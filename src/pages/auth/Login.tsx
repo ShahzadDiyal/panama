@@ -66,8 +66,8 @@ export default function Login() {
 
       {/* Right Section - White background - 40% width */}
       <div
-        className="w-full lg:w-[35%] flex items-center justify-center p-12 bg-white shadow-xl relative z-10"
-        style={{ borderTopLeftRadius: '40px' }}
+        className="w-full lg:w-[35%] flex items-center justify-center p-12 bg-white shadow-xl relative z-10 rounded-tl-[40px]"
+       
       >        <div className="w-full max-w-xl">
           {/* Mobile Logo (visible only on mobile) */}
           <div className="lg:hidden text-center mb-8">

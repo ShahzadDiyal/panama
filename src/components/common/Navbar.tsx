@@ -1,86 +1,121 @@
 import { useState, useEffect } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
+import panameLogo from '../../assets/logo/panama.png'
+import homeIcon from '../../assets/logo/home.png'
+import suppliersIcon from '../../assets/logo/supplier.png'
+import dealsIcon from '../../assets/logo/deals.png'
+import servicesIcon from '../../assets/logo/services.png'
+import sourcingIcon from '../../assets/logo/sourcing.png'
+import pricingIcon from '../../assets/logo/pricing.png'
+
 
 const navLinks = [
-  { label: 'Home',      path: '/' },
-  { label: 'Suppliers', path: '/supplier' },
-  { label: 'Deals',     path: '/deals' },
-  { label: 'Sourcing',  path: '/sourcing' },
-  { label: 'Servicing', path: '/servicing' },
-  { label: 'Pricing',   path: '/pricing' },
+  {
+    label: 'Home',
+    path: '/',
+    icon: (
+      <img src={homeIcon} alt="" />
+    ),
+  },
+  {
+    label: 'Suppliers',
+    path: '/supplier',
+    icon: (
+      <img src={suppliersIcon} alt="" />
+
+    ),
+  },
+  {
+    label: 'Deals',
+    path: '/deals',
+    icon: (
+      <img src={dealsIcon} alt="" />
+
+    ),
+  },
+  {
+    label: 'Sourcing',
+    path: '/sourcing',
+    icon: (
+      <img src={servicesIcon} alt="" />
+
+    ),
+  },
+  {
+    label: 'Servicing',
+    path: '/servicing',
+    icon: (
+      <img src={sourcingIcon} alt="" />
+
+    ),
+  },
+  {
+    label: 'Pricing',
+    path: '/pricing',
+    icon: (
+      <img src={pricingIcon} alt="" />
+
+    ),
+  },
 ]
 
 export default function Navbar() {
-  const [scrolled,     setScrolled]     = useState(false)
-  const [menuOpen,     setMenuOpen]     = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const location = useLocation()
 
-  // Close mobile menu on route change
   useEffect(() => { setMenuOpen(false) }, [location])
 
-  // Add background on scroll
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20)
-    window.addEventListener('scroll', onScroll)
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300
-        ${scrolled
-          ? 'bg-slate-950/90 backdrop-blur-md border-b border-white/10 shadow-lg shadow-black/20'
-          : 'bg-transparent'
-        }`}
-    >
+    <header className="fixed top-0 left-0 right-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
 
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg group-hover:shadow-amber-500/30 transition-shadow duration-300">
-              <span className="text-slate-900 font-bold text-base">P</span>
+          {/* Logo — Left */}
+          <Link to="/" className="flex items-center gap-2.5 group flex-shrink-0">
+            <div className="lg:w-70 w-40 flex items-center justify-center  ">
+              <img src={panameLogo} alt="" />
             </div>
-            <span className="text-white font-bold text-xl tracking-wide">Paname</span>
+
           </Link>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center gap-1">
+          {/* Desktop Nav — Center */}
+          <nav className="hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
             {navLinks.map((link) => (
               <NavLink
                 key={link.path}
                 to={link.path}
                 end={link.path === '/'}
                 className={({ isActive }) =>
-                  `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                  `flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-[16px] font-medium transition-all duration-200
                   ${isActive
                     ? 'text-amber-400 bg-amber-400/10'
-                    : 'text-slate-300 hover:text-white hover:bg-white/5'
+                    : 'text-slate-300 hover:text-white hover:bg-white/8'
                   }`
                 }
               >
-                {link.label}
+                {link.icon}
+                <span>{link.label}</span>
               </NavLink>
             ))}
           </nav>
 
-          {/* Desktop Auth Buttons */}
-          <div className="hidden lg:flex items-center gap-3">
+          {/* Desktop Auth Buttons — Right */}
+          <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
             <Link
               to="/login"
-              className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors duration-200"
+              className="px-6 py-3 text-[16px] font-medium text-black bg-white border border-white/20 hover:border-white/40 rounded-lg transition-all duration-200"
             >
-              Sign In
+              Login
             </Link>
             <Link
               to="/register"
-              className="px-5 py-2.5 text-sm font-semibold text-slate-900 bg-gradient-to-r from-amber-400 to-amber-500 rounded-lg hover:from-amber-300 hover:to-amber-400 transition-all duration-200 shadow-lg hover:shadow-amber-500/25 hover:-translate-y-0.5"
+              className="px-6 py-3 text-[16px] font-medium text-black bg-white border border-white/20 hover:border-white/40 rounded-lg transition-all duration-200"
             >
-              Get Started
+              Get Access
             </Link>
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Toggle */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="lg:hidden p-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors duration-200"
@@ -112,22 +147,23 @@ export default function Navbar() {
               to={link.path}
               end={link.path === '/'}
               className={({ isActive }) =>
-                `block px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
+                `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
                 ${isActive
                   ? 'text-amber-400 bg-amber-400/10'
                   : 'text-slate-300 hover:text-white hover:bg-white/5'
                 }`
               }
             >
-              {link.label}
+              {link.icon}
+              <span>{link.label}</span>
             </NavLink>
           ))}
           <div className="pt-3 border-t border-white/10 flex flex-col gap-2">
             <Link
               to="/login"
-              className="block px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors duration-200"
+              className="block px-4 py-3 text-sm font-medium text-center bg-white text-black  rounded-lg transition-colors duration-200"
             >
-              Sign In
+              Login
             </Link>
             <Link
               to="/register"
