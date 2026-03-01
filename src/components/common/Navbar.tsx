@@ -67,7 +67,7 @@ export default function Navbar() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-8xl mx-auto pt-10 px-4 sm:px-6 lg:pr-16">
         <div className="flex items-center justify-between h-16 lg:h-20">
 
           {/* Logo — Left */}
@@ -86,7 +86,7 @@ export default function Navbar() {
                 to={link.path}
                 end={link.path === '/'}
                 className={({ isActive }) =>
-                  `flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-[16px] font-medium transition-all duration-200
+                  `flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-[16px] transition-all duration-200
                   ${isActive
                     ? 'text-amber-400 bg-amber-400/10'
                     : 'text-slate-300 hover:text-white hover:bg-white/8'
