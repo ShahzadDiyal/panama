@@ -1,0 +1,185 @@
+import { Link } from 'react-router-dom'
+
+import msgIcon from '../../assets/msg_icon.png'
+import ideas_icon from '../../assets/ideas_icon.png'
+import traveling_icon from '../../assets/traveling_icon.png'
+
+
+// ── Types ─────────────────────────────────────────────────────────────────
+interface Service {
+  title: string
+  description: string
+  icon: React.ReactNode
+}
+
+interface PricingPlan {
+  title: string
+  subtitle?: string
+  features: string[]
+}
+
+// ── Data ──────────────────────────────────────────────────────────────────
+const services: Service[] = [
+  {
+    title: 'Business Consulting with Ishmael',
+    description: 'One-on-one guidance for sourcing and Panama market entry.',
+    icon: (
+      <img src={msgIcon} alt="" />
+    ),
+  },
+  {
+    title: 'AI Business Idea Validation',
+    description: 'Validate products and ideas before investing capital.',
+    icon: (
+      <img src={ideas_icon} alt="" />
+    ),
+  },
+  {
+    title: 'Panama Business Tours',
+    description: 'Curated supplier tours and factory visits.',
+    icon: (
+   <img src={traveling_icon} alt="" />
+    ),
+  },
+]
+
+const plans: PricingPlan[] = [
+  {
+    title: '$20 Day Pass',
+    features: ['24-hour access', 'Suppliers & Deals', 'WhatsApp Contact'],
+  },
+  {
+    title: '$50 Monthly',
+    subtitle: '– Business Builder',
+    features: ['Full access', 'Validation tools', 'Education & updates'],
+  },
+  {
+    title: '$299 Yearly',
+    subtitle: '– Best Value',
+    features: ['Everything included', 'Save more annually'],
+  },
+]
+
+// ── PricingSection ────────────────────────────────────────────────────────
+const PricingSection = () => {
+  return (
+    // Light blue-gray gradient background matching screenshot
+    <section
+      className="w-full py-12 sm:py-16"
+      style={{ background: 'linear-gradient(135deg, #EBF3FB 0%, #D6EAF8 50%, #EBF3FB 100%)' }}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+
+        {/* Large watermark numbers — decorative, right side */}
+        <span
+          className="absolute right-0 top-0 text-[160px] sm:text-[220px] font-black
+            text-slate-200/70 leading-none select-none pointer-events-none hidden sm:block"
+          aria-hidden="true"
+        >
+          0
+        </span>
+
+        {/* ── Business Support Section ── */}
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-800 mb-6 sm:mb-8">
+          Business Support Beyond Sourcing
+        </h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-22 mb-12 sm:mb-16 relative z-10">
+          {services.map((service) => (
+            <div
+              key={service.title}
+              className="bg-white rounded-2xl border border-gray-100 shadow-sm
+                p-5 sm:p-6 flex flex-col justify-between min-h-[140px] 
+                hover:shadow-md transition-shadow duration-200"
+            >
+              <div>
+                <h3 className="font-semibold text-slate-800 text-[16px] mb-3 leading-snug">
+                  {service.title}
+                </h3>
+                <p className="text-[#33333366] text-[16px] font-semibold leading-relaxed max-w-[220px]">
+                  {service.description}
+                </p>
+              </div>
+              <div className="flex justify-end">
+                {service.icon}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Divider */}
+        <hr className="border-slate-200 mb-10 sm:mb-12" />
+
+        {/* Large watermark number 3 */}
+        <span
+          className="absolute right-0 bottom-0 text-[160px] sm:text-[220px] font-black
+            text-slate-200/70 leading-none select-none pointer-events-none hidden sm:block"
+          aria-hidden="true"
+        >
+          3
+        </span>
+
+        {/* ── Pricing Section ── */}
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-800 mb-6 sm:mb-8 relative z-10">
+          Simple Access Pricing
+        </h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-24 relative z-10">
+          {plans.map((plan) => (
+            <div
+              key={plan.title}
+              className="bg-white rounded-2xl border border-gray-100 shadow-sm
+                p-5 sm:p-6 flex flex-col justify-between min-h-[340px] sm:min-h-[380px]
+                hover:shadow-md transition-shadow duration-200"
+            >
+              {/* Plan title */}
+              <div className="mb-6">
+                <h3 className="font-bold text-slate-800 text-[18px] sm:text-[20px] leading-snug">
+                  {plan.title}
+                  {plan.subtitle && (
+                    <>
+                      <br />
+                      <span className="font-bold">{plan.subtitle}</span>
+                    </>
+                  )}
+                </h3>
+
+                {/* Features list */}
+                <ul className="mt-5 sm:mt-6 space-y-2">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="flex items-center gap-2 text-[#33333399] text-[16px] font-semibold">
+                      <span className='text-black'>✔</span>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* CTA button */}
+              <Link
+                to="/pricing"
+                className="group flex items-center justify-between w-full
+                  px-5 py-3.5 rounded-xl border border-slate-200
+                  hover:bg-slate-800 hover:border-slate-800 hover:text-white
+                  text-slate-700 text-[13px] sm:text-[14px] font-medium
+                  transition-all duration-200"
+              >
+                Get Access Now
+                <svg
+                  className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5"
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
+
+            </div>
+          ))}
+        </div>
+
+      </div>
+    </section>
+  )
+}
+
+export default PricingSection

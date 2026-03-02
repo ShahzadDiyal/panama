@@ -21,7 +21,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
 
         {/* ── Desktop layout: everything in one flex row, bottom-aligned ── */}
-        <div className="hidden sm:flex items-end gap-0 min-h-[160px] py-10">
+        <div className="hidden sm:flex items-end gap-0 min-h-[160px] py-16">
 
           {/* Brand */}
           <div className="flex-1 flex items-end ">
