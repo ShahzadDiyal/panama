@@ -119,7 +119,7 @@ export default function HeroSection() {
                 <div
                   key={b.label}
                   className="inline-flex w-full md:w-[250px] xl:w-[230px] items-center gap-3 px-8 py-3 rounded-full
-                    bg-[#6D9098] border border-white/20 text-white text-[16px] font-medium
+                    lg:bg-[#6D9098] border border-white/20 text-white text-[16px] font-medium
                     hover:bg-white/20 transition-colors duration-200 cursor-default"
                 >
                   <span className="text-amber-400 flex-shrink-0">{b.icon}</span>

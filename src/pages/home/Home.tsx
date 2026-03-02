@@ -6,21 +6,36 @@ import PricingSection from "../../components/home/PricingSection"
 
 // ── StickyInfoBar ─────────────────────────────────────────────────────────
 function StickyInfoBar({ visible }: { visible: boolean }) {
-  const [category, setCategory] = useState<string>('')
-  const [supplierType, setSupplierType] = useState<string>('')
-  const [search, setSearch] = useState<string>('')
+  const [category, setCategory] = useState('')
+  const [supplierType, setSupplierType] = useState('')
+  const [search, setSearch] = useState('')
 
   return (
     <div
-      className={`sticky top-20 z-20 bg-white transition-all duration-300 px-4 sm:px-6 lg:px-8 pb-3 ${
-        visible
-          ? 'opacity-100 translate-y-0'
-          : 'opacity-0 -translate-y-4 pointer-events-none'
-      }`}
+      className={`
+        sticky top-16 sm:top-18 lg:top-20 z-30 bg-white
+        transition-all duration-300
+        px-4 sm:px-6 lg:px-8
+        py-3 sm:py-4
+        shadow-sm
+        ${visible
+          ? "opacity-100 translate-y-0"
+          : "opacity-0 -translate-y-4 pointer-events-none"}
+      `}
     >
-      {/* ── Row 1: 3-col info ── */}
-      <div className="border-t border-b border-gray-200 mb-4">
-        <div className="grid grid-cols-3 ">
+
+      {/* ── Row 1: Info columns ── */}
+      <div className="border-y border-gray-200">
+
+        {/* Responsive grid */}
+        <div className="
+          grid
+          grid-cols-1
+          sm:grid-cols-2
+          lg:grid-cols-3
+          gap-y-3
+          gap-x-4
+        ">
           {[
             {
               heading: 'Browse',
@@ -37,157 +52,187 @@ function StickyInfoBar({ visible }: { visible: boolean }) {
           ].map((col, i) => (
             <div
               key={i}
-              className="flex flex-col items-center text-center  sm:px-6 lg:px-10 py-3 sm:py-4"
+              className="
+                flex flex-col items-center text-center
+                px-2 sm:px-4 lg:px-6
+                py-3
+              "
             >
-              <h3 className="font-semibold text-slate-800 text-[11px] sm:text-[14px] lg:text-[15px] mb-0.5 sm:mb-1">
+              <h3 className="
+                font-semibold text-slate-800
+                text-xs sm:text-sm lg:text-base
+                mb-1
+              ">
                 {col.heading}
               </h3>
-              <p className="text-slate-400 text-[9px] sm:text-[12px] lg:text-[13px] leading-snug max-w-[200px] hidden sm:block">
+
+              <p className="
+                text-slate-400
+                text-xs sm:text-sm
+                leading-snug
+                max-w-[260px]
+              ">
                 {col.subheading}
               </p>
             </div>
           ))}
         </div>
+
       </div>
 
-      {/* ── Row 2: search left, dropdowns right ── */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+      {/* ── Row 2: Search + filters ── */}
+      <div className="
+        flex
+        flex-col
+        lg:flex-row
+        gap-3
+        mt-4
+      ">
 
-        {/* Search bar */}
-        <div className="relative flex-1">
+        {/* Search */}
+        <div className="relative flex-1 w-full">
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search suppliers, products, or categories"
-            className="w-full pl-5 pr-11 py-2.5 rounded-full border border-gray-200
-              text-slate-700 placeholder-slate-400 text-[13px]
-              focus:outline-none focus:border-slate-400 transition-colors duration-200"
+            className="
+              w-full
+              pl-4 pr-10 py-2.5
+              rounded-full
+              border border-gray-300
+              text-sm
+              focus:outline-none
+              focus:border-slate-500
+            "
           />
-          <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+
+          <span className="absolute right-3 top-1/2 -translate-y-1/2">
+            <svg className="w-4 h-4 text-slate-400"
+              fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </span>
         </div>
 
-        {/* Dropdowns row */}
-        <div className="flex items-center gap-3 flex-shrink-0">
+        {/* Filters */}
+        <div className="
+          flex
+          flex-col
+          sm:flex-row
+          gap-3
+          w-full
+          lg:w-auto
+        ">
 
-          {/* Category dropdown */}
-          <div className="relative">
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="appearance-none pl-4 pr-9 py-2.5 rounded-full border border-gray-200
-                text-slate-700 text-[13px] bg-white
-                focus:outline-none focus:border-slate-400 transition-colors duration-200
-                cursor-pointer min-w-[130px]"
-            >
-              <option value="">Category</option>
-              <option value="food">Food & Beverage</option>
-              <option value="apparel">Apparel</option>
-              <option value="electronics">Electronics</option>
-              <option value="packaging">Packaging</option>
-              <option value="beauty">Beauty & Personal Care</option>
-              <option value="fashion">Fashion</option>
-            </select>
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </span>
-          </div>
+          {/* Category */}
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="
+              w-full sm:w-auto
+              px-4 py-2.5
+              rounded-full
+              border border-gray-300
+              text-sm
+              focus:outline-none
+            "
+          >
+            <option value="">Category</option>
+            <option value="food">Food & Beverage</option>
+            <option value="apparel">Apparel</option>
+            <option value="electronics">Electronics</option>
+            <option value="packaging">Packaging</option>
+            <option value="beauty">Beauty</option>
+            <option value="fashion">Fashion</option>
+          </select>
 
-          {/* Supplier Type dropdown */}
-          <div className="relative">
-            <select
-              value={supplierType}
-              onChange={(e) => setSupplierType(e.target.value)}
-              className="appearance-none pl-4 pr-9 py-2.5 rounded-full border border-gray-200
-                text-slate-700 text-[13px] bg-white
-                focus:outline-none focus:border-slate-400 transition-colors duration-200
-                cursor-pointer min-w-[145px]"
-            >
-              <option value="">Supplier Type</option>
-              <option value="manufacturer">Manufacturer</option>
-              <option value="wholesaler">Wholesaler</option>
-              <option value="distributor">Distributor</option>
-              <option value="exporter">Exporter</option>
-            </select>
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </span>
-          </div>
+          {/* Supplier Type */}
+          <select
+            value={supplierType}
+            onChange={(e) => setSupplierType(e.target.value)}
+            className="
+              w-full sm:w-auto
+              px-4 py-2.5
+              rounded-full
+              border border-gray-300
+              text-sm
+              focus:outline-none
+            "
+          >
+            <option value="">Supplier Type</option>
+            <option value="manufacturer">Manufacturer</option>
+            <option value="wholesaler">Wholesaler</option>
+            <option value="distributor">Distributor</option>
+            <option value="exporter">Exporter</option>
+          </select>
 
         </div>
+
       </div>
+
     </div>
   )
 }
 
 // ── Home ──────────────────────────────────────────────────────────────────
 export default function Home() {
-  const [barVisible, setBarVisible] = useState<boolean>(false)
+
+  const [barVisible, setBarVisible] = useState(false)
 
   const dealsRef = useRef<HTMLDivElement>(null)
   const suppliersRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const options: IntersectionObserverInit = {
-      root: null,
-      rootMargin: '-10% 0px -10% 0px',
-      threshold: 0,
-    }
 
-    const observer = new IntersectionObserver((entries) => {
-      const anyVisible = entries.some((e) => e.isIntersecting)
-      if (anyVisible) {
-        setBarVisible(true)
-      } else {
-        // Check if either section is still in view
-        const dealsInView =
-          dealsRef.current
-            ? dealsRef.current.getBoundingClientRect().top < window.innerHeight * 0.9 &&
-              dealsRef.current.getBoundingClientRect().bottom > window.innerHeight * 0.1
-            : false
-        const suppliersInView =
-          suppliersRef.current
-            ? suppliersRef.current.getBoundingClientRect().top < window.innerHeight * 0.9 &&
-              suppliersRef.current.getBoundingClientRect().bottom > window.innerHeight * 0.1
-            : false
-
-        if (!dealsInView && !suppliersInView) setBarVisible(false)
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.some(e => e.isIntersecting)
+        setBarVisible(visible)
+      },
+      {
+        root: null,
+        threshold: 0.05,
       }
-    }, options)
+    )
 
     if (dealsRef.current) observer.observe(dealsRef.current)
     if (suppliersRef.current) observer.observe(suppliersRef.current)
 
     return () => observer.disconnect()
+
   }, [])
 
   return (
-    <div className="bg-slate-950">
+    <div className="bg-slate-950 w-full overflow-x-hidden">
 
       <HeroSection />
 
       <div className="bg-white">
-        {/* Single sticky bar — same content always, shown over both sections */}
+
         <StickyInfoBar visible={barVisible} />
 
-        <div ref={dealsRef}>
+        <div
+          ref={dealsRef}
+          className="px-4 sm:px-6 lg:px-8"
+        >
           <LatestDeals />
         </div>
 
-        <div ref={suppliersRef}>
+        <div
+          ref={suppliersRef}
+          className="px-4 sm:px-6 lg:px-8"
+        >
           <VerifiedSupplier />
         </div>
+
       </div>
 
-      <PricingSection />
+      <div className="">
+        <PricingSection />
+      </div>
 
     </div>
   )

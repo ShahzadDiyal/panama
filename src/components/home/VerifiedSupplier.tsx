@@ -83,7 +83,7 @@ function VerifiedBadgeIcon() {
 function SupplierCard({ supplier, featured = false }: { supplier: Supplier; featured?: boolean }) {
   return (
     // ↓ Outer wrapper: same p-[10px] + rounded-3xl as LatestDeals cards
-    <div className="flex-shrink-0 w-[210px] sm:w-[225px] lg:w-[240px] xl:w-[250px]
+    <div className="flex-shrink-0 w-[300px] sm:w-[225px] lg:w-[240px] xl:w-[250px]
       bg-white rounded-3xl overflow-hidden border border-gray-100
       shadow-sm hover:shadow-lg transition-shadow duration-300 p-[10px]">
 
@@ -247,7 +247,7 @@ const VerifiedSuppliers = () => {
       {/* Carousel track — same gap-10 + pl-6/pl-8 as LatestDeals */}
       <div
         ref={trackRef}
-        className="flex gap-10 overflow-x-auto pb-2 select-none pl-6 sm:pl-5 lg:pl-8"
+        className="flex gap-10 overflow-x-auto pb-2 select-none pl-2 sm:pl-5 lg:pl-8"
         style={{ cursor: 'grab', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}

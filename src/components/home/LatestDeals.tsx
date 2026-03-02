@@ -159,7 +159,7 @@ function DealCard({ deal }: { deal: Deal }) {
 
   return (
     // card: 2px padding each side, fully rounded, square-ish
-    <div className="flex-shrink-0 w-[230px] sm:w-[250px] md:w-[260px] lg:w-[270px] xl:w-[280px]
+    <div className="flex-shrink-0 w-[300px] sm:w-[250px] md:w-[260px] lg:w-[270px] xl:w-[280px]
       bg-white rounded-3xl overflow-hidden border border-gray-100
       shadow-sm hover:shadow-lg transition-shadow duration-300 p-[10px]">
 
@@ -351,7 +351,7 @@ const LatestDeals = () => {
       <div
         ref={trackRef}
         className="flex gap-10 overflow-x-auto pb-2 select-none
-          pl-6 sm:pl-5 lg:pl-8"
+          pl-2 sm:pl-5 lg:pl-8"
         style={{
           cursor: 'grab',
           scrollbarWidth: 'none',
