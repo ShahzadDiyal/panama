@@ -208,7 +208,7 @@ const VerifiedSuppliers = () => {
   const onTouchEnd = () => { isDragging.current = false }
 
   return (
-    <section className="w-full py-8 sm:py-10 bg-white overflow-hidden">
+    <section className="w-full py-8 sm:py-26 bg-white overflow-hidden">
 
       {/* Header row — same px as LatestDeals */}
       <div className="flex items-start justify-between mb-6 px-4 sm:px-5 lg:pl-8 lg:pr-8">

@@ -113,7 +113,7 @@ export default function HeroSection() {
             {/* ^^^ CHANGED: flex-col on small screens, flex-row on xl (1200px+) */}
 
             {/* Left: Badges */}
-            <div className="flex flex-row px-6 xl:flex-col flex-wrap gap-3 xl:justify-center lg:justify-center md:justify-start justify-center">
+            <div className="flex flex-row  xl:px-0 px-6 xl:flex-col flex-wrap gap-3 xl:justify-center lg:justify-center md:justify-start justify-center">
               {/* ^^^ CHANGED: flex-row on small screens, flex-col on xl */}
               {badges.map((b) => (
                 <div

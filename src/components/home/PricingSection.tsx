@@ -65,7 +65,7 @@ const PricingSection = () => {
   return (
     // Light blue-gray gradient background matching screenshot
     <section
-      className="w-full py-12 sm:py-16"
+      className="w-full py-12 sm:py-30"
       style={{ background: 'linear-gradient(135deg, #EBF3FB 0%, #D6EAF8 50%, #EBF3FB 100%)' }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">

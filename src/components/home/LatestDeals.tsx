@@ -161,7 +161,7 @@ function DealCard({ deal }: { deal: Deal }) {
     // card: 2px padding each side, fully rounded, square-ish
     <div className="flex-shrink-0 w-[300px] sm:w-[250px] md:w-[260px] lg:w-[270px] xl:w-[280px]
       bg-white rounded-3xl overflow-hidden border border-gray-100
-      shadow-sm hover:shadow-lg transition-shadow duration-300 p-[10px]">
+      shadow-sm hover:shadow-lg transition-shadow duration-300 p-[10px] ">
 
       <div className="rounded-3xl overflow-hidden h-full flex flex-col">
 
@@ -320,7 +320,7 @@ const LatestDeals = () => {
   const onTouchEnd = () => { isDragging.current = false }
 
   return (
-    <section className="w-full py-8 sm:py-10 bg-white overflow-hidden">
+    <section className="w-full py-20 sm:py-16 bg-white overflow-hidden">
 
       {/* Header: pl-5 (20px) on large, equal on small */}
       <div className="flex items-center justify-between mb-6 px-4 sm:px-5 lg:pl-8 lg:pr-8">
