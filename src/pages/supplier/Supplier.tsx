@@ -1,133 +1,570 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useNavbar } from '../../context/NavbarContext'
+import dropdown_icon from '../../assets/dropdown_icon.png'
+import sourcing_illustrator from '../../assets/souring_illustrator.png'
 
-const SUPPLIERS = [
-  { id: 1, name: 'Shanghai Manufacturing Co.', category: 'Electronics', country: '🇨🇳 China', rating: 4.9, reviews: 312, moq: '$5,000', verified: true, tags: ['ISO 9001', 'Fast Ship'] },
-  { id: 2, name: 'TechParts Global',            category: 'Components',  country: '🇰🇷 South Korea', rating: 4.8, reviews: 198, moq: '$2,500', verified: true, tags: ['CE Certified', 'OEM'] },
-  { id: 3, name: 'EuroTextile Solutions',       category: 'Textiles',    country: '🇩🇪 Germany',      rating: 4.7, reviews: 145, moq: '$1,000', verified: true, tags: ['GOTS', 'Sustainable'] },
-  { id: 4, name: 'Mumbai Steel Works',          category: 'Metals',      country: '🇮🇳 India',        rating: 4.6, reviews: 89,  moq: '$3,000', verified: false, tags: ['BIS Certified'] },
-  { id: 5, name: 'BioFood Exports Ltd',         category: 'Food',        country: '🇧🇷 Brazil',       rating: 4.8, reviews: 221, moq: '$500',   verified: true, tags: ['Organic', 'FDA'] },
-  { id: 6, name: 'Apex Auto Parts',             category: 'Automotive',  country: '🇯🇵 Japan',        rating: 4.9, reviews: 407, moq: '$10,000',verified: true, tags: ['JIS', 'OEM'] },
+// ── Types ─────────────────────────────────────────────────────────────────
+interface Supplier {
+  id: number
+  name: string
+  category: string
+  location: string
+  logo: string
+  logoRound: boolean
+  verified: boolean
+  premium: boolean
+  responds: string
+}
+
+// ── Mock data ─────────────────────────────────────────────────────────────
+const SUPPLIERS: Supplier[] = [
+  { id: 1, name: 'Panama Agro Exports', category: 'Food & Beverage', location: 'Panama City', logo: 'https://images.unsplash.com/photo-1607631568010-a87245c0daf8?w=200&q=80', logoRound: true, verified: true, premium: false, responds: 'Responds in 24 hrs' },
+  { id: 2, name: 'Colón Textile Group', category: 'Apparel', location: 'Colón', logo: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=200&q=80', logoRound: true, verified: true, premium: false, responds: 'Responds in 24 hrs' },
+  { id: 3, name: 'Pacific Tech Distributors', category: 'Electronics', location: 'Panama Oeste', logo: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&q=80', logoRound: true, verified: true, premium: true, responds: 'Responds in 2 hrs' },
+  { id: 4, name: 'Canal Zone Packaging Ltd.', category: 'Packaging & Materials', location: 'Panama City', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Canal%2B_2019.svg/500px-Canal%2B_2019.svg.png', logoRound: false, verified: true, premium: false, responds: 'Responds in 24 hrs' },
+  { id: 5, name: 'Tropic Beauty Exports', category: 'Beauty & Personal Care', location: 'Chiriqui', logo: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=200&q=80', logoRound: false, verified: true, premium: false, responds: 'Responds in 48 hrs' },
+  { id: 6, name: 'Bocas del Toro Organics', category: 'Food & Beverage', location: 'Bocas del Toro', logo: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&q=80', logoRound: true, verified: true, premium: true, responds: 'Responds in 1 hr' },
+  { id: 7, name: 'Chiriqui Steel Works', category: 'Metals', location: 'Chiriqui', logo: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=200&q=80', logoRound: true, verified: false, premium: true, responds: 'Responds in 24 hrs' },
+  { id: 8, name: 'David Auto Parts Co.', category: 'Automotive', location: 'David, Chiriqui', logo: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=200&q=80', logoRound: true, verified: true, premium: false, responds: 'Responds in 24 hrs' },
+  { id: 9, name: 'Panama Pharma Exports', category: 'Healthcare', location: 'Panama City', logo: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=200&q=80', logoRound: true, verified: true, premium: true, responds: 'Responds in 3 hrs' },
+  { id: 10, name: 'Veraguas Crafts Co.', category: 'Handicrafts', location: 'Veraguas', logo: 'https://images.unsplash.com/photo-1606722590583-6951b5ea92ad?w=200&q=80', logoRound: true, verified: false, premium: false, responds: 'Responds in 48 hrs' },
+  { id: 11, name: 'Panama Logistics Hub', category: 'Logistics', location: 'Panama City', logo: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=200&q=80', logoRound: true, verified: true, premium: false, responds: 'Responds in 12 hrs' },
+  { id: 12, name: 'Coiba Marine Exports', category: 'Marine & Fishing', location: 'Veraguas Coast', logo: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=200&q=80', logoRound: true, verified: true, premium: true, responds: 'Responds in 6 hrs' },
 ]
 
-const CATEGORIES = ['All', 'Electronics', 'Components', 'Textiles', 'Metals', 'Food', 'Automotive']
+const CATEGORIES = ['All', 'Food & Beverage', 'Apparel', 'Electronics', 'Packaging & Materials', 'Beauty & Personal Care', 'Metals', 'Automotive', 'Healthcare', 'Handicrafts', 'Logistics', 'Marine & Fishing']
+const SUPPLIER_TYPES = ['All Types', 'Manufacturer', 'Wholesaler', 'Distributor', 'Exporter']
+const LOCATIONS = ['All Locations', 'Panama City', 'Colón', 'Panama Oeste', 'Chiriqui', 'Bocas del Toro', 'Veraguas']
+const MOQ_RANGES = ['Any MOQ', 'Under $500', '$500–$2,000', '$2,000–$5,000', '$5,000+']
 
-export default function Supplier() {
-  const [search,   setSearch]   = useState('')
+// ── Verified Badge Icon ───────────────────────────────────────────────────
+function VerifiedBadgeIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round"
+        d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0
+           3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946
+           3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138
+           3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806
+           3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438
+           3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+    </svg>
+  )
+}
+
+// ── Regular Supplier Card ─────────────────────────────────────────────────
+function SupplierCard({ supplier, featured = false }: { supplier: Supplier; featured?: boolean }) {
+  return (
+    <div
+      className="no-section-click bg-white rounded-2xl shadow-sm hover:shadow-md
+        transition-all duration-300 hover:-translate-y-0.5 flex flex-col overflow-hidden"
+      style={{ boxShadow: '0 2px 12px 0 rgba(60,80,140,0.07)' }}
+    >
+      {/* Verified badge */}
+      <div className="flex items-center justify-center gap-1.5 pt-5 pb-1">
+        {supplier.verified ? (
+          <div className="flex items-center gap-1 text-red-500 text-[13px] sm:text-[15px] font-semibold">
+            <VerifiedBadgeIcon className="w-4 h-4" />
+            Verified Supplier
+          </div>
+        ) : (
+          <div className="text-slate-300 text-[11px]">Unverified</div>
+        )}
+      </div>
+
+      {/* Logo */}
+      <div className="flex justify-center mt-3 mb-3 px-4">
+        <div className={`w-[72px] h-[72px] sm:w-[90px] sm:h-[90px] flex-shrink-0 overflow-hidden
+          flex items-center justify-center
+          ${supplier.logoRound ? 'rounded-full border border-gray-100 shadow-sm' : 'rounded-full bg-slate-900 shadow-sm'}`}>
+          <img
+            src={supplier.logo}
+            alt={supplier.name}
+            draggable={false}
+            className={supplier.logoRound ? 'w-full h-full object-cover' : 'w-[56px] h-[56px] sm:w-[68px] sm:h-[68px] object-contain'}
+          />
+        </div>
+      </div>
+
+      {/* Info */}
+      <div className="flex flex-col px-3 sm:px-5 pb-4 sm:pb-5 flex-1">
+        <h3 className="font-bold text-slate-800 text-[13px] sm:text-[16px] leading-snug mb-1">
+          {supplier.name}
+        </h3>
+
+        <div className="flex items-center gap-1 mb-1.5">
+          <span className="text-[11px] sm:text-[12px] text-blue-600 font-medium">
+            {supplier.responds}
+          </span>
+        </div>
+
+        <p className="text-slate-400 text-[11px] sm:text-[13px] mb-1">{supplier.category}</p>
+
+        <div className="flex items-center gap-1 text-black text-[11px] sm:text-[12px] mb-4">
+          <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round"
+              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          {supplier.location}
+        </div>
+
+        {/* CTA */}
+        <Link
+          to={`/supplier/${supplier.id}`}
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+          className={`group mt-auto flex items-center justify-center gap-2 w-full
+            py-2.5 sm:py-3 rounded-xl text-[11px] sm:text-[13px] font-semibold transition-all duration-200
+            ${featured
+              ? 'bg-[#162B60] text-white hover:bg-blue-900'
+              : 'bg-[#DAEEFF] text-slate-700 hover:bg-[#162B60] hover:text-white'
+            }`}
+        >
+          View Profile
+          <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center
+            transition-all duration-300 group-hover:rotate-[-45deg]
+            ${featured ? 'bg-white/20' : 'bg-[#B8E4FF]'}`}>
+            <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </span>
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+// ── Premium (Locked) Supplier Card ────────────────────────────────────────
+function PremiumCard({ supplier }: { supplier: Supplier }) {
+  return (
+    <div
+      className="no-section-click relative rounded-2xl border border-slate-200 overflow-hidden flex flex-col"
+      style={{
+        background: 'linear-gradient(135deg, rgba(220,228,255,0.55) 0%, rgba(200,215,255,0.38) 100%)',
+        backdropFilter: 'blur(2px)',
+        boxShadow: '0 2px 16px 0 rgba(60,80,160,0.10)',
+      }}
+    >
+      {/* Blurred content underneath */}
+      <div className="flex flex-col flex-1 blur-[3px] select-none pointer-events-none opacity-70 px-3 sm:px-5 pt-5 pb-5">
+        <div className="flex items-center justify-center gap-1 text-red-400 text-[12px] font-semibold mb-3">
+          <VerifiedBadgeIcon className="w-4 h-4" />
+          Verified Supplier
+        </div>
+        <div className="flex justify-center mt-1 mb-3">
+          <div className="w-[72px] h-[72px] sm:w-[90px] sm:h-[90px] rounded-full overflow-hidden border border-gray-100 shadow-sm flex-shrink-0">
+            <img src={supplier.logo} alt="" draggable={false} className="w-full h-full object-cover" />
+          </div>
+        </div>
+        <h3 className="font-bold text-slate-700 text-[13px] sm:text-[15px] leading-snug mb-1">{supplier.name}</h3>
+        <span className="text-[11px] text-blue-500 font-medium mb-1">{supplier.responds}</span>
+        <p className="text-slate-400 text-[11px] sm:text-[12px] mb-1">{supplier.category}</p>
+        <div className="flex items-center gap-1 text-slate-400 text-[11px] sm:text-[12px]">
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round"
+              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          {supplier.location}
+        </div>
+      </div>
+
+      {/* Lock overlay */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+        <div
+          className="flex flex-col items-center gap-2 bg-white/70 backdrop-blur-md
+            border border-white/80 rounded-2xl px-5 py-6 shadow-lg mx-4"
+          style={{ boxShadow: '0 4px 24px 0 rgba(60,80,160,0.13)' }}
+        >
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center">
+            <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <p className="text-slate-700 text-[13px] font-bold text-center">Go Premium</p>
+          <Link
+            to="/pricing"
+            onClick={(e) => e.stopPropagation()}
+            className="no-section-click mt-1 bg-[#162B60] hover:bg-blue-900 text-white
+              text-[11px] font-semibold px-4 py-1.5 rounded-lg transition-all duration-200"
+          >
+            Unlock
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Scroll Isolator (desktop only) ────────────────────────────────────────
+function ScrollIsolator({ children, isMobile }: { children: React.ReactNode; isMobile: boolean }) {
+  const ref = useRef<HTMLDivElement>(null)
+
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (isMobile) return
+    const el = ref.current
+    if (!el) return
+    const { scrollTop, scrollHeight, clientHeight } = el
+    const atTop = scrollTop === 0 && e.deltaY < 0
+    const atBottom = scrollTop + clientHeight >= scrollHeight - 1 && e.deltaY > 0
+    if (!atTop && !atBottom) e.stopPropagation()
+  }
+
+  return (
+    <div
+      ref={ref}
+      onWheel={handleWheel}
+      className={isMobile ? '' : 'overflow-y-auto'}
+      style={isMobile ? {} : { scrollbarWidth: 'none' }}
+    >
+      {children}
+    </div>
+  )
+}
+
+// ── Supplier Grid Section ─────────────────────────────────────────────────
+function SupplierGridSection({ onNext, isMobile }: { onNext: () => void; isMobile: boolean }) {
+  const [search, setSearch] = useState('')
   const [category, setCategory] = useState('All')
+  const [supplierType, setSupplierType] = useState('All Types')
+  const [location, setLocation] = useState('All Locations')
+  const [moq, setMoq] = useState('Any MOQ')
 
   const filtered = SUPPLIERS.filter((s) => {
-    const matchSearch   = s.name.toLowerCase().includes(search.toLowerCase())
+    const matchSearch = s.name.toLowerCase().includes(search.toLowerCase()) ||
+      s.category.toLowerCase().includes(search.toLowerCase())
     const matchCategory = category === 'All' || s.category === category
     return matchSearch && matchCategory
   })
 
-  return (
-    <div className="bg-slate-950 min-h-screen">
+  const handleClick = (e: React.MouseEvent) => {
+    if (isMobile) return // disable click-to-advance on mobile
+    const target = e.target as HTMLElement
+    const isInteractive = target.closest(
+      'a, button, input, select, textarea, [role="button"], .no-section-click'
+    )
+    if (!isInteractive) onNext()
+  }
 
-      {/* Page Header */}
-      <div className="bg-slate-900 border-b border-white/10 pt-28 pb-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <span className="text-amber-400 text-sm font-semibold tracking-widest uppercase">Suppliers</span>
-          <h1 className="text-4xl lg:text-5xl font-bold text-white mt-2 mb-3">Verified Supplier Network</h1>
-          <p className="text-slate-400 text-lg max-w-2xl">
-            Browse thousands of pre-vetted suppliers across all industries and regions.
+  const dropdownClass = `appearance-none bg-white border border-gray-200 rounded-[10px]
+    pl-3 pr-8 py-2 text-xs sm:text-sm text-slate-600 font-medium w-full
+    focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all`
+
+  return (
+    <div
+      className={`min-h-screen pb-10 ${!isMobile ? 'cursor-pointer' : ''}`}
+      style={{ background: 'linear-gradient(160deg, #E8DDFF 0%, #f5f0ff 60%, #FFFFFF 100%)' }}
+      onClick={handleClick}
+    >
+      {/* ── Header ── */}
+      <div className="pt-24 sm:pt-28 pb-6 sm:pb-8 px-4 sm:px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+          <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-bold text-slate-800 leading-tight">
+            Explore Verified Panama<br />Suppliers
+          </h1>
+          <p className="text-gray-400 font-semibold text-xs sm:text-sm leading-relaxed sm:text-right sm:max-w-xs">
+            Connect directly with trusted manufacturers, exporters,
+            and distributors across multiple industries in Panama.
           </p>
+        </div>
+
+        {/* Search */}
+        <div className="no-section-click max-w-7xl mx-auto mt-4 sm:mt-5"
+          onClick={(e) => e.stopPropagation()}>
+          <div className="relative w-full">
+            <input
+              type="text"
+              placeholder="Search suppliers, products, or categories..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-4 sm:pl-5 pr-10 sm:pr-12 py-3 sm:py-3.5 border border-gray-400
+                rounded-full text-slate-700 placeholder-gray-400 text-sm sm:text-[15px] font-medium
+                bg-white/60 focus:bg-white focus:outline-none focus:border-blue-300
+                focus:ring-2 focus:ring-blue-100 transition-all"
+            />
+            <span className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </span>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="no-section-click max-w-7xl mx-auto mt-4 sm:mt-6"
+          onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white/50 rounded-xl p-3 sm:p-4">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+
+              {/* Category */}
+              <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
+                <select value={category} onChange={(e) => setCategory(e.target.value)} className={dropdownClass}>
+                  <option value="All">Category</option>
+                  {CATEGORIES.filter(c => c !== 'All').map(c => <option key={c}>{c}</option>)}
+                </select>
+                <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
+              </div>
+
+              {/* Supplier Type */}
+              <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
+                <select value={supplierType} onChange={(e) => setSupplierType(e.target.value)} className={dropdownClass}>
+                  {SUPPLIER_TYPES.map(t => <option key={t}>{t}</option>)}
+                </select>
+                <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
+              </div>
+
+              {/* Location */}
+              <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
+                <select value={location} onChange={(e) => setLocation(e.target.value)} className={dropdownClass}>
+                  {LOCATIONS.map(l => <option key={l}>{l}</option>)}
+                </select>
+                <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
+              </div>
+
+              {/* MOQ */}
+              <div className="relative flex-1 min-w-[110px] sm:flex-none sm:w-auto">
+                <select value={moq} onChange={(e) => setMoq(e.target.value)} className={dropdownClass}>
+                  {MOQ_RANGES.map(m => <option key={m}>{m}</option>)}
+                </select>
+                <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
+              </div>
+
+              {/* Reset */}
+              <button
+                onClick={() => { setCategory('All'); setSupplierType('All Types'); setLocation('All Locations'); setMoq('Any MOQ'); setSearch('') }}
+                className="w-9 h-9 flex items-center justify-center hover:bg-yellow-100 rounded-lg transition-all flex-shrink-0"
+                title="Reset filters"
+              >
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          {/* Search */}
-          <div className="relative flex-1">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search suppliers..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-slate-900 border border-white/10 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/20 transition-all"
-            />
-          </div>
-          {/* Category filter */}
-          <div className="flex gap-2 flex-wrap">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setCategory(cat)}
-                className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border
-                  ${category === cat
-                    ? 'bg-amber-400/10 border-amber-400/50 text-amber-400'
-                    : 'bg-slate-900 border-white/10 text-slate-400 hover:border-white/20 hover:text-white'
-                  }`}
-              >
-                {cat}
-              </button>
+      {/* Cards grid */}
+      <ScrollIsolator isMobile={isMobile}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-0 pb-16">
+          {/* 1 col on mobile, 2 on sm, 3 on md, 4 on lg+ */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+            {filtered.map((supplier, index) => (
+              supplier.premium
+                ? <PremiumCard key={supplier.id} supplier={supplier} />
+                : <SupplierCard key={supplier.id} supplier={supplier} featured={index === 0} />
             ))}
           </div>
         </div>
+      </ScrollIsolator>
+    </div>
+  )
+}
 
-        {/* Results count */}
-        <p className="text-slate-400 text-sm mb-6">{filtered.length} suppliers found</p>
+// ── Upsell Section ────────────────────────────────────────────────────────
+function UpsellSection({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean }) {
+  const handleClick = (e: React.MouseEvent) => {
+    if (isMobile) return
+    const target = e.target as HTMLElement
+    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
+    if (!isInteractive) onPrev()
+  }
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((supplier) => (
-            <Link
-              key={supplier.id}
-              to={`/supplier/${supplier.id}`}
-              className="group bg-slate-900 border border-white/10 rounded-2xl p-6 hover:border-amber-400/25 hover:-translate-y-1 transition-all duration-300 hover:shadow-xl hover:shadow-black/30"
-            >
-              {/* Header */}
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-slate-700 to-slate-600 rounded-xl flex items-center justify-center text-white font-bold text-lg">
-                  {supplier.name[0]}
-                </div>
-                {supplier.verified && (
-                  <span className="flex items-center gap-1 text-xs font-medium text-green-400 bg-green-400/10 border border-green-400/20 px-2 py-1 rounded-full">
-                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    Verified
-                  </span>
-                )}
-              </div>
+  return (
+    <div
+      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? 'cursor-pointer' : ''}`}
+      style={{ background: 'linear-gradient(160deg, #eef1fb 0%, #f5f0ff 60%, #eaf4ff 100%)' }}
+      onClick={handleClick}
+    >
+      <div className="max-w-7xl mx-auto">
 
-              <h3 className="text-white font-semibold text-base mb-1 group-hover:text-amber-400 transition-colors">{supplier.name}</h3>
-              <p className="text-slate-400 text-sm mb-3">{supplier.country} · {supplier.category}</p>
+        {/* Why Trusted */}
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-5 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-800 leading-tight">
+            Why Our Suppliers Are Trusted
+          </h2>
+          <p className="text-slate-400 text-xs sm:text-sm leading-relaxed sm:max-w-xs sm:text-right">
+            All suppliers listed are reviewed for legitimacy, business
+            registration, and export capability.
+          </p>
+        </div>
 
-              {/* Tags */}
-              <div className="flex flex-wrap gap-1.5 mb-4">
-                {supplier.tags.map((tag) => (
-                  <span key={tag} className="text-xs px-2 py-0.5 bg-slate-800 border border-white/10 text-slate-400 rounded-md">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-
-              {/* Stats */}
-              <div className="flex items-center justify-between pt-4 border-t border-white/10">
-                <div className="flex items-center gap-1">
-                  <svg className="w-4 h-4 text-amber-400 fill-current" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                  <span className="text-white text-sm font-medium">{supplier.rating}</span>
-                  <span className="text-slate-500 text-xs">({supplier.reviews})</span>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-slate-500">Min. Order</p>
-                  <p className="text-amber-400 text-sm font-semibold">{supplier.moq}</p>
-                </div>
-              </div>
-            </Link>
+        {/* Trust pills — 2 cols on mobile, 4 on md+ */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-8 sm:mb-10">
+          {['✓ Business Verified', '✓ Export Ready', '✓ Direct Communication', '✓ No Middlemen'].map((pill) => (
+            <span key={pill}
+              className="bg-white text-slate-600 text-[12px] sm:text-[14px] font-medium
+                px-3 sm:px-5 py-2 sm:py-2.5 rounded-full text-center shadow-sm">
+              {pill}
+            </span>
           ))}
         </div>
 
+        {/* CTA Banner */}
+        <div
+          className="relative rounded-2xl sm:rounded-3xl overflow-hidden px-5 sm:px-10 py-8 sm:py-12"
+          style={{ background: 'linear-gradient(130deg, #B7B7FF 0%, #c6c6ff 40%, #FFFFFF 100%)' }}
+        >
+          {/* Text + Image row */}
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-10">
+            <div className="flex flex-col items-start w-full lg:max-w-sm">
+              <h3 className="text-xl sm:text-2xl lg:text-[36px] font-extrabold text-slate-800 leading-snug mb-2 sm:mb-3">
+                Start Sourcing Directly from<br />Panama Today
+              </h3>
+              <p className="text-slate-700 text-sm sm:text-[15px] font-semibold leading-relaxed">
+                Get access to verified suppliers and wholesale deals instantly.
+              </p>
+            </div>
+
+            <div className="flex-shrink-0 w-full lg:w-auto flex justify-center">
+              <img
+                src={sourcing_illustrator}
+                alt=""
+                className="w-full max-w-[240px] sm:max-w-[300px] lg:max-w-[340px] object-contain"
+              />
+            </div>
+          </div>
+
+          {/* Button centered below */}
+          <div className="mt-6 sm:mt-8 flex justify-center">
+            <Link
+              to="/pricing"
+              onClick={(e) => e.stopPropagation()}
+              className="no-section-click inline-flex items-center gap-3 bg-[#162B60] hover:bg-blue-900
+                text-white font-semibold px-6 sm:px-8 py-3 sm:py-3.5 rounded-lg text-sm sm:text-[15px]
+                transition-all duration-200 hover:scale-105 shadow-lg"
+            >
+              Unlock Access Now
+              <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </span>
+            </Link>
+          </div>
+
+          {/* Blobs */}
+          <div className="absolute top-0 right-0 w-48 sm:w-64 h-48 sm:h-64 rounded-full opacity-30 pointer-events-none"
+            style={{ background: 'radial-gradient(circle, #a5b4fc 0%, transparent 70%)', transform: 'translate(30%, -30%)' }} />
+          <div className="absolute bottom-0 left-1/3 w-36 sm:w-48 h-36 sm:h-48 rounded-full opacity-20 pointer-events-none"
+            style={{ background: 'radial-gradient(circle, #818cf8 0%, transparent 70%)', transform: 'translateY(40%)' }} />
+        </div>
+
+      
       </div>
     </div>
+  )
+}
+
+// ── Main Supplier Page ────────────────────────────────────────────────────
+const TOTAL = 2
+
+export default function Supplier() {
+  const { setShowNavbar2 } = useNavbar()
+  const [section, setSection] = useState(0)
+  const [leavingUp, setLeavingUp] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+  const isAnimatingRef = useRef(false)
+  const sectionRef = useRef(0)
+
+  useEffect(() => {
+    setShowNavbar2(true)
+    return () => setShowNavbar2(false)
+  }, [setShowNavbar2])
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const updateSection = (n: number) => {
+    sectionRef.current = n
+    setSection(n)
+  }
+
+  const goNext = () => {
+    if (sectionRef.current >= TOTAL - 1) return
+    if (isAnimatingRef.current) return
+    isAnimatingRef.current = true
+    setLeavingUp(true)
+    setTimeout(() => {
+      setLeavingUp(false)
+      updateSection(sectionRef.current + 1)
+      isAnimatingRef.current = false
+    }, 320)
+  }
+
+  const goPrev = () => {
+    if (sectionRef.current <= 0) return
+    if (isAnimatingRef.current) return
+    updateSection(sectionRef.current - 1)
+  }
+
+  const goNextRef = useRef(goNext)
+  const goPrevRef = useRef(goPrev)
+  goNextRef.current = goNext
+  goPrevRef.current = goPrev
+
+  // Arrow keys — desktop only
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (isMobile) return
+      if (e.key === 'ArrowDown') goNextRef.current()
+      else if (e.key === 'ArrowUp') goPrevRef.current()
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [isMobile])
+
+  // On mobile: render all sections stacked, normal scroll
+  if (isMobile) {
+    return (
+      <div className="w-full">
+        <SupplierGridSection onNext={goNext} isMobile={true} />
+        <UpsellSection onPrev={goPrev} isMobile={true} />
+      </div>
+    )
+  }
+
+  // Desktop: section-by-section with animation
+  const cls = leavingUp ? 'supplier-leave-up' : 'supplier-enter-down'
+
+  return (
+    <>
+      <style>{`
+        @keyframes supplierLeaveUp {
+          from { opacity: 1; transform: translateY(0); }
+          to   { opacity: 0; transform: translateY(-70px); }
+        }
+        @keyframes supplierEnterDown {
+          from { opacity: 0; transform: translateY(40px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .supplier-leave-up {
+          animation: supplierLeaveUp 0.32s ease-in forwards;
+          pointer-events: none;
+        }
+        .supplier-enter-down {
+          animation: supplierEnterDown 0.38s cubic-bezier(0.22,1,0.36,1) both;
+        }
+      `}</style>
+
+      <div className="w-full overflow-hidden">
+        <div className={cls}>
+          {section === 0 && <SupplierGridSection onNext={goNext} isMobile={false} />}
+          {section === 1 && <UpsellSection onPrev={goPrev} isMobile={false} />}
+        </div>
+      </div>
+    </>
   )
 }
