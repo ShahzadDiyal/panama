@@ -150,7 +150,7 @@ export default function Navbar2() {
                 `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
                 ${isActive
                   ? 'text-amber-400 bg-amber-400/10'
-                  : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  : 'text-slate-600 hover:text-white hover:bg-white/5'
                 }`
               }
             >
