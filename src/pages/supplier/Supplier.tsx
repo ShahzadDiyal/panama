@@ -471,7 +471,7 @@ function UpsellSection2({ onPrev, isMobile }: { onPrev: () => void; isMobile: bo
   return (
     <div
       className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? 'cursor-pointer' : ''}`}
-      style={{ background: 'linear-gradient(160deg, #eef1fb 0%, #f5f0ff 60%, #eaf4ff 100%)' }}
+      style={{ background: 'linear-gradient(160deg, #eaf4ff 0%, #f5f0ff 60%, #eef1fb 100%)' }}
       onClick={handleClick}
     >
       <div className="max-w-7xl mx-auto">
@@ -623,6 +623,7 @@ export default function Supplier() {
       <div className="w-full">
         <SupplierGridSection onNext={goNext} isMobile={true} />
         <UpsellSection onPrev={goPrev} isMobile={true} />
+        <UpsellSection2 onPrev={goPrev} isMobile={true} />
       </div>
     )
   }
@@ -653,7 +654,8 @@ export default function Supplier() {
       <div className="w-full overflow-hidden">
         <div className={cls}>
           {section === 0 && <SupplierGridSection onNext={goNext} isMobile={false} />}
-          {section === 1 && <UpsellSection onPrev={goPrev} isMobile={false} />}
+          {section === 1 && <UpsellSection onPrev={goNext} isMobile={false} />}
+          {section === 2 && <UpsellSection2 onPrev={goPrev} isMobile={false} />}
         </div>
       </div>
     </>

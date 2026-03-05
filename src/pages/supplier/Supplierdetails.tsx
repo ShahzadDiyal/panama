@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { useRef, useState, useEffect } from 'react'
 
 import supplier_profile from '../../assets/supplier_details.png'
@@ -179,9 +179,8 @@ function DealCard({ deal }: { deal: Deal }) {
               src={src}
               alt={deal.title}
               draggable={false}
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out ${
-                i === imgIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
-              } ${deal.isPremium ? 'blur-sm' : ''}`}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out ${i === imgIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                } ${deal.isPremium ? 'blur-sm' : ''}`}
             />
           ))}
 
@@ -193,9 +192,8 @@ function DealCard({ deal }: { deal: Deal }) {
                   onMouseDown={(e) => e.stopPropagation()}
                   onClick={() => goTo(i)}
                   aria-label={`Image ${i + 1}`}
-                  className={`rounded-full transition-all duration-300 ${
-                    i === imgIndex ? 'w-4 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/55'
-                  }`}
+                  className={`rounded-full transition-all duration-300 ${i === imgIndex ? 'w-4 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/55'
+                    }`}
                 />
               ))}
             </div>
@@ -237,7 +235,7 @@ function DealCard({ deal }: { deal: Deal }) {
             )}
           </div>
 
-          <button className="group mt-auto flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-slate-200 hover:bg-[#162B60] hover:border-[#162B60] hover:text-white text-slate-700 text-[13px] font-medium transition-all duration-200 bg-[#C3E8FF]">
+          <Link to={`/deals/${deal.id}`} className="group mt-auto flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-slate-200 hover:bg-[#162B60] hover:border-[#162B60] hover:text-white text-slate-700 text-[13px] font-medium transition-all duration-200 bg-[#C3E8FF]">
             Request Quote
             <svg
               className="w-8 h-8 transition-transform duration-300 group-hover:rotate-310 bg-[#CFF6FF] rounded-full text-black p-1"
@@ -245,7 +243,7 @@ function DealCard({ deal }: { deal: Deal }) {
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
-          </button>
+          </Link>
         </div>
       </div>
     </div>
@@ -270,7 +268,7 @@ function Section1({ supplier, onNext, isMobile }: { supplier: any; onNext: () =>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pt-28">
         <div className="space-y-6">
           {/* Main Supplier Card */}
-          <div className="px-4 sm:px-6 md:px-10 py-4 sm:py-6 bg-white/40 rounded-2xl md:rounded-full inline-flex flex-col justify-center items-center gap-4 w-full">
+          <div className="px-4 sm:px-6 md:px-10 py-4 my-12 sm:py-6 bg-white/40 rounded-2xl md:rounded-full inline-flex flex-col justify-center items-center gap-4 w-full">
             <div className="w-full flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
               <img className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full" src={supplier_profile} alt={supplier.name} />
               <div className="flex flex-col justify-center items-start gap-4 flex-1 md:ml-8 w-full">
@@ -326,7 +324,7 @@ function Section1({ supplier, onNext, isMobile }: { supplier: any; onNext: () =>
           </div>
 
           {/* About & Details Section */}
-          <div className="w-full p-4 sm:p-6 md:p-10 bg-white/30 rounded-2xl flex flex-col lg:flex-row justify-start items-start gap-8 lg:gap-80">
+          <div className="w-full p-4 sm:p-6 md:p-10 bg-white/30 mt-10 rounded-2xl flex flex-col lg:flex-row justify-start items-start gap-8 lg:gap-80">
             <div className="flex-1 flex flex-col justify-start items-start gap-4 w-full">
               <div className="self-stretch justify-start text-zinc-800/70 text-xl sm:text-2xl font-normal capitalize leading-7 sm:leading-9">
                 About This Supplier
@@ -420,34 +418,36 @@ function Section2({ onNext, onPrev, isMobile }: { onNext: () => void; onPrev: ()
           <div className="no-section-click max-w-7xl mx-auto mt-4 sm:mt-6 my-6"
             onClick={(e) => e.stopPropagation()}>
             <div className="bg-white/50 rounded-xl p-3 sm:p-4">
-              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
-                  <select value={category} onChange={(e) => setCategory(e.target.value)} className={dropdownClass}>
-                    <option value="All">Category</option>
-                    {CATEGORIES.filter(c => c !== 'All').map(c => <option key={c}>{c}</option>)}
-                  </select>
-                  <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
-                </div>
+              <div className="justify-between flex flex-wrap">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                  <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
+                    <select value={category} onChange={(e) => setCategory(e.target.value)} className={dropdownClass}>
+                      <option value="All">Category</option>
+                      {CATEGORIES.filter(c => c !== 'All').map(c => <option key={c}>{c}</option>)}
+                    </select>
+                    <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
+                  </div>
 
-                <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
-                  <select value={supplierType} onChange={(e) => setSupplierType(e.target.value)} className={dropdownClass}>
-                    {SUPPLIER_TYPES.map(t => <option key={t}>{t}</option>)}
-                  </select>
-                  <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
-                </div>
+                  <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
+                    <select value={supplierType} onChange={(e) => setSupplierType(e.target.value)} className={dropdownClass}>
+                      {SUPPLIER_TYPES.map(t => <option key={t}>{t}</option>)}
+                    </select>
+                    <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
+                  </div>
 
-                <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
-                  <select value={location} onChange={(e) => setLocation(e.target.value)} className={dropdownClass}>
-                    {LOCATIONS.map(l => <option key={l}>{l}</option>)}
-                  </select>
-                  <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
-                </div>
+                  <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
+                    <select value={location} onChange={(e) => setLocation(e.target.value)} className={dropdownClass}>
+                      {LOCATIONS.map(l => <option key={l}>{l}</option>)}
+                    </select>
+                    <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
+                  </div>
 
-                <div className="relative flex-1 min-w-[110px] sm:flex-none sm:w-auto">
-                  <select value={moq} onChange={(e) => setMoq(e.target.value)} className={dropdownClass}>
-                    {MOQ_RANGES.map(m => <option key={m}>{m}</option>)}
-                  </select>
-                  <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
+                  <div className="relative flex-1 min-w-[110px] sm:flex-none sm:w-auto">
+                    <select value={moq} onChange={(e) => setMoq(e.target.value)} className={dropdownClass}>
+                      {MOQ_RANGES.map(m => <option key={m}>{m}</option>)}
+                    </select>
+                    <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
+                  </div>
                 </div>
 
                 <button
@@ -494,7 +494,7 @@ function Section3({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pt-28">
         <div className="my-8 sm:my-16 relative">
           {/* Unlock to Contact Section */}
-          <div className="relative w-full max-w-[90%] sm:max-w-[581px] mx-auto mb-12">
+          <div className="relative w-full max-w-[90%] sm:max-w-[581px] mx-auto my-30">
             <div className="w-full px-4 sm:px-10 py-4 sm:py-6 bg-zinc-100/40 rounded-full outline outline-1 outline-offset-[-1px] outline-black/10 flex flex-col justify-center items-center gap-4">
               <div className="self-stretch flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-0">
                 <div className="text-right justify-start text-zinc-800 text-sm sm:text-base font-medium">WhatsApp:</div>
@@ -524,15 +524,15 @@ function Section3({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean 
           {/* Reviews Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 relative px-4 sm:px-0">
             {/* Review Card 1 */}
-            <div className="relative w-full p-4 sm:p-6 bg-[#F3F5F8] rounded-2xl flex flex-col gap-4">
-              <div className="absolute top-[-40px] sm:top-[-60px] right-4 sm:right-6 text-neutral-300 text-4xl sm:text-6xl font-semibold leading-none">
+            <div className="w-[280px] relative p-10 bg-[#F3F5F8] rounded-2xl flex flex-col gap-4">
+              <div className="absolute top-[-40px] sm:top-[-60px] right-4 sm:right-6 text-gray-400 text-4xl sm:text-6xl font-semibold leading-none">
                 ,,
               </div>
               <div className="flex flex-col gap-0.5">
-                <div className="text-zinc-800 text-lg sm:text-xl font-medium">
+                <div className="text-zinc-800 text-[20px] sm:text-xl font-medium">
                   Michael Rodriguez
                 </div>
-                <div className="text-zinc-800/80 text-sm sm:text-base font-medium">
+                <div className="text-zinc-800/80 text-[16px] font-medium">
                   Wholesale Distributor – Mexico
                 </div>
               </div>
@@ -542,8 +542,8 @@ function Section3({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean 
             </div>
 
             {/* Review Card 2 */}
-            <div className="relative w-full p-4 sm:p-6 bg-[#F3F5F8] rounded-2xl flex flex-col gap-4">
-              <div className="absolute top-[-40px] sm:top-[-60px] right-4 sm:right-6 text-neutral-300 text-4xl sm:text-6xl font-semibold leading-none">
+            <div className="relative w-[280px]  p-10 bg-[#F3F5F8] rounded-2xl flex flex-col gap-4">
+              <div className="absolute top-[-40px] sm:top-[-60px] right-4 sm:right-6 text-gray-400 text-4xl sm:text-6xl font-semibold leading-none">
                 ,,
               </div>
               <div className="flex flex-col gap-0.5">
@@ -560,8 +560,8 @@ function Section3({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean 
             </div>
 
             {/* Review Card 3 */}
-            <div className="relative w-full p-4 sm:p-6 bg-[#F3F5F8] rounded-2xl flex flex-col gap-4">
-              <div className="absolute top-[-40px] sm:top-[-60px] right-4 sm:right-6 text-neutral-300 text-4xl sm:text-6xl font-semibold leading-none">
+            <div className="relative w-[280px] p-10 bg-[#F3F5F8] rounded-2xl flex flex-col gap-4">
+              <div className="absolute top-[-40px] sm:top-[-60px] right-4 sm:right-6 text-gray-400 text-4xl sm:text-6xl font-semibold leading-none">
                 ,,
               </div>
               <div className="flex flex-col gap-0.5">
