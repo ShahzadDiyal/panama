@@ -421,13 +421,13 @@ function Section5({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean 
   ]
 
   return (
-     <div
+    <div
       className={`min-h-screen px-4 sm:px-8 lg:px-16 py-10 pt-40  ${!isMobile ? 'cursor-pointer' : ''}`}
       style={{ background: 'linear-gradient(135deg, #eef1fb 0%, #f5f0ff 100%)' }}
       onClick={handleClick}
     >
       <div className="max-w-5xl mx-auto space-y-8 no-section-click">
-         
+
         {/* Row 2: FAQ Box */}
         <div className="bg-[#FFFFFF4D] rounded-2xl shadow-xl p-6 sm:p-8 no-section-click">
           <h3 className="text-2xl font-bold text-[#162B60] mb-6">FAQs</h3>

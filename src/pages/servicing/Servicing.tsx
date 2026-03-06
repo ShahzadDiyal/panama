@@ -211,7 +211,7 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
       onClick={handleClick}
     >
       {/* Background number 03 */}
-     <div className="absolute top-1/2 -translate-y-1/2 right-10 flex flex-col items-center text-[300px] font-bold text-[#162B60]/7 select-none pointer-events-none animate-pulse leading-none">
+      <div className="absolute top-1/2 -translate-y-1/2 right-10 flex flex-col items-center text-[300px] font-bold text-[#162B60]/7 select-none pointer-events-none animate-pulse leading-none">
         <span>0</span>
         <span>3</span>
       </div>
@@ -314,7 +314,7 @@ function Section4({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
       style={{ background: 'linear-gradient(135deg, #eef1fb 0%, #f5f0ff 100%)' }}
       onClick={handleClick}
     >
-     <div className="absolute top-1/2 -translate-y-1/2 right-10 flex flex-col items-center text-[300px] font-bold text-[#162B60]/7 select-none pointer-events-none animate-pulse leading-none">
+      <div className="absolute top-1/2 -translate-y-1/2 right-10 flex flex-col items-center text-[300px] font-bold text-[#162B60]/7 select-none pointer-events-none animate-pulse leading-none">
         <span>0</span>
         <span>4</span>
       </div>
@@ -329,7 +329,7 @@ function Section4({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
             <p className="text-[20px] text-slate-700">
               Gain direct access to verified suppliers, expert guidance, and sourcing support — everything you need to confidently launch and grow your business in Panama.
             </p>
-            
+
           </div>
 
           {/* Right side: image */}
@@ -342,20 +342,20 @@ function Section4({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <button className="no-section-click flex-1 py-4 px-6 bg-[#4042E1] hover:bg-blue-900 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg flex items-center justify-center gap-2">
-               View Pricing Plans
-              <span className='bg-[#CFF6FF] rounded-full p-1'>
- <img src={arrow_icon} alt="" className="w-6 h-6" />
-                </span>
-              </button>
-              <button className="no-section-click flex-1 py-4 px-6 bg-[#4042E1] border-[#162B60] text-white hover:bg-[#162B60] hover:text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
-                Book a Consultation
-                <span className='bg-[#CFF6FF] rounded-full p-1'>
- <img src={arrow_icon} alt="" className="w-6 h-6" />
-                </span>
-               
-              </button>
-            </div>
+          <button className="no-section-click flex-1 py-4 px-6 bg-[#4042E1] hover:bg-blue-900 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg flex items-center justify-center gap-2">
+            View Pricing Plans
+            <span className='bg-[#CFF6FF] rounded-full p-1'>
+              <img src={arrow_icon} alt="" className="w-6 h-6" />
+            </span>
+          </button>
+          <button className="no-section-click flex-1 py-4 px-6 bg-[#4042E1] border-[#162B60] text-white hover:bg-[#162B60] hover:text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
+            Book a Consultation
+            <span className='bg-[#CFF6FF] rounded-full p-1'>
+              <img src={arrow_icon} alt="" className="w-6 h-6" />
+            </span>
+
+          </button>
+        </div>
       </div>
     </div>
   )
