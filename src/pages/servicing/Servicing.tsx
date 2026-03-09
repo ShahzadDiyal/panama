@@ -14,6 +14,7 @@ import business_tour_icon from '../../assets/business_tour_icon.svg'
 import testimonial1 from '../../assets/testimonial1.svg'
 import testimonial2 from '../../assets/testimonial2.svg'
 import testimonial3 from '../../assets/testimonial3.svg'
+import { Link } from 'react-router-dom'
 
 // Section 1 – unchanged
 function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean }) {
@@ -342,12 +343,12 @@ function Section4({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-4 pt-4">
-          <button className="no-section-click flex-1 py-4 px-6 bg-[#4042E1] hover:bg-blue-900 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg flex items-center justify-center gap-2">
+          <Link to='/pricing' className="no-section-click flex-1 py-4 px-6 bg-[#4042E1] hover:bg-blue-900 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg flex items-center justify-center gap-2">
             View Pricing Plans
             <span className='bg-[#CFF6FF] rounded-full p-1'>
               <img src={arrow_icon} alt="" className="w-6 h-6" />
             </span>
-          </button>
+          </Link>
           <button className="no-section-click flex-1 py-4 px-6 bg-[#4042E1] border-[#162B60] text-white hover:bg-[#162B60] hover:text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
             Book a Consultation
             <span className='bg-[#CFF6FF] rounded-full p-1'>

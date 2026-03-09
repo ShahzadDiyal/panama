@@ -9,8 +9,8 @@ export default function Login() {
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({ email: '', password: '' })
-    const { login, loading, error } = useAuth()
-const [localError, setLocalError] = useState('')
+  const { login, loading, error } = useAuth()
+  const [localError, setLocalError] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,7 +21,7 @@ const [localError, setLocalError] = useState('')
     e.preventDefault()
     setLocalError('')
     const result = await login(form)
-    if(result.success){
+    if (result.success) {
       navigate('/')
     } else {
       setLocalError(result.error || '')
@@ -77,7 +77,7 @@ const [localError, setLocalError] = useState('')
       {/* Right Section - White background - 40% width */}
       <div
         className="w-full lg:w-[35%] flex items-center justify-center p-12 bg-white shadow-xl relative z-10 rounded-tl-[40px]"
-       
+
       >        <div className="w-full max-w-xl">
           {/* Mobile Logo (visible only on mobile) */}
           <div className="lg:hidden text-center mb-8">
@@ -90,7 +90,7 @@ const [localError, setLocalError] = useState('')
             <p className="text-gray-400 font-semibold">Login to continue to your account</p>
           </div>
 
- {(localError || error) && (
+          {(localError || error) && (
             <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-4">
               {localError || error}
             </div>
@@ -170,10 +170,10 @@ const [localError, setLocalError] = useState('')
             {/* Login Button */}
             <button
               type="submit"
-               disabled={loading}
+              disabled={loading}
               className="w-full py-4 px-4 bg-[#162B60] hover:bg-[#162B64]/90 text-white font-semibold text-sm rounded-lg transition-colors mt-2 cursor-pointer"
             >
-                {loading ? 'Logging in...' : 'Login'}
+              {loading ? 'Logging in...' : 'Login'}
             </button>
           </form>
 

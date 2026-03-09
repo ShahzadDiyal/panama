@@ -12,6 +12,8 @@ import food_icon from '../../assets/food_icon.svg'
 import industrial_icon from '../../assets/industrial_icon.svg'
 import arrow_icon from '../../assets/arrow_left_icon.svg'
 import dropdown_icon from '../../assets/dropdown_icon.png'
+import type { Category } from '../../types'
+import { publicService } from '../../services/publicService'
 
 // ── Section 1: Upsell Section ────────────────────────────────────────────
 function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean }) {
@@ -199,6 +201,27 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
 
 // ── Section 3: Pricing & Form ────────────────────────────────────────────
 function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: () => void; isMobile: boolean }) {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [loadingCategories, setLoadingCategories] = useState(true);
+
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await publicService.getCategories();
+        setCategories(data);
+      } catch (error) {
+        console.error('Failed to load categories', error);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+
+
   const handleClick = (e: React.MouseEvent) => {
     if (isMobile) return
     const target = e.target as HTMLElement
@@ -266,14 +289,25 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
                   <input type="text" placeholder="Product Name" className="no-section-click p-3 bg-white p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#162B60] w-full" />
                   <div className="relative w-full">
                     <select
+                      value={selectedCategory} // This expects a string, not Category[]
+                      onChange={(e) => setSelectedCategory(e.target.value)}
                       className="no-section-click appearance-none p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#162B60] w-full bg-white pr-10"
                       style={{ WebkitAppearance: 'none', MozAppearance: 'none' }}
                     >
-                      <option>Product Category</option>
-                      <option>Agriculture</option>
-                      <option>Electronics</option>
-                      <option>Apparel</option>
+                      <option value="All">All Categories</option>
+                      {loadingCategories ? (
+                        <option disabled>Loading...</option>
+                      ) : (
+                        categories.map((cat) => (
+                          <option key={cat.id} value={cat.name}>
+                            {cat.name}
+                          </option>
+                        ))
+                      )}
                     </select>
+
+
+
                     <img
                       src={dropdown_icon}
                       alt=""

@@ -1,9 +1,11 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { publicService } from '../../services/publicService'
+import type { Plan } from '../../types'
 
 import msgIcon from '../../assets/msg_icon.png'
 import ideas_icon from '../../assets/ideas_icon.png'
 import traveling_icon from '../../assets/traveling_icon.png'
-
 
 // ── Types ─────────────────────────────────────────────────────────────────
 interface Service {
@@ -12,13 +14,7 @@ interface Service {
   icon: React.ReactNode
 }
 
-interface PricingPlan {
-  title: string
-  subtitle?: string
-  features: string[]
-}
-
-// ── Data ──────────────────────────────────────────────────────────────────
+// ── Data (services remain static as they're not from API) ─────────────────
 const services: Service[] = [
   {
     title: 'Business Consulting with Ishmael',
@@ -43,25 +39,77 @@ const services: Service[] = [
   },
 ]
 
-const plans: PricingPlan[] = [
-  {
-    title: '$20 Day Pass',
-    features: ['24-hour access', 'Suppliers & Deals', 'WhatsApp Contact'],
-  },
-  {
-    title: '$50 Monthly',
-    subtitle: '– Business Builder',
-    features: ['Full access', 'Validation tools', 'Education & updates'],
-  },
-  {
-    title: '$299 Yearly',
-    subtitle: '– Best Value',
-    features: ['Everything included', 'Save more annually'],
-  },
-]
-
 // ── PricingSection ────────────────────────────────────────────────────────
 const PricingSection = () => {
+  const [plans, setPlans] = useState<Plan[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  // Fetch plans from API
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const data = await publicService.getPlans()
+        // Filter only active plans
+        const activePlans = data.filter(plan => plan.is_active === 1)
+        setPlans(activePlans)
+      } catch (err) {
+        console.error('Failed to fetch plans', err)
+        setError('Failed to load pricing plans')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchPlans()
+  }, [])
+
+  // Map API plans to the format expected by the UI
+  const getPlanDisplay = (plan: Plan) => {
+    // Format price with 2 decimal places
+    const formattedPrice = parseFloat(plan.price).toFixed(2)
+    
+    // Map plan_name to the expected title format
+    let title = `${plan.plan_name}`
+    let subtitle = ''
+    
+    // Add appropriate subtitle based on plan
+    if (plan.plan_name === 'Monthly') {
+      subtitle = '– Business Builder'
+    } else if (plan.plan_name === 'Yearly') {
+      subtitle = '– Best Value'
+    }
+    
+    // Create features based on plan
+    const features = []
+    
+    // Common feature
+    features.push(`${plan.validity_value} ${plan.validity_unit} access`)
+    
+    // Add plan-specific features
+    if (plan.plan_name === 'Day Pass') {
+      features.push('Suppliers & Deals access')
+      features.push('WhatsApp Contact')
+    } else if (plan.plan_name === 'Monthly') {
+      features.push('Full supplier directory access')
+      features.push('Business Idea Validation tools')
+      features.push('Workshop & education access')
+      features.push('New supplier updates')
+    } else if (plan.plan_name === 'Yearly') {
+      features.push('Everything in Monthly')
+      features.push('Priority access to new suppliers')
+      features.push('Best value pricing')
+    }
+    
+    return {
+      title: `$${formattedPrice} ${title}`,
+      subtitle: subtitle,
+      features: features.slice(0, 3), // Limit to 3 features to maintain UI consistency
+      price: formattedPrice,
+      currency: plan.currency,
+      id: plan.id
+    }
+  }
+
   return (
     // Light blue-gray gradient background matching screenshot
     <section
@@ -124,59 +172,90 @@ const PricingSection = () => {
           Simple Access Pricing
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-24 relative z-10">
-          {plans.map((plan) => (
-            <div
-              key={plan.title}
-              className="bg-white rounded-2xl border border-gray-100 shadow-sm
-                p-5 sm:p-6 flex flex-col justify-between min-h-[340px] sm:min-h-[380px]
-                hover:shadow-md transition-shadow duration-200"
+        {/* Loading state */}
+        {loading && (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#162B60]"></div>
+          </div>
+        )}
+
+        {/* Error state */}
+        {!loading && error && (
+          <div className="text-center py-20">
+            <p className="text-red-500">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-4 px-6 py-2 bg-[#162B60] text-white rounded-lg"
             >
-              {/* Plan title */}
-              <div className="mb-6">
-                <h3 className="font-bold text-slate-800 text-[18px] sm:text-[20px] leading-snug">
-                  {plan.title}
-                  {plan.subtitle && (
-                    <>
-                      <br />
-                      <span className="font-bold">{plan.subtitle}</span>
-                    </>
-                  )}
-                </h3>
+              Try Again
+            </button>
+          </div>
+        )}
 
-                {/* Features list */}
-                <ul className="mt-5 sm:mt-6 space-y-2">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-center gap-2 text-[#33333399] text-[16px] font-semibold">
-                      <span className='text-black'>✔</span>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+        {/* No plans state */}
+        {!loading && !error && plans.length === 0 && (
+          <div className="text-center py-20">
+            <p className="text-slate-500">No pricing plans available at the moment.</p>
+          </div>
+        )}
 
-              {/* CTA button */}
-              <Link
-                to="/pricing"
-                className="group flex items-center justify-between w-full
-                  px-5 py-3.5 rounded-xl border border-slate-200
-                  hover:bg-slate-800 hover:border-slate-800 hover:text-white
-                  text-slate-700 text-[13px] sm:text-[14px] font-medium
-                  transition-all duration-200"
-              >
-                Get Access Now
-                <svg
-                  className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5"
-                  fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}
+        {/* Pricing cards */}
+        {!loading && !error && plans.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-24 relative z-10">
+            {plans.map((plan) => {
+              const display = getPlanDisplay(plan)
+              return (
+                <div
+                  key={plan.id}
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm
+                    p-5 sm:p-6 flex flex-col justify-between min-h-[340px] sm:min-h-[380px]
+                    hover:shadow-md transition-shadow duration-200"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </Link>
+                  {/* Plan title */}
+                  <div className="mb-6">
+                    <h3 className="font-bold text-slate-800 text-[18px] sm:text-[20px] leading-snug">
+                      {display.title}
+                      {display.subtitle && (
+                        <>
+                          <br />
+                          <span className="font-bold">{display.subtitle}</span>
+                        </>
+                      )}
+                    </h3>
 
-            </div>
-          ))}
-        </div>
+                    {/* Features list */}
+                    <ul className="mt-5 sm:mt-6 space-y-2">
+                      {display.features.map((feature) => (
+                        <li key={feature} className="flex items-center gap-2 text-[#33333399] text-[16px] font-semibold">
+                          <span className='text-black'>✔</span>
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
 
+                  {/* CTA button */}
+                  <Link
+                    to={`/pricing?plan=${plan.id}`}
+                    className="group flex items-center justify-between w-full
+                      px-5 py-3.5 rounded-xl border border-slate-200
+                      hover:bg-slate-800 hover:border-slate-800 hover:text-white
+                      text-slate-700 text-[13px] sm:text-[14px] font-medium
+                      transition-all duration-200"
+                  >
+                    Get Access Now
+                    <svg
+                      className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5"
+                      fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </Link>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </section>
   )

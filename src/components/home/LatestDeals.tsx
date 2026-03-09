@@ -1,5 +1,7 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { publicService, getImageUrl } from '../../services/publicService'
+import type { ProductListItem } from '../../types'
 
 // ── Types ─────────────────────────────────────────────────────────────────
 interface Deal {
@@ -12,144 +14,6 @@ interface Deal {
   verified: boolean
   images: string[]
 }
-
-// ── Mock data ─────────────────────────────────────────────────────────────
-const deals: Deal[] = [
-  {
-    id: 1,
-    title: 'Bulk Coffee Beans',
-    category: 'Food & Beverage',
-    moq: '500 kg',
-    priceRange: '$4.20 – $4.80 / kg',
-    location: 'Panama City',
-    verified: true,
-    images: [
-      'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=400&q=80',
-      'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400&q=80',
-      'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&q=80',
-    ],
-  },
-  {
-    id: 2,
-    title: 'Cotton T-Shirts',
-    category: 'Apparel',
-    moq: '1,000 pcs',
-    priceRange: '$2.10 – $2.60 / piece',
-    location: 'Colón',
-    verified: true,
-    images: [
-      'https://images.unsplash.com/photo-1562157873-818bc0726f68?w=400&q=80',
-      'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=80',
-    ],
-  },
-  {
-    id: 3,
-    title: 'LED Smart Lights',
-    category: 'Electronics',
-    moq: '300 units',
-    priceRange: '$9.50 – $12.00',
-    location: 'Panama Oeste',
-    verified: true,
-    images: [
-      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80',
-      'https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?w=400&q=80',
-    ],
-  },
-   
-  {
-    id: 5,
-    title: 'Handmade Leather Bags',
-    category: 'Fashion',
-    moq: '50 pcs',
-    priceRange: '$18.00 – $25.00',
-    location: 'David',
-    verified: true,
-    images: [
-      'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&q=80',
-      'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&q=80',
-    ],
-  },
-  {
-    id: 6,
-    title: 'Organic Honey Jars',
-    category: 'Food & Beverage',
-    moq: '200 units',
-    priceRange: '$3.50 – $5.00 / jar',
-    location: 'Chiriqui',
-    verified: true,
-    images: [
-      'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=400&q=80',
-      'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=400&q=80',
-    ],
-  },
-  {
-    id: 7,
-    title: 'Bulk Coffee Beans',
-    category: 'Food & Beverage',
-    moq: '500 kg',
-    priceRange: '$4.20 – $4.80 / kg',
-    location: 'Panama City',
-    verified: true,
-    images: [
-      'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=400&q=80',
-      'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400&q=80',
-      'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&q=80',
-    ],
-  },
-  {
-    id: 8,
-    title: 'Cotton T-Shirts',
-    category: 'Apparel',
-    moq: '1,000 pcs',
-    priceRange: '$2.10 – $2.60 / piece',
-    location: 'Colón',
-    verified: true,
-    images: [
-      'https://images.unsplash.com/photo-1562157873-818bc0726f68?w=400&q=80',
-      'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=80',
-    ],
-  },
-  {
-    id: 9,
-    title: 'LED Smart Lights',
-    category: 'Electronics',
-    moq: '300 units',
-    priceRange: '$9.50 – $12.00',
-    location: 'Panama Oeste',
-    verified: true,
-    images: [
-      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80',
-      'https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?w=400&q=80',
-    ],
-  },
-   
-  {
-    id: 10,
-    title: 'Handmade Leather Bags',
-    category: 'Fashion',
-    moq: '50 pcs',
-    priceRange: '$18.00 – $25.00',
-    location: 'David',
-    verified: true,
-    images: [
-      'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&q=80',
-      'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&q=80',
-    ],
-  },
-  {
-    id: 11,
-    title: 'Organic Honey Jars',
-    category: 'Food & Beverage',
-    moq: '200 units',
-    priceRange: '$3.50 – $5.00 / jar',
-    location: 'Chiriqui',
-    verified: true,
-    images: [
-      'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=400&q=80',
-      'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=400&q=80',
-    ],
-  },
-]
 
 // ── DealCard ──────────────────────────────────────────────────────────────
 function DealCard({ deal }: { deal: Deal }) {
@@ -247,7 +111,7 @@ function DealCard({ deal }: { deal: Deal }) {
 
           {/* CTA — icon rotates on hover */}
           <Link
-            to="/deals"
+            to={`/deals/${deal.id}`}
             onMouseDown={(e) => e.stopPropagation()}
             className="group mt-auto flex items-center justify-center gap-2 w-full
               py-2 sm:py-2.5 rounded-xl border border-slate-200
@@ -271,14 +135,105 @@ function DealCard({ deal }: { deal: Deal }) {
   )
 }
 
+// ── Helper function to convert API product to Deal format ─────────────────
+const mapProductToDeal = (product: ProductListItem): Deal => {
+  // Get all image URLs from images array
+  const imageUrls = product.images && Array.isArray(product.images) && product.images.length > 0
+    ? product.images.map(img => getImageUrl(img.path))
+    : product.cover_image 
+      ? [getImageUrl(product.cover_image)]
+      : ['https://via.placeholder.com/400x400?text=No+Image'];
+  
+  // Format price range - check if old_price exists
+  const price = parseFloat(product.price).toFixed(2);
+  const priceRange = product.old_price 
+    ? `$${price} – $${parseFloat(product.old_price).toFixed(2)} / unit`
+    : `$${price} / unit`;
+  
+  // Format MOQ
+  const moqText = `${product.moq} units`;
+  
+  return {
+    id: product.id,
+    title: product.title,
+    category: product.category?.name || 'Uncategorized',
+    moq: moqText,
+    priceRange: priceRange,
+    location: product.location,
+    verified: true, // Products are from verified vendors
+    images: imageUrls
+  };
+};
+
 // ── Main component ────────────────────────────────────────────────────────
 const LatestDeals = () => {
+  const [deals, setDeals] = useState<Deal[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  
   const trackRef = useRef<HTMLDivElement>(null)
   const isDragging = useRef(false)
   const startX = useRef(0)
   const scrollStart = useRef(0)
 
   const CARD_WIDTH = 280 + 20  // max card width + gap
+
+  // ── Fetch deals from API ──
+  useEffect(() => {
+    const fetchDeals = async () => {
+      try {
+        setLoading(true)
+        
+        // Fetch first page of vendors
+        const vendorsResponse = await publicService.getVendors({ page: 1 })
+        
+        // Collect all products from all vendors (limit to first 5 vendors for performance)
+        let allProducts: ProductListItem[] = []
+        const vendorsToFetch = vendorsResponse.data.slice(0, 5) // Limit to first 5 vendors
+        
+        // Fetch products for each vendor in parallel for better performance
+        const productPromises = vendorsToFetch.map(vendor => 
+          publicService.getVendorProducts(vendor.id).catch(err => {
+            console.error(`Failed to fetch products for vendor ${vendor.id}`, err)
+            return null
+          })
+        )
+        
+        const productResponses = await Promise.all(productPromises)
+        
+        // Combine all products
+        productResponses.forEach(response => {
+          if (response && response.products && response.products.data) {
+            allProducts = [...allProducts, ...response.products.data]
+          }
+        })
+        console.log('all producst: ', productResponses)
+        
+        // Filter to only show deals (is_deal === true)
+        const dealProducts = allProducts.filter(product => product.is_deal === true)
+        
+        // Sort by created_at (newest first) to show latest deals
+        const sortedProducts = dealProducts.sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+        
+        // Take first 12 products to avoid too many
+        const recentDeals = sortedProducts.slice(0, 12)
+        
+        // Map to Deal format
+        const formattedDeals = recentDeals.map(mapProductToDeal)
+        setDeals(formattedDeals)
+        setError('')
+      } catch (err) {
+        console.error('Failed to fetch deals', err)
+        setError('Failed to load deals')
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchDeals()
+  }, [])
 
   // ── Next button ──
   const scrollNext = () => {
@@ -301,6 +256,10 @@ const LatestDeals = () => {
     trackRef.current.scrollLeft = scrollStart.current - walk
   }
   const onMouseUp = () => {
+    isDragging.current = false
+    if (trackRef.current) trackRef.current.style.cursor = 'grab'
+  }
+  const onMouseLeave = () => {
     isDragging.current = false
     if (trackRef.current) trackRef.current.style.cursor = 'grab'
   }
@@ -360,7 +319,7 @@ const LatestDeals = () => {
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
-        onMouseLeave={onMouseUp}
+        onMouseLeave={onMouseLeave}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -369,12 +328,42 @@ const LatestDeals = () => {
           .deals-track::-webkit-scrollbar { display: none; }
         `}</style>
 
-        {deals.map((deal) => (
+        {/* Loading state */}
+        {loading && (
+          <div className="flex items-center justify-center py-20 w-full">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#162B60]"></div>
+          </div>
+        )}
+
+        {/* Error state */}
+        {!loading && error && (
+          <div className="text-center py-20 w-full">
+            <p className="text-red-500">{error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="mt-4 px-6 py-2 bg-[#162B60] text-white rounded-lg"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
+
+        {/* No deals state */}
+        {!loading && !error && deals.length === 0 && (
+          <div className="text-center py-20 w-full">
+            <p className="text-slate-500">No deals available at the moment.</p>
+          </div>
+        )}
+
+        {/* Deals grid */}
+        {!loading && !error && deals.map((deal) => (
           <DealCard key={deal.id} deal={deal} />
         ))}
 
         {/* Right-edge breathing room */}
-        <div className="flex-shrink-0 w-6 sm:w-5" />
+        {!loading && !error && deals.length > 0 && (
+          <div className="flex-shrink-0 w-6 sm:w-5" />
+        )}
       </div>
 
     </section>

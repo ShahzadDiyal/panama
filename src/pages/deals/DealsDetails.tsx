@@ -1,15 +1,26 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useNavbar } from '../../context/NavbarContext'
+import { publicService, getImageUrl } from '../../services/publicService'
+import { quoteService } from '../../services/quoteService'
+import { useAuth } from '../../context/AuthContext'
+import type { ProductDetails } from '../../types'
 import hot_deals from '../../assets/hot_deals.png'
 import lock_icon from '../../assets/lock_icon.svg'
+import QuoteModal from '../../components/home/QuoteModal'
 
 
 export default function DealDetails() {
   const { id } = useParams()
   const { setShowNavbar2 } = useNavbar()
+  const { user } = useAuth()
   const [visible, setVisible] = useState(false)
   const [activeImg, setActiveImg] = useState(0)
+  const [product, setProduct] = useState<ProductDetails | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [quoteLoading, setQuoteLoading] = useState(false)
+const [showQuoteModal, setShowQuoteModal] = useState(false)
 
   useEffect(() => {
     setShowNavbar2(true)
@@ -21,31 +32,115 @@ export default function DealDetails() {
     return () => clearTimeout(t)
   }, [])
 
-  const deal = {
-    id,
-    title: 'Premium Arabica Coffee Beans – Bulk Export',
-    category: 'Food & Beverage',
-    discount: '35% OFF',
-    original: '$8.50 per unit',
-    price: '$6.20 per unit',
-    expires: '3 days',
-    supplier: 'Panama Coffee Exports S.A.',
-    supplierId: 1,
-    location: 'Panama City, Panama',
-    description:
-      'This limited-time wholesale offer is available directly from a verified Panama exporter. These premium Arabica coffee beans are sourced, processed, and packaged for international wholesale buyers.',
-    idealFor: ['Retailers', 'Importers', 'Coffee brands', 'Distributors'],
-    moq: '1,000 Units',
-    stock: 12,
+  // Fetch product details
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!id) return
+      try {
+        setLoading(true)
+        const data = await publicService.getProductDetails(Number(id))
+        setProduct(data)
+        setError('')
+      } catch (err) {
+        console.error('Failed to fetch product', err)
+        setError('Failed to load product details')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProduct()
+  }, [id])
+
+  const handleRequestQuote = async () => {
+    if (!user) {
+      window.location.href = '/login'
+      return
+    }
+    
+    if (!product) return
+    
+    setQuoteLoading(true)
+    try {
+      await quoteService.createQuote({
+        product_id: product.id,
+        quantity: product.moq || 1000,
+        unit: 'units',
+        shipping_country: 'UAE',
+        shipping_city: 'Dubai',
+        note: 'I need best price for bulk order. Please share lead time and MOQ.'
+      })
+      alert('Quote request sent successfully!')
+    } catch (err) {
+      console.error('Failed to send quote', err)
+      alert('Failed to send quote request')
+    } finally {
+      setQuoteLoading(false)
+    }
+  }
+
+  const handleWhatsAppContact = () => {
+    if (!user) {
+      window.location.href = '/login'
+      return
+    }
+    // This would need a separate API endpoint for vendor WhatsApp
+    alert('Please contact the supplier through the quote request first')
+  }
+
+
+
+  const handleRequestQuoteClick = () => {
+  if (!user) {
+    window.location.href = '/login'
+    return
+  }
+  setShowQuoteModal(true)
+}
+
+  // Format deal data from API
+  const deal = product ? {
+    id: product.id,
+    title: product.title,
+    category: product.category?.name || 'Uncategorized',
+    discount: product.old_price ? `${Math.round((1 - parseFloat(product.price)/parseFloat(product.old_price)) * 100)}% OFF` : 'Special Deal',
+    original: product.old_price ? `$${parseFloat(product.old_price).toFixed(2)} per unit` : '',
+    price: `$${parseFloat(product.price).toFixed(2)} per unit`,
+    expires: '7 days', // This might come from a deals endpoint
+    supplier: product.vendor?.business_name || 'Unknown Supplier',
+    supplierId: product.vendor_id,
+    location: product.location,
+    description: product.description,
+    idealFor: product.ideal_for || ['Retailers', 'Distributors', 'Importers'],
+    moq: `${product.moq} units`,
+    stock: 12, // This might come from inventory endpoint
     verified: true,
-    hotDeal: true,
+    hotDeal: product.is_deal || false,
     limitedStock: true,
-    images: [
-      'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=800&q=80',
-      'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400&q=80',
-      'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&q=80',
-      'https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=400&q=80',
-    ],
+    images: product.images_list 
+      ? product.images_list.map(img => img.url)
+      : product.images?.map(img => getImageUrl(img.path)) || [getImageUrl(product.cover_image)],
+  } : null
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#162B60]"></div>
+      </div>
+    )
+  }
+
+  if (error || !deal) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-red-500 text-center">
+          <p className="text-xl font-semibold">Error</p>
+          <p>{error || 'Product not found'}</p>
+          <Link to="/deals" className="mt-4 inline-block px-6 py-2 bg-[#162B60] text-white rounded-lg">
+            Back to Deals
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -75,36 +170,34 @@ export default function DealDetails() {
         className="min-h-screen px-4 sm:px-6 lg:px-8 xl:px-12 pt-20 sm:pt-24 pb-16"
         style={{ background: 'linear-gradient(160deg, #eef1fb 0%, #f5f0ff 60%, #eaf4ff 100%)' }}
       >
-        <div className="max-w-7xl mx-auto  mt-10">
+        <div className="max-w-7xl mx-auto mt-10">
 
           {/* Desktop Layout (lg and above) - 12 Column Grid */}
           <div className="hidden lg:block">
-            {/* Back button - Col 1 (1/12) */}
-           
-
             {/* 12-Column Grid */}
             <div className="grid grid-cols-12 gap-6 justify-center">
-               {visible && (
-              <div className="anim-up justify-center text-center">
-                <Link
-                  to="/deals"
-                  className="inline-flex items-center justify-center w-9 h-9 rounded-full
-                    bg-white border border-gray-200 shadow-sm hover:shadow-md
-                    text-slate-600 hover:text-slate-900 transition-all duration-200"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </Link>
-              </div>
-            )}
+              {visible && (
+                <div className="col-span-1 anim-up justify-center text-center">
+                  <Link
+                    to="/deals"
+                    className="inline-flex items-center justify-center w-9 h-9 rounded-full
+                      bg-white border border-gray-200 shadow-sm hover:shadow-md
+                      text-slate-600 hover:text-slate-900 transition-all duration-200"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </Link>
+                </div>
+              )}
+              
               {/* Col 2 - Main Image (5/12) */}
               {visible && (
                 <div className="col-span-5 anim-left">
                   <div className="relative rounded-2xl overflow-hidden bg-black w-full h-full"
-                    style={{ aspectRatio: '4/3',}}>
+                    style={{ aspectRatio: '4/3' }}>
                     <img
-                      src={deal.images[activeImg]}
+                      src={deal.images[activeImg] || deal.images[0]}
                       alt={deal.title}
                       className="w-full h-full object-cover transition-all duration-500"
                     />
@@ -112,7 +205,7 @@ export default function DealDetails() {
                     {/* Badges top-left */}
                     <div className="absolute top-4 left-4 flex flex-col gap-2">
                       {deal.verified && (
-                        <span className="flex items-center gap-1.5 backdrop-blur-sm
+                        <span className="flex items-center gap-1.5 bg-black/60 backdrop-blur-sm
                           text-white text-[11px] sm:text-xs font-medium px-2.5 py-1.5 rounded-full">
                           <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24" strokeWidth={2}>
@@ -153,7 +246,7 @@ export default function DealDetails() {
               {visible && (
                 <div className="col-span-2 anim-up anim-delay-1">
                   <div className="flex flex-col gap-8">
-                    {deal.images.slice(1).map((img, i) => (
+                    {deal.images.slice(1, 4).map((img, i) => (
                       <button
                         key={i}
                         onClick={() => setActiveImg(i + 1)}
@@ -202,7 +295,9 @@ export default function DealDetails() {
                     <span className="text-[24px] font-medium text-slate-800">
                       {deal.price}
                     </span>
-                    <span className="text-sm text-slate-400 font-medium line-through">{deal.original}</span>
+                    {deal.original && (
+                      <span className="text-sm text-slate-400 font-medium line-through">{deal.original}</span>
+                    )}
                   </div>
 
                   {/* Meta */}
@@ -229,6 +324,7 @@ export default function DealDetails() {
                   {/* CTAs */}
                   <div className="flex flex-col gap-3 mt-2">
                     <button
+                      onClick={handleWhatsAppContact}
                       className="flex items-center justify-between gap-3 px-5 py-3 rounded-full
                         bg-[#C3E8FF] hover:bg-[#162B60] text-slate-700 hover:text-white
                         font-semibold text-[16px] transition-all duration-200 group"
@@ -244,16 +340,20 @@ export default function DealDetails() {
                     </button>
 
                     <button
+                      onClick={handleRequestQuoteClick}
+                      disabled={quoteLoading}
                       className="flex items-center justify-between gap-3 px-5 py-3 rounded-full
                         bg-[#C3E8FF] hover:bg-[#162B60] text-slate-700 hover:text-white
-                        font-semibold text-[16px] transition-all duration-200 group"
+                        font-semibold text-[16px] transition-all duration-200 group disabled:opacity-50"
                     >
-                      Request Quote
+                      {quoteLoading ? 'Sending...' : 'Request Quote'}
                       <span className="w-7 h-7 rounded-full group-hover:bg-white/20
                         flex items-center justify-center flex-shrink-0 transition-all">
                        <img src={lock_icon} alt="" />
                       </span>
                     </button>
+
+                   
                   </div>
                 </div>
               )}
@@ -284,7 +384,7 @@ export default function DealDetails() {
                 <div className="relative rounded-2xl overflow-hidden bg-black w-full"
                   style={{ aspectRatio: '16/9' }}>
                   <img
-                    src={deal.images[activeImg]}
+                    src={deal.images[activeImg] || deal.images[0]}
                     alt={deal.title}
                     className="w-full h-full object-cover transition-all duration-500"
                   />
@@ -314,7 +414,7 @@ export default function DealDetails() {
             {/* Horizontal Thumbnails for Mobile */}
             {visible && (
               <div className="anim-up anim-delay-1 flex flex-row gap-3 overflow-x-auto pb-2 mb-4">
-                {deal.images.slice(1).map((img, i) => (
+                {deal.images.slice(1, 4).map((img, i) => (
                   <button
                     key={i}
                     onClick={() => setActiveImg(i + 1)}
@@ -362,7 +462,9 @@ export default function DealDetails() {
                   <span className="text-2xl font-extrabold text-slate-800">
                     {deal.price}
                   </span>
-                  <span className="text-sm text-slate-400 line-through">{deal.original}</span>
+                  {deal.original && (
+                    <span className="text-sm text-slate-400 line-through">{deal.original}</span>
+                  )}
                 </div>
 
                 {/* Meta */}
@@ -388,9 +490,12 @@ export default function DealDetails() {
 
                 {/* CTAs */}
                 <div className="flex flex-col sm:flex-row gap-3 mt-2">
-                  <button className="flex-1 flex items-center justify-between gap-3 px-5 py-3 rounded-xl
-                    bg-[#DAEEFF] hover:bg-[#162B60] text-slate-700 hover:text-white
-                    font-semibold text-sm transition-all duration-200 group">
+                  <button 
+                    onClick={handleWhatsAppContact}
+                    className="flex-1 flex items-center justify-between gap-3 px-5 py-3 rounded-xl
+                      bg-[#DAEEFF] hover:bg-[#162B60] text-slate-700 hover:text-white
+                      font-semibold text-sm transition-all duration-200 group"
+                  >
                     Contact via WhatsApp
                     <span className="w-7 h-7 rounded-full bg-white/60 group-hover:bg-white/20
                       flex items-center justify-center flex-shrink-0 transition-all">
@@ -401,10 +506,14 @@ export default function DealDetails() {
                     </span>
                   </button>
 
-                  <button className="flex-1 flex items-center justify-between gap-3 px-5 py-3 rounded-xl
-                    bg-[#DAEEFF] hover:bg-[#162B60] text-slate-700 hover:text-white
-                    font-semibold text-sm transition-all duration-200 group">
-                    Request Quote
+                  <button 
+                    onClick={handleRequestQuote}
+                    disabled={quoteLoading}
+                    className="flex-1 flex items-center justify-between gap-3 px-5 py-3 rounded-xl
+                      bg-[#DAEEFF] hover:bg-[#162B60] text-slate-700 hover:text-white
+                      font-semibold text-sm transition-all duration-200 group disabled:opacity-50"
+                  >
+                    {quoteLoading ? 'Sending...' : 'Request Quote'}
                     <span className="w-7 h-7 rounded-full bg-white/60 group-hover:bg-white/20
                       flex items-center justify-center flex-shrink-0 transition-all">
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor"
@@ -419,6 +528,20 @@ export default function DealDetails() {
             )}
           </div>
         </div>
+         <QuoteModal
+  isOpen={showQuoteModal}
+  onClose={() => setShowQuoteModal(false)}
+  product={{
+    id: product?.id as any,
+    title: product?.title as any,
+    supplier: product?.vendor?.business_name || 'Unknown Supplier',
+    moq: product?.moq
+  }}
+  onSuccess={() => {
+    // Optional: redirect to quotes page or show success message
+    // navigate('/quotes')
+  }}
+/>
       </div>
     </>
   )

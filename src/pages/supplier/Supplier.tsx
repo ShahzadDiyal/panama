@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { useNavbar } from '../../context/NavbarContext'
 import dropdown_icon from '../../assets/dropdown_icon.png'
 import sourcing_illustrator from '../../assets/souring_illustrator.png'
+import { publicService, getImageUrl } from '../../services/publicService';
+import type { Category, VendorListItem } from '../../types'
 
 // ── Types ─────────────────────────────────────────────────────────────────
 interface Supplier {
@@ -17,23 +19,6 @@ interface Supplier {
   responds: string
 }
 
-// ── Mock data ─────────────────────────────────────────────────────────────
-const SUPPLIERS: Supplier[] = [
-  { id: 1, name: 'Panama Agro Exports', category: 'Food & Beverage', location: 'Panama City', logo: 'https://images.unsplash.com/photo-1607631568010-a87245c0daf8?w=200&q=80', logoRound: true, verified: true, premium: false, responds: 'Responds in 24 hrs' },
-  { id: 2, name: 'Colón Textile Group', category: 'Apparel', location: 'Colón', logo: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=200&q=80', logoRound: true, verified: true, premium: false, responds: 'Responds in 24 hrs' },
-  { id: 3, name: 'Pacific Tech Distributors', category: 'Electronics', location: 'Panama Oeste', logo: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&q=80', logoRound: true, verified: true, premium: true, responds: 'Responds in 2 hrs' },
-  { id: 4, name: 'Canal Zone Packaging Ltd.', category: 'Packaging & Materials', location: 'Panama City', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Canal%2B_2019.svg/500px-Canal%2B_2019.svg.png', logoRound: false, verified: true, premium: false, responds: 'Responds in 24 hrs' },
-  { id: 5, name: 'Tropic Beauty Exports', category: 'Beauty & Personal Care', location: 'Chiriqui', logo: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=200&q=80', logoRound: false, verified: true, premium: false, responds: 'Responds in 48 hrs' },
-  { id: 6, name: 'Bocas del Toro Organics', category: 'Food & Beverage', location: 'Bocas del Toro', logo: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&q=80', logoRound: true, verified: true, premium: true, responds: 'Responds in 1 hr' },
-  { id: 7, name: 'Chiriqui Steel Works', category: 'Metals', location: 'Chiriqui', logo: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=200&q=80', logoRound: true, verified: false, premium: true, responds: 'Responds in 24 hrs' },
-  { id: 8, name: 'David Auto Parts Co.', category: 'Automotive', location: 'David, Chiriqui', logo: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=200&q=80', logoRound: true, verified: true, premium: false, responds: 'Responds in 24 hrs' },
-  { id: 9, name: 'Panama Pharma Exports', category: 'Healthcare', location: 'Panama City', logo: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=200&q=80', logoRound: true, verified: true, premium: true, responds: 'Responds in 3 hrs' },
-  { id: 10, name: 'Veraguas Crafts Co.', category: 'Handicrafts', location: 'Veraguas', logo: 'https://images.unsplash.com/photo-1606722590583-6951b5ea92ad?w=200&q=80', logoRound: true, verified: false, premium: false, responds: 'Responds in 48 hrs' },
-  { id: 11, name: 'Panama Logistics Hub', category: 'Logistics', location: 'Panama City', logo: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=200&q=80', logoRound: true, verified: true, premium: false, responds: 'Responds in 12 hrs' },
-  { id: 12, name: 'Coiba Marine Exports', category: 'Marine & Fishing', location: 'Veraguas Coast', logo: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=200&q=80', logoRound: true, verified: true, premium: true, responds: 'Responds in 6 hrs' },
-]
-
-const CATEGORIES = ['All', 'Food & Beverage', 'Apparel', 'Electronics', 'Packaging & Materials', 'Beauty & Personal Care', 'Metals', 'Automotive', 'Healthcare', 'Handicrafts', 'Logistics', 'Marine & Fishing']
 const SUPPLIER_TYPES = ['All Types', 'Manufacturer', 'Wholesaler', 'Distributor', 'Exporter']
 const LOCATIONS = ['All Locations', 'Panama City', 'Colón', 'Panama Oeste', 'Chiriqui', 'Bocas del Toro', 'Veraguas']
 const MOQ_RANGES = ['Any MOQ', 'Under $500', '$500–$2,000', '$2,000–$5,000', '$5,000+']
@@ -188,7 +173,6 @@ function PremiumCard({ supplier }: { supplier: Supplier }) {
             </svg>
           </div>
           <p className="text-slate-700 text-[16px] font-bold text-center">Go Premium</p>
-          
         </div>
       </div>
     </div>
@@ -224,26 +208,109 @@ function ScrollIsolator({ children, isMobile }: { children: React.ReactNode; isM
 // ── Supplier Grid Section ─────────────────────────────────────────────────
 function SupplierGridSection({ onNext, isMobile }: { onNext: () => void; isMobile: boolean }) {
   const [search, setSearch] = useState('')
-  const [category, setCategory] = useState('All')
+  const [selectedCategory, setSelectedCategory] = useState<string>('All')
   const [supplierType, setSupplierType] = useState('All Types')
-  const [location, setLocation] = useState('All Locations')
+  const [selectedLocation, setSelectedLocation] = useState('All Locations')
   const [moq, setMoq] = useState('Any MOQ')
 
-  const filtered = SUPPLIERS.filter((s) => {
-    const matchSearch = s.name.toLowerCase().includes(search.toLowerCase()) ||
-      s.category.toLowerCase().includes(search.toLowerCase())
-    const matchCategory = category === 'All' || s.category === category
-    return matchSearch && matchCategory
-  })
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [apiSuppliers, setApiSuppliers] = useState<VendorListItem[]>([]);
+  const [loadingSuppliers, setLoadingSuppliers] = useState(true);
+  const [suppliersError, setSuppliersError] = useState('');
 
   const handleClick = (e: React.MouseEvent) => {
-    if (isMobile) return // disable click-to-advance on mobile
+    if (isMobile) return
     const target = e.target as HTMLElement
     const isInteractive = target.closest(
       'a, button, input, select, textarea, [role="button"], .no-section-click'
     )
     if (!isInteractive) onNext()
   }
+
+  // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await publicService.getCategories();
+        setCategories(data);
+      } catch (error) {
+        console.error('Failed to load categories', error);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Fetch suppliers
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      try {
+        setLoadingSuppliers(true);
+        
+        const filters: any = {
+          page: 1
+        };
+        
+        if (selectedCategory !== 'All') {
+          const categoryObj = categories.find(c => c.name === selectedCategory);
+          if (categoryObj) {
+            filters.category_id = categoryObj.id;
+          }
+        }
+        
+        if (selectedLocation !== 'All Locations') {
+          filters.location = selectedLocation;
+        }
+        
+        const response = await publicService.getVendors(filters);
+        setApiSuppliers(response.data);
+        setSuppliersError('');
+      } catch (error) {
+        console.error('Failed to load suppliers', error);
+        setSuppliersError('Failed to load suppliers. Please try again.');
+      } finally {
+        setLoadingSuppliers(false);
+      }
+    };
+
+    if (categories.length > 0 || selectedCategory === 'All') {
+      fetchSuppliers();
+    }
+  }, [selectedCategory, selectedLocation, categories]);
+
+  // Convert API vendor to Supplier interface
+  const mapVendorToSupplier = (vendor: VendorListItem, _index: number): Supplier => {
+    // Determine premium status - you can customize this logic
+    // For demo, marking every 3rd vendor as premium
+    const isPremium = vendor.id % 3 === 0;
+    
+    return {
+      id: vendor.id,
+      name: vendor.business_name,
+      category: vendor.category?.name || 'Uncategorized',
+      location: vendor.location,
+      logo: getImageUrl(vendor.image_path),
+      logoRound: true,
+      verified: vendor.status === 'approved',
+      premium: isPremium,
+      responds: 'Responds in 24 hrs',
+    };
+  };
+
+  // Apply search filter
+  const filteredSuppliers = apiSuppliers
+    .filter(vendor => {
+      if (search) {
+        const searchLower = search.toLowerCase();
+        return vendor.business_name.toLowerCase().includes(searchLower) ||
+               (vendor.category?.name || '').toLowerCase().includes(searchLower) ||
+               (vendor.about || '').toLowerCase().includes(searchLower);
+      }
+      return true;
+    })
+    .map((vendor, index) => mapVendorToSupplier(vendor, index));
 
   const dropdownClass = `appearance-none bg-white border border-gray-200 rounded-[10px]
     pl-3 pr-8 py-2 text-xs sm:text-sm text-slate-600 font-medium w-full
@@ -298,9 +365,21 @@ function SupplierGridSection({ onNext, isMobile }: { onNext: () => void; isMobil
 
               {/* Category */}
               <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
-                <select value={category} onChange={(e) => setCategory(e.target.value)} className={dropdownClass}>
-                  <option value="All">Category</option>
-                  {CATEGORIES.filter(c => c !== 'All').map(c => <option key={c}>{c}</option>)}
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className={dropdownClass}
+                >
+                  <option value="All">All Categories</option>
+                  {loadingCategories ? (
+                    <option disabled>Loading...</option>
+                  ) : (
+                    categories.map((cat) => (
+                      <option key={cat.id} value={cat.name}>
+                        {cat.name}
+                      </option>
+                    ))
+                  )}
                 </select>
                 <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
               </div>
@@ -315,7 +394,7 @@ function SupplierGridSection({ onNext, isMobile }: { onNext: () => void; isMobil
 
               {/* Location */}
               <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
-                <select value={location} onChange={(e) => setLocation(e.target.value)} className={dropdownClass}>
+                <select value={selectedLocation} onChange={(e) => setSelectedLocation(e.target.value)} className={dropdownClass}>
                   {LOCATIONS.map(l => <option key={l}>{l}</option>)}
                 </select>
                 <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
@@ -331,7 +410,13 @@ function SupplierGridSection({ onNext, isMobile }: { onNext: () => void; isMobil
 
               {/* Reset */}
               <button
-                onClick={() => { setCategory('All'); setSupplierType('All Types'); setLocation('All Locations'); setMoq('Any MOQ'); setSearch('') }}
+                onClick={() => { 
+                  setSelectedCategory('All'); 
+                  setSupplierType('All Types'); 
+                  setSelectedLocation('All Locations'); 
+                  setMoq('Any MOQ'); 
+                  setSearch('') 
+                }}
                 className="w-9 h-9 flex items-center justify-center hover:bg-yellow-100 rounded-lg transition-all flex-shrink-0"
                 title="Reset filters"
               >
@@ -348,14 +433,45 @@ function SupplierGridSection({ onNext, isMobile }: { onNext: () => void; isMobil
       {/* Cards grid */}
       <ScrollIsolator isMobile={isMobile}>
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-0 pb-16">
-          {/* 1 col on mobile, 2 on sm, 3 on md, 4 on lg+ */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-            {filtered.map((supplier, index) => (
-              supplier.premium
-                ? <PremiumCard key={supplier.id} supplier={supplier} />
-                : <SupplierCard key={supplier.id} supplier={supplier} featured={index === 0} />
-            ))}
-          </div>
+          {/* Loading state */}
+          {loadingSuppliers && (
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#162B60]"></div>
+            </div>
+          )}
+
+          {/* Error state */}
+          {!loadingSuppliers && suppliersError && (
+            <div className="text-center py-20">
+              <p className="text-red-500">{suppliersError}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="mt-4 px-6 py-2 bg-[#162B60] text-white rounded-lg"
+              >
+                Try Again
+              </button>
+            </div>
+          )}
+
+          {/* No results state */}
+          {!loadingSuppliers && !suppliersError && filteredSuppliers.length === 0 && (
+            <div className="text-center py-20">
+              <p className="text-slate-500 text-lg">No suppliers found matching your criteria.</p>
+            </div>
+          )}
+
+          {/* Suppliers grid */}
+          {!loadingSuppliers && !suppliersError && filteredSuppliers.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+              {filteredSuppliers.map((supplier, index) => (
+                supplier.premium ? (
+                  <PremiumCard key={supplier.id} supplier={supplier} />
+                ) : (
+                  <SupplierCard key={supplier.id} supplier={supplier} featured={index === 0} />
+                )
+              ))}
+            </div>
+          )}
         </div>
       </ScrollIsolator>
     </div>
@@ -451,15 +567,12 @@ function UpsellSection({ onPrev, isMobile }: { onPrev: () => void; isMobile: boo
           <div className="absolute bottom-0 left-1/3 w-36 sm:w-48 h-36 sm:h-48 rounded-full opacity-20 pointer-events-none"
             style={{ background: 'radial-gradient(circle, #818cf8 0%, transparent 70%)', transform: 'translateY(40%)' }} />
         </div>
-
-      
       </div>
     </div>
   )
 }
 
-
-// ── Upsell Section ────────────────────────────────────────────────────────
+// ── Upsell Section 2 ────────────────────────────────────────────────────────
 function UpsellSection2({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean }) {
   const handleClick = (e: React.MouseEvent) => {
     if (isMobile) return
@@ -548,13 +661,10 @@ function UpsellSection2({ onPrev, isMobile }: { onPrev: () => void; isMobile: bo
           <div className="absolute bottom-0 left-1/3 w-36 sm:w-48 h-36 sm:h-48 rounded-full opacity-20 pointer-events-none"
             style={{ background: 'radial-gradient(circle, #818cf8 0%, transparent 70%)', transform: 'translateY(40%)' }} />
         </div>
-
-      
       </div>
     </div>
   )
 }
-
 
 // ── Main Supplier Page ────────────────────────────────────────────────────
 const TOTAL = 3
@@ -654,7 +764,7 @@ export default function Supplier() {
       <div className="w-full overflow-hidden">
         <div className={cls}>
           {section === 0 && <SupplierGridSection onNext={goNext} isMobile={false} />}
-          {section === 1 && <UpsellSection onPrev={goNext} isMobile={false} />}
+          {section === 1 && <UpsellSection onPrev={goPrev} isMobile={false} />}
           {section === 2 && <UpsellSection2 onPrev={goPrev} isMobile={false} />}
         </div>
       </div>

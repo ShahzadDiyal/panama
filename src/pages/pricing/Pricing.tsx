@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { useNavbar } from '../../context/NavbarContext'
+import { publicService } from '../../services/publicService'
+import { subscriptionService } from '../../services/subscriptionService'
+import { useAuth } from '../../context/AuthContext'
+import type { Plan } from '../../types'
 
 // Assets
 import pricing_illustrator from '../../assets/pricing_herosection_img.svg'
@@ -67,6 +71,67 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
 
 // ── Section 2: Pricing Cards (first occurrence) ──────────────────────────
 function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: () => void; isMobile: boolean }) {
+  const { user, subscription, refreshSubscription } = useAuth()
+  const [plans, setPlans] = useState<Plan[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [subscribing, setSubscribing] = useState<number | null>(null)
+
+  // Fetch plans from API
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const data = await publicService.getPlans()
+        // Filter only active plans
+        const activePlans = data.filter(plan => plan.is_active === 1)
+        setPlans(activePlans)
+      } catch (err) {
+        console.error('Failed to fetch plans', err)
+        setError('Failed to load pricing plans')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchPlans()
+  }, [])
+
+  const handleSubscribe = async (planId: number) => {
+    if (!user) {
+      window.location.href = '/login'
+      return
+    }
+
+    // Check if user already has this exact plan active
+    if (subscription?.status === 'active' && subscription.plan_id === planId) {
+      alert('You already have this subscription active!')
+      return
+    }
+
+    try {
+      setSubscribing(planId)
+      
+      if (subscription) {
+        // User has existing subscription - use upgrade
+        await subscriptionService.upgrade(planId)
+        await refreshSubscription()
+        alert('Plan upgraded successfully!')
+      } else {
+        // User has no subscription - use checkout (redirects to Stripe)
+        const { checkout_url } = await subscriptionService.checkout(planId)
+        // Redirect to Stripe Checkout
+        window.location.href = checkout_url
+        return // Don't refresh subscription yet - will happen after payment
+      }
+      
+    } catch (err: any) {
+      console.error('Subscription failed', err)
+      const errorMessage = err.response?.data?.message || 'Failed to process subscription. Please try again.'
+      alert(errorMessage)
+    } finally {
+      setSubscribing(null)
+    }
+  }
+
   const handleClick = (e: React.MouseEvent) => {
     if (isMobile) return
     const target = e.target as HTMLElement
@@ -80,57 +145,89 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
     }
   }
 
-  const plans = [
-    {
-      name: 'Day Pass',
-      tagline: 'Trial and quick exploration',
-      features: [
-        'Full supplier directory access',
-        'Wholesale deals access',
-        'Request quotes from suppliers',
-        'Contact suppliers via WhatsApp'
-      ],
-      duration: '24 Hours Access',
-      price: '$20',
-      buttonText: 'Get Day Pass',
-      popular: false
-    },
-    {
-      name: 'Business Builder',
-      tagline: 'Active sourcing and research',
-      features: [
-        'Full supplier directory access',
-        'Wholesale deals access',
-        'Request quotes',
-        'WhatsApp supplier contact',
-        'Business Idea Validation access',
-        'Workshop & education access',
-        'New supplier updates'
-      ],
-      duration: 'Per Month',
-      price: '$50',
-      buttonText: 'Start Monthly Plan',
-      popular: false
-    },
-    {
-      name: 'Business Pro',
-      tagline: 'Serious importers and business owners',
-      features: [
-        'Full supplier directory access',
-        'Wholesale deals access',
-        'Direct supplier contact',
-        'Request unlimited quotes',
-        'Business Idea Validation tools',
-        'Workshop & education access',
-        'Priority access to new suppliers',
-        'Best value pricing'
-      ],
-      duration: 'Per Year',
-      price: '$299',
-      buttonText: 'Start Yearly Plan',
-      popular: true
+  // Check if user has this plan already
+  const hasActivePlan = (planId: number) => {
+    return subscription?.status === 'active' && subscription.plan_id === planId
+  }
+
+  // Map API plan to the format expected by the UI
+  const getPlanDisplay = (plan: Plan, _index: number) => {
+    const formattedPrice = parseFloat(plan.price).toFixed(2)
+    
+    // Map based on plan_name
+    if (plan.plan_name === 'Day Pass') {
+      return {
+        id: plan.id,
+        name: 'Day Pass',
+        tagline: 'Trial and quick exploration',
+        features: [
+          'Full supplier directory access',
+          'Wholesale deals access',
+          'Request quotes from suppliers',
+          'Contact suppliers via WhatsApp'
+        ],
+        duration: '24 Hours Access',
+        price: `$${formattedPrice}`,
+        buttonText: 'Get Day Pass',
+        popular: false
+      }
+    } else if (plan.plan_name === 'Monthly') {
+      return {
+        id: plan.id,
+        name: 'Business Builder',
+        tagline: 'Active sourcing and research',
+        features: [
+          'Full supplier directory access',
+          'Wholesale deals access',
+          'Request quotes',
+          'WhatsApp supplier contact',
+          'Business Idea Validation access',
+          'Workshop & education access',
+          'New supplier updates'
+        ],
+        duration: 'Per Month',
+        price: `$${formattedPrice}`,
+        buttonText: 'Start Monthly Plan',
+        popular: false
+      }
+    } else if (plan.plan_name === 'Yearly') {
+      return {
+        id: plan.id,
+        name: 'Business Pro',
+        tagline: 'Serious importers and business owners',
+        features: [
+          'Full supplier directory access',
+          'Wholesale deals access',
+          'Direct supplier contact',
+          'Request unlimited quotes',
+          'Business Idea Validation tools',
+          'Workshop & education access',
+          'Priority access to new suppliers',
+          'Best value pricing'
+        ],
+        duration: 'Per Year',
+        price: `$${formattedPrice}`,
+        buttonText: 'Start Yearly Plan',
+        popular: true
+      }
     }
-  ]
+    
+    // Fallback
+    return {
+      id: plan.id,
+      name: plan.plan_name,
+      tagline: plan.description,
+      features: [plan.description],
+      duration: `${plan.validity_value} ${plan.validity_unit}(s)`,
+      price: `$${formattedPrice}`,
+      buttonText: `Get ${plan.plan_name}`,
+      popular: false
+    }
+  }
+
+  const isPlanActive = (planId: number) => {
+    return hasActivePlan(planId)
+  }
 
   return (
     <div
@@ -151,39 +248,91 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
           </div>
         </div>
 
-        {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
-          {plans.map((plan, index) => (
-            <div
-              key={index}
-              className={`relative bg-white rounded-2xl shadow-xl p-6 sm:p-8 flex flex-col no-section-click`}
+        {/* Loading state */}
+        {loading && (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#162B60]"></div>
+          </div>
+        )}
+
+        {/* Error state */}
+        {!loading && error && (
+          <div className="text-center py-20">
+            <p className="text-red-500">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-4 px-6 py-2 bg-[#162B60] text-white rounded-lg"
             >
-              <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-1">{plan.name}</h3>
-              <p className="text-slate-500 text-xs sm:text-sm mb-4">{plan.tagline}</p>
+              Try Again
+            </button>
+          </div>
+        )}
 
-              <ul className="flex-1 mb-6 space-y-2">
-                {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-2 text-slate-700">
-                    <span className="text-green-600 font-bold text-base sm:text-lg flex-shrink-0">✓</span>
-                    <span className="text-xs sm:text-sm">{feature}</span>
-                  </li>
-                ))}
-              </ul>
+        {/* No plans state */}
+        {!loading && !error && plans.length === 0 && (
+          <div className="text-center py-20">
+            <p className="text-slate-500">No pricing plans available at the moment.</p>
+          </div>
+        )}
 
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-slate-400 text-xs sm:text-sm font-medium">{plan.duration}</span>
-                <span className="text-xl sm:text-2xl font-bold text-[#162B60]">{plan.price}</span>
-              </div>
+        {/* Cards */}
+        {!loading && !error && plans.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
+            {plans.map((plan, index) => {
+              const display = getPlanDisplay(plan, index)
+              const isActive = isPlanActive(plan.id)
+              
+              return (
+                <div
+                  key={plan.id}
+                  className={`relative bg-white rounded-2xl shadow-xl p-6 sm:p-8 flex flex-col no-section-click ${
+                    isActive ? 'ring-2 ring-green-500' : ''
+                  }`}
+                >
+                  {isActive && (
+                    <div className="absolute -top-3 right-4 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                      ACTIVE
+                    </div>
+                  )}
+                  
+                  <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-1">{display.name}</h3>
+                  <p className="text-slate-500 text-xs sm:text-sm mb-4">{display.tagline}</p>
 
-              <button className="no-section-click w-full flex items-center justify-between gap-2 bg-[#E9F6FE] hover:bg-blue-900 hover:text-white text-black font-semibold px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl transition-all duration-200 group text-sm sm:text-base">
-                {plan.buttonText}
-                <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white group-hover:bg-white/30 flex items-center justify-center flex-shrink-0 transition-all">
-                  <img src={arrow_icon} alt="" className="w-3 h-3 sm:w-4 sm:h-4" />
-                </span>
-              </button>
-            </div>
-          ))}
-        </div>
+                  <ul className="flex-1 mb-6 space-y-2">
+                    {display.features.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-2 text-slate-700">
+                        <span className="text-green-600 font-bold text-base sm:text-lg flex-shrink-0">✓</span>
+                        <span className="text-xs sm:text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-slate-400 text-xs sm:text-sm font-medium">{display.duration}</span>
+                    <span className="text-xl sm:text-2xl font-bold text-[#162B60]">{display.price}</span>
+                  </div>
+
+                  {isActive ? (
+                    <div className="w-full text-center py-3 px-4 bg-green-100 text-green-800 font-medium rounded-xl">
+                      Current Plan
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={() => handleSubscribe(display.id)}
+                      disabled={subscribing === display.id}
+                      className="no-section-click w-full flex items-center justify-between gap-2 bg-[#E9F6FE] hover:bg-blue-900 hover:text-white text-black font-semibold px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl transition-all duration-200 group text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {subscribing === display.id ? 'Processing...' : display.buttonText}
+                      <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white group-hover:bg-white/30 flex items-center justify-center flex-shrink-0 transition-all">
+                        <img src={arrow_icon} alt="" className="w-3 h-3 sm:w-4 sm:h-4" />
+                      </span>
+                    </button>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -191,6 +340,67 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
 
 // ── Section 3: Pricing Cards (second occurrence) ─────────────────────────
 function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: () => void; isMobile: boolean }) {
+  const { user, subscription, refreshSubscription } = useAuth()
+  const [plans, setPlans] = useState<Plan[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [subscribing, setSubscribing] = useState<number | null>(null)
+
+  // Fetch plans from API
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const data = await publicService.getPlans()
+        // Filter only active plans
+        const activePlans = data.filter(plan => plan.is_active === 1)
+        setPlans(activePlans)
+      } catch (err) {
+        console.error('Failed to fetch plans', err)
+        setError('Failed to load pricing plans')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchPlans()
+  }, [])
+
+  const handleSubscribe = async (planId: number) => {
+    if (!user) {
+      window.location.href = '/login'
+      return
+    }
+
+    // Check if user already has this exact plan active
+    if (subscription?.status === 'active' && subscription.plan_id === planId) {
+      alert('You already have this subscription active!')
+      return
+    }
+
+    try {
+      setSubscribing(planId)
+      
+      if (subscription) {
+        // User has existing subscription - use upgrade
+        await subscriptionService.upgrade(planId)
+        await refreshSubscription()
+        alert('Plan upgraded successfully!')
+      } else {
+        // User has no subscription - use checkout (redirects to Stripe)
+        const { checkout_url } = await subscriptionService.checkout(planId)
+        // Redirect to Stripe Checkout
+        window.location.href = checkout_url
+        return // Don't refresh subscription yet - will happen after payment
+      }
+      
+    } catch (err: any) {
+      console.error('Subscription failed', err)
+      const errorMessage = err.response?.data?.message || 'Failed to process subscription. Please try again.'
+      alert(errorMessage)
+    } finally {
+      setSubscribing(null)
+    }
+  }
+
   const handleClick = (e: React.MouseEvent) => {
     if (isMobile) return
     const target = e.target as HTMLElement
@@ -204,57 +414,89 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
     }
   }
 
-  const plans = [
-    {
-      name: 'Day Pass',
-      tagline: 'Trial and quick exploration',
-      features: [
-        'Full supplier directory access',
-        'Wholesale deals access',
-        'Request quotes from suppliers',
-        'Contact suppliers via WhatsApp'
-      ],
-      duration: '24 Hours Access',
-      price: '$20',
-      buttonText: 'Get Day Pass',
-      popular: false
-    },
-    {
-      name: 'Business Builder',
-      tagline: 'Active sourcing and research',
-      features: [
-        'Full supplier directory access',
-        'Wholesale deals access',
-        'Request quotes',
-        'WhatsApp supplier contact',
-        'Business Idea Validation access',
-        'Workshop & education access',
-        'New supplier updates'
-      ],
-      duration: 'Per Month',
-      price: '$50',
-      buttonText: 'Start Monthly Plan',
-      popular: false
-    },
-    {
-      name: 'Business Pro',
-      tagline: 'Serious importers and business owners',
-      features: [
-        'Full supplier directory access',
-        'Wholesale deals access',
-        'Direct supplier contact',
-        'Request unlimited quotes',
-        'Business Idea Validation tools',
-        'Workshop & education access',
-        'Priority access to new suppliers',
-        'Best value pricing'
-      ],
-      duration: 'Per Year',
-      price: '$299',
-      buttonText: 'Start Yearly Plan',
-      popular: true
+  // Check if user has this plan already
+  const hasActivePlan = (planId: number) => {
+    return subscription?.status === 'active' && subscription.plan_id === planId
+  }
+
+  // Map API plan to the format expected by the UI
+  const getPlanDisplay = (plan: Plan, _index: number) => {
+    const formattedPrice = parseFloat(plan.price).toFixed(2)
+    
+    // Map based on plan_name
+    if (plan.plan_name === 'Day Pass') {
+      return {
+        id: plan.id,
+        name: 'Day Pass',
+        tagline: 'Trial and quick exploration',
+        features: [
+          'Full supplier directory access',
+          'Wholesale deals access',
+          'Request quotes from suppliers',
+          'Contact suppliers via WhatsApp'
+        ],
+        duration: '24 Hours Access',
+        price: `$${formattedPrice}`,
+        buttonText: 'Get Day Pass',
+        popular: false
+      }
+    } else if (plan.plan_name === 'Monthly') {
+      return {
+        id: plan.id,
+        name: 'Business Builder',
+        tagline: 'Active sourcing and research',
+        features: [
+          'Full supplier directory access',
+          'Wholesale deals access',
+          'Request quotes',
+          'WhatsApp supplier contact',
+          'Business Idea Validation access',
+          'Workshop & education access',
+          'New supplier updates'
+        ],
+        duration: 'Per Month',
+        price: `$${formattedPrice}`,
+        buttonText: 'Start Monthly Plan',
+        popular: false
+      }
+    } else if (plan.plan_name === 'Yearly') {
+      return {
+        id: plan.id,
+        name: 'Business Pro',
+        tagline: 'Serious importers and business owners',
+        features: [
+          'Full supplier directory access',
+          'Wholesale deals access',
+          'Direct supplier contact',
+          'Request unlimited quotes',
+          'Business Idea Validation tools',
+          'Workshop & education access',
+          'Priority access to new suppliers',
+          'Best value pricing'
+        ],
+        duration: 'Per Year',
+        price: `$${formattedPrice}`,
+        buttonText: 'Start Yearly Plan',
+        popular: true
+      }
     }
-  ]
+    
+    // Fallback
+    return {
+      id: plan.id,
+      name: plan.plan_name,
+      tagline: plan.description,
+      features: [plan.description],
+      duration: `${plan.validity_value} ${plan.validity_unit}(s)`,
+      price: `$${formattedPrice}`,
+      buttonText: `Get ${plan.plan_name}`,
+      popular: false
+    }
+  }
+
+  const isPlanActive = (planId: number) => {
+    return hasActivePlan(planId)
+  }
 
   return (
     <div
@@ -263,39 +505,91 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
       onClick={handleClick}
     >
       <div className="max-w-7xl mx-auto no-section-click pt-12 sm:pt-20">
-        {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
-          {plans.map((plan, index) => (
-            <div
-              key={index}
-              className={`relative bg-white rounded-2xl shadow-xl p-6 sm:p-8 flex flex-col no-section-click`}
+        {/* Loading state */}
+        {loading && (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#162B60]"></div>
+          </div>
+        )}
+
+        {/* Error state */}
+        {!loading && error && (
+          <div className="text-center py-20">
+            <p className="text-red-500">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-4 px-6 py-2 bg-[#162B60] text-white rounded-lg"
             >
-              <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-1">{plan.name}</h3>
-              <p className="text-slate-500 text-xs sm:text-sm mb-4">{plan.tagline}</p>
+              Try Again
+            </button>
+          </div>
+        )}
 
-              <ul className="flex-1 mb-6 space-y-2">
-                {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-2 text-slate-700">
-                    <span className="text-green-600 font-bold text-base sm:text-lg flex-shrink-0">✓</span>
-                    <span className="text-xs sm:text-sm">{feature}</span>
-                  </li>
-                ))}
-              </ul>
+        {/* No plans state */}
+        {!loading && !error && plans.length === 0 && (
+          <div className="text-center py-20">
+            <p className="text-slate-500">No pricing plans available at the moment.</p>
+          </div>
+        )}
 
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-slate-400 text-xs sm:text-sm font-medium">{plan.duration}</span>
-                <span className="text-xl sm:text-2xl font-bold text-[#162B60]">{plan.price}</span>
-              </div>
+        {/* Cards */}
+        {!loading && !error && plans.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
+            {plans.map((plan, index) => {
+              const display = getPlanDisplay(plan, index)
+              const isActive = isPlanActive(plan.id)
+              
+              return (
+                <div
+                  key={plan.id}
+                  className={`relative bg-white rounded-2xl shadow-xl p-6 sm:p-8 flex flex-col no-section-click ${
+                    isActive ? 'ring-2 ring-green-500' : ''
+                  }`}
+                >
+                  {isActive && (
+                    <div className="absolute -top-3 right-4 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                      ACTIVE
+                    </div>
+                  )}
+                  
+                  <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-1">{display.name}</h3>
+                  <p className="text-slate-500 text-xs sm:text-sm mb-4">{display.tagline}</p>
 
-              <button className="no-section-click w-full flex items-center justify-between gap-2 bg-[#E9F6FE] hover:bg-blue-900 hover:text-white text-black font-semibold px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl transition-all duration-200 group text-sm sm:text-base">
-                {plan.buttonText}
-                <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white group-hover:bg-white/30 flex items-center justify-center flex-shrink-0 transition-all">
-                  <img src={arrow_icon} alt="" className="w-3 h-3 sm:w-4 sm:h-4" />
-                </span>
-              </button>
-            </div>
-          ))}
-        </div>
+                  <ul className="flex-1 mb-6 space-y-2">
+                    {display.features.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-2 text-slate-700">
+                        <span className="text-green-600 font-bold text-base sm:text-lg flex-shrink-0">✓</span>
+                        <span className="text-xs sm:text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-slate-400 text-xs sm:text-sm font-medium">{display.duration}</span>
+                    <span className="text-xl sm:text-2xl font-bold text-[#162B60]">{display.price}</span>
+                  </div>
+
+                  {isActive ? (
+                    <div className="w-full text-center py-3 px-4 bg-green-100 text-green-800 font-medium rounded-xl">
+                      Current Plan
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={() => handleSubscribe(display.id)}
+                      disabled={subscribing === display.id}
+                      className="no-section-click w-full flex items-center justify-between gap-2 bg-[#E9F6FE] hover:bg-blue-900 hover:text-white text-black font-semibold px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl transition-all duration-200 group text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {subscribing === display.id ? 'Processing...' : display.buttonText}
+                      <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white group-hover:bg-white/30 flex items-center justify-center flex-shrink-0 transition-all">
+                        <img src={arrow_icon} alt="" className="w-3 h-3 sm:w-4 sm:h-4" />
+                      </span>
+                    </button>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -304,7 +598,7 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
 // ── Main Component with 3 sections ───────────────────────────────────────
 const TOTAL_SECTIONS = 3
 
-export default function Sourcing() {
+export default function Pricing() {
   const { setShowNavbar2 } = useNavbar()
   const [section, setSection] = useState(0)
   const [leavingUp, setLeavingUp] = useState(false)

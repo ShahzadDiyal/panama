@@ -1,13 +1,15 @@
-import { useParams, Link } from 'react-router-dom'
+import {  Link } from 'react-router-dom'
 import { useRef, useState, useEffect } from 'react'
 
-import supplier_profile from '../../assets/supplier_details.png'
-import verified_badge from '../../assets/verified_tick_.png'
-import recent_icon from '../../assets/recent_icon.svg'
-import star_icon from '../../assets/star_icon.png'
-import arrow_left_icon from '../../assets/arrow_left_icon.svg'
+// import supplier_profile from '../../assets/supplier_details.png'
+// import verified_badge from '../../assets/verified_tick_.png'
+// import recent_icon from '../../assets/recent_icon.svg'
+// import star_icon from '../../assets/star_icon.png'
+// import arrow_left_icon from '../../assets/arrow_left_icon.svg'
 import dropdown_icon from '../../assets/dropdown_icon.png'
 import sourcing_illustrator from '../../assets/souring_illustrator.png'
+import { publicService, getImageUrl } from '../../services/publicService'
+import type { Category, ProductListItem } from '../../types'
 
 // ── Types ─────────────────────────────────────────────────────────────────
 interface Deal {
@@ -22,124 +24,7 @@ interface Deal {
   isPremium?: boolean // Flag for premium cards
 }
 
-// ── Mock data with premium flag ───────────────────────────────────────────
-const deals: Deal[] = [
-  {
-    id: 1,
-    title: 'Bulk Coffee Beans',
-    category: 'Food & Beverage',
-    moq: '500 kg',
-    priceRange: '$4.20 – $4.80 / kg',
-    location: 'Panama City',
-    verified: true,
-    isPremium: false,
-    images: [
-      'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=400&q=80',
-      'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400&q=80',
-      'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&q=80',
-    ],
-  },
-  {
-    id: 2,
-    title: 'Cotton T-Shirts',
-    category: 'Apparel',
-    moq: '1,000 pcs',
-    priceRange: '$2.10 – $2.60 / piece',
-    location: 'Colón',
-    verified: true,
-    isPremium: true,
-    images: [
-      'https://images.unsplash.com/photo-1562157873-818bc0726f68?w=400&q=80',
-      'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=80',
-    ],
-  },
-  {
-    id: 3,
-    title: 'LED Smart Lights',
-    category: 'Electronics',
-    moq: '300 units',
-    priceRange: '$9.50 – $12.00',
-    location: 'Panama Oeste',
-    verified: true,
-    isPremium: false,
-    images: [
-      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80',
-      'https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?w=400&q=80',
-    ],
-  },
-  {
-    id: 4,
-    title: 'Handmade Leather Bags',
-    category: 'Fashion',
-    moq: '50 pcs',
-    priceRange: '$18.00 – $25.00',
-    location: 'David',
-    verified: true,
-    isPremium: true,
-    images: [
-      'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&q=80',
-      'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&q=80',
-    ],
-  },
-  {
-    id: 5,
-    title: 'Organic Honey Jars',
-    category: 'Food & Beverage',
-    moq: '200 units',
-    priceRange: '$3.50 – $5.00 / jar',
-    location: 'Chiriqui',
-    verified: true,
-    isPremium: false,
-    images: [
-      'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=400&q=80',
-      'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=400&q=80',
-    ],
-  },
-  {
-    id: 6,
-    title: 'Premium Coffee Beans',
-    category: 'Food & Beverage',
-    moq: '250 kg',
-    priceRange: '$8.50 – $12.00 / kg',
-    location: 'Boquete',
-    verified: true,
-    isPremium: true,
-    images: [
-      'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=400&q=80',
-      'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&q=80',
-    ],
-  },
-  {
-    id: 7,
-    title: 'Designer T-Shirts',
-    category: 'Apparel',
-    moq: '500 pcs',
-    priceRange: '$5.50 – $8.00 / piece',
-    location: 'Panama City',
-    verified: true,
-    isPremium: true,
-    images: [
-      'https://images.unsplash.com/photo-1562157873-818bc0726f68?w=400&q=80',
-      'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=80',
-    ],
-  },
-  {
-    id: 8,
-    title: 'Smart Home Hub',
-    category: 'Electronics',
-    moq: '150 units',
-    priceRange: '$25.00 – $35.00',
-    location: 'David',
-    verified: true,
-    isPremium: false,
-    images: [
-      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80',
-      'https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?w=400&q=80',
-    ],
-  },
-]
-
-const CATEGORIES = ['All', 'Food & Beverage', 'Apparel', 'Electronics', 'Packaging & Materials', 'Beauty & Personal Care', 'Metals', 'Automotive', 'Healthcare', 'Handicrafts', 'Logistics', 'Marine & Fishing']
+// const CATEGORIES = ['All', 'Food & Beverage', 'Apparel', 'Electronics', 'Packaging & Materials', 'Beauty & Personal Care', 'Metals', 'Automotive', 'Healthcare', 'Handicrafts', 'Logistics', 'Marine & Fishing']
 const SUPPLIER_TYPES = ['All Types', 'Manufacturer', 'Wholesaler', 'Distributor', 'Exporter']
 const LOCATIONS = ['All Locations', 'Panama City', 'Colón', 'Panama Oeste', 'Chiriqui', 'Bocas del Toro', 'Veraguas']
 const MOQ_RANGES = ['Any MOQ', 'Under $500', '$500–$2,000', '$2,000–$5,000', '$5,000+']
@@ -254,10 +139,131 @@ function DealCard({ deal }: { deal: Deal }) {
 // ── Section 1 Component (Deals Grid) ────────────────────────────────────
 function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean }) {
   const [search, setSearch] = useState('')
-  const [category, setCategory] = useState('All')
+  // const [category, setCategory] = useState('All')
   const [supplierType, setSupplierType] = useState('All Types')
   const [location, setLocation] = useState('All Locations')
   const [moq, setMoq] = useState('Any MOQ')
+
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  
+  // New state for API deals
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [loadingDeals, setLoadingDeals] = useState(true);
+  const [dealsError, setDealsError] = useState('');
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await publicService.getCategories();
+        setCategories(data);
+      } catch (error) {
+        console.error('Failed to load categories', error);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Fetch deals from API
+  useEffect(() => {
+    const fetchDeals = async () => {
+      try {
+        setLoadingDeals(true);
+        
+        // Fetch first page of vendors
+        const vendorsResponse = await publicService.getVendors({ page: 1 });
+        
+        // Collect all products from all vendors (limit to first 5 vendors for performance)
+        let allProducts: ProductListItem[] = [];
+        const vendorsToFetch = vendorsResponse.data.slice(0, 5);
+        
+        // Fetch products for each vendor in parallel
+        const productPromises = vendorsToFetch.map(vendor => 
+          publicService.getVendorProducts(vendor.id).catch(err => {
+            console.error(`Failed to fetch products for vendor ${vendor.id}`, err);
+            return null;
+          })
+        );
+        
+        const productResponses = await Promise.all(productPromises);
+        
+        // Combine all products
+        productResponses.forEach(response => {
+          if (response && response.products && response.products.data) {
+            allProducts = [...allProducts, ...response.products.data];
+          }
+        });
+        
+        // Filter to only show deals (is_deal === true)
+        const dealProducts = allProducts.filter(product => product.is_deal === true);
+        
+        // Sort by created_at (newest first) to show latest deals
+        const sortedProducts = dealProducts.sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        
+        // Map to Deal format
+        const formattedDeals = sortedProducts.map(mapProductToDeal);
+        setDeals(formattedDeals);
+        setDealsError('');
+      } catch (err) {
+        console.error('Failed to fetch deals', err);
+        setDealsError('Failed to load deals');
+      } finally {
+        setLoadingDeals(false);
+      }
+    };
+    
+    fetchDeals();
+  }, []);
+
+  // Helper function to convert API product to Deal format
+  const mapProductToDeal = (product: ProductListItem): Deal => {
+    // Get all image URLs
+    const imageUrls = product.images && Array.isArray(product.images) && product.images.length > 0
+      ? product.images.map(img => getImageUrl(img.path))
+      : product.cover_image 
+        ? [getImageUrl(product.cover_image)]
+        : ['https://via.placeholder.com/400x400?text=No+Image'];
+    
+    // Format price range
+    const price = parseFloat(product.price).toFixed(2);
+    const priceRange = product.old_price 
+      ? `$${price} – $${parseFloat(product.old_price).toFixed(2)} / unit`
+      : `$${price} / unit`;
+    
+    // Format MOQ
+    const moqText = `${product.moq} units`;
+    
+    // Determine premium status (customize as needed)
+    const isPremium = product.id % 3 === 0; // Example: every 3rd product is premium
+    
+    return {
+      id: product.id,
+      title: product.title,
+      category: product.category?.name || 'Uncategorized',
+      moq: moqText,
+      priceRange: priceRange,
+      location: product.location,
+      verified: true,
+      images: imageUrls,
+      isPremium: isPremium
+    };
+  };
+
+  // Apply search and category filters
+  const filteredDeals = deals.filter(deal => {
+    const matchesSearch = search === '' || 
+      deal.title.toLowerCase().includes(search.toLowerCase()) ||
+      deal.category.toLowerCase().includes(search.toLowerCase());
+    
+    const matchesCategory = selectedCategory === 'All' || deal.category === selectedCategory;
+    
+    return matchesSearch && matchesCategory;
+  });
 
   const dropdownClass = `appearance-none bg-white border border-gray-200 rounded-[10px]
     pl-3 pr-8 py-2 text-xs sm:text-sm text-slate-600 font-medium w-full
@@ -279,13 +285,13 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pt-28">
         <div className="mt-8">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
-          <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-bold text-slate-800 leading-tight">
-            Discover Exclusive Wholesale<br />Deals in Panama
-          </h1>
-          <p className="text-gray-400 font-semibold text-xs sm:text-sm leading-relaxed sm:text-right sm:max-w-xs">
-           Browse limited-time bulk offers directly from verified distributors and suppliers.
-          </p>
-        </div>
+            <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-bold text-slate-800 leading-tight">
+              Discover Exclusive Wholesale<br />Deals in Panama
+            </h1>
+            <p className="text-gray-400 font-semibold text-xs sm:text-sm leading-relaxed sm:text-right sm:max-w-xs">
+              Browse limited-time bulk offers directly from verified distributors and suppliers.
+            </p>
+          </div>
           {/* Search */}
           <div className="no-section-click max-w-4xl mx-auto mt-4 sm:mt-5"
             onClick={(e) => e.stopPropagation()}>
@@ -316,9 +322,21 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                   <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
-                    <select value={category} onChange={(e) => setCategory(e.target.value)} className={dropdownClass}>
-                      <option value="All">Category</option>
-                      {CATEGORIES.filter(c => c !== 'All').map(c => <option key={c}>{c}</option>)}
+                    <select
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      className={dropdownClass}
+                    >
+                      <option value="All">All Categories</option>
+                      {loadingCategories ? (
+                        <option disabled>Loading...</option>
+                      ) : (
+                        categories.map((cat) => (
+                          <option key={cat.id} value={cat.name}>
+                            {cat.name}
+                          </option>
+                        ))
+                      )}
                     </select>
                     <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
                   </div>
@@ -346,7 +364,13 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
                 </div>
 
                 <button
-                  onClick={() => { setCategory('All'); setSupplierType('All Types'); setLocation('All Locations'); setMoq('Any MOQ'); setSearch('') }}
+                  onClick={() => { 
+                    setSelectedCategory('All'); 
+                    setSupplierType('All Types'); 
+                    setLocation('All Locations'); 
+                    setMoq('Any MOQ'); 
+                    setSearch('') 
+                  }}
                   className="w-9 h-9 flex items-center justify-center hover:bg-yellow-100 rounded-lg transition-all flex-shrink-0"
                   title="Reset filters"
                 >
@@ -359,12 +383,41 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
             </div>
           </div>
 
+          {/* Loading State */}
+          {loadingDeals && (
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#162B60]"></div>
+            </div>
+          )}
+
+          {/* Error State */}
+          {!loadingDeals && dealsError && (
+            <div className="text-center py-20">
+              <p className="text-red-500">{dealsError}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="mt-4 px-6 py-2 bg-[#162B60] text-white rounded-lg"
+              >
+                Try Again
+              </button>
+            </div>
+          )}
+
+          {/* No Deals State */}
+          {!loadingDeals && !dealsError && filteredDeals.length === 0 && (
+            <div className="text-center py-20">
+              <p className="text-slate-500 text-lg">No deals found matching your criteria.</p>
+            </div>
+          )}
+
           {/* Grid Layout for Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 justify-items-center">
-            {deals.map((deal) => (
-              <DealCard key={deal.id} deal={deal} />
-            ))}
-          </div>
+          {!loadingDeals && !dealsError && filteredDeals.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 justify-items-center">
+              {filteredDeals.map((deal) => (
+                <DealCard key={deal.id} deal={deal} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -569,7 +622,7 @@ function Section3({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean 
 const TOTAL_SECTIONS = 3
 
 export default function Deals() {
-  const { id } = useParams()
+  // const { id } = useParams()
   const [section, setSection] = useState(0)
   const [leavingUp, setLeavingUp] = useState(false)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)

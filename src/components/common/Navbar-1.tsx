@@ -119,11 +119,11 @@ export default function Navbar() {
                       <p className="text-xs text-gray-500">{user.email}</p>
                     </div>
                     <Link
-                      to="/profile"
+                      to="/quotes"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       onClick={() => setUserMenuOpen(false)}
                     >
-                      Profile
+                     My Quotes
                     </Link>
                     <button
                       onClick={handleLogout}
@@ -204,13 +204,13 @@ export default function Navbar() {
                   <p className="text-sm font-medium text-gray-900">{user.name}</p>
                   <p className="text-xs text-gray-500">{user.email}</p>
                 </div>
-                <Link
+                {/* <Link
                   to="/profile"
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   onClick={() => setMenuOpen(false)}
                 >
                   Profile
-                </Link>
+                </Link> */}
                 <button
                   onClick={handleLogout}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

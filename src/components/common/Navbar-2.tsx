@@ -116,12 +116,12 @@ export default function Navbar2() {
                       <p className="text-sm font-medium text-gray-900">{user.name}</p>
                       <p className="text-xs text-gray-500">{user.email}</p>
                     </div>
-                    <Link
-                      to="/profile"
+                   <Link
+                      to="/quotes"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       onClick={() => setUserMenuOpen(false)}
                     >
-                      Profile
+                     My Quotes
                     </Link>
                     <button
                       onClick={handleLogout}
@@ -203,12 +203,12 @@ export default function Navbar2() {
                   <p className="text-xs text-gray-500">{user.email}</p>
                 </div>
                 <Link
-                  to="/profile"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Profile
-                </Link>
+                      to="/quotes"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                     My Quotes
+                    </Link>
                 <button
                   onClick={handleLogout}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

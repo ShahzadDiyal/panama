@@ -1,67 +1,68 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-
+import { publicService, getImageUrl } from '../../services/publicService'
+import type { VendorListItem } from '../../types'
 // ── Types ─────────────────────────────────────────────────────────────────
 interface Supplier {
   id: number
-  name: string
-  category: string
+  name: string // maps to business_name
+  category: string // from category.name
   location: string
-  logo: string
-  logoRound: boolean
+  logo: string // from image_path
+  logoRound: boolean // keep as true for all or based on image type
 }
 
 // ── Mock data ─────────────────────────────────────────────────────────────
-const suppliers: Supplier[] = [
-  {
-    id: 1,
-    name: 'Panama Agro Exports',
-    category: 'Food & Beverage',
-    location: 'Panama City',
-    logo: 'https://images.unsplash.com/photo-1607631568010-a87245c0daf8?w=200&q=80',
-    logoRound: true,
-  },
-  {
-    id: 2,
-    name: 'Colón Textile Group',
-    category: 'Apparel',
-    location: 'Colón',
-    logo: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=200&q=80',
-    logoRound: true,
-  },
-  {
-    id: 3,
-    name: 'Pacific Tech Distributors',
-    category: 'Electronics',
-    location: 'Panama Oeste',
-    logo: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&q=80',
-    logoRound: true,
-  },
-  {
-    id: 4,
-    name: 'Canal Zone Packaging Ltd.',
-    category: 'Packaging & Materials',
-    location: 'Panama City',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Canal%2B_2019.svg/500px-Canal%2B_2019.svg.png',
-    logoRound: false,
-  },
-  {
-    id: 5,
-    name: 'Tropic Beauty Exports',
-    category: 'Beauty & Personal Care',
-    location: 'Chiriqui',
-    logo: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=200&q=80',
-    logoRound: false,
-  },
-  {
-    id: 6,
-    name: 'Bocas del Toro Organics',
-    category: 'Food & Beverage',
-    location: 'Bocas del Toro',
-    logo: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&q=80',
-    logoRound: true,
-  },
-]
+// const suppliers: Supplier[] = [
+//   {
+//     id: 1,
+//     name: 'Panama Agro Exports',
+//     category: 'Food & Beverage',
+//     location: 'Panama City',
+//     logo: 'https://images.unsplash.com/photo-1607631568010-a87245c0daf8?w=200&q=80',
+//     logoRound: true,
+//   },
+//   {
+//     id: 2,
+//     name: 'Colón Textile Group',
+//     category: 'Apparel',
+//     location: 'Colón',
+//     logo: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=200&q=80',
+//     logoRound: true,
+//   },
+//   {
+//     id: 3,
+//     name: 'Pacific Tech Distributors',
+//     category: 'Electronics',
+//     location: 'Panama Oeste',
+//     logo: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&q=80',
+//     logoRound: true,
+//   },
+//   {
+//     id: 4,
+//     name: 'Canal Zone Packaging Ltd.',
+//     category: 'Packaging & Materials',
+//     location: 'Panama City',
+//     logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Canal%2B_2019.svg/500px-Canal%2B_2019.svg.png',
+//     logoRound: false,
+//   },
+//   {
+//     id: 5,
+//     name: 'Tropic Beauty Exports',
+//     category: 'Beauty & Personal Care',
+//     location: 'Chiriqui',
+//     logo: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=200&q=80',
+//     logoRound: false,
+//   },
+//   {
+//     id: 6,
+//     name: 'Bocas del Toro Organics',
+//     category: 'Food & Beverage',
+//     location: 'Bocas del Toro',
+//     logo: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&q=80',
+//     logoRound: true,
+//   },
+// ]
 
 // ── VerifiedBadge icon ────────────────────────────────────────────────────
 function VerifiedBadgeIcon() {
@@ -81,6 +82,8 @@ function VerifiedBadgeIcon() {
 
 // ── SupplierCard ──────────────────────────────────────────────────────────
 function SupplierCard({ supplier, featured = false }: { supplier: Supplier; featured?: boolean }) {
+
+
   return (
     // ↓ Outer wrapper: same p-[10px] + rounded-3xl as LatestDeals cards
     <div className="flex-shrink-0 w-[300px] sm:w-[225px] lg:w-[240px] xl:w-[250px]
@@ -152,9 +155,9 @@ function SupplierCard({ supplier, featured = false }: { supplier: Supplier; feat
         >
           View Profile
           <svg
-              className="w-8 h-8 transition-transform duration-300 group-hover:rotate-310 bg-[#CFF6FF] rounded-full text-black p-1"
-              fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}
-            >
+            className="w-8 h-8 transition-transform duration-300 group-hover:rotate-310 bg-[#CFF6FF] rounded-full text-black p-1"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
           </svg>
         </Link>
@@ -166,6 +169,29 @@ function SupplierCard({ supplier, featured = false }: { supplier: Supplier; feat
 
 // ── Main component ────────────────────────────────────────────────────────
 const VerifiedSuppliers = () => {
+  const [suppliers, setSuppliers] = useState<VendorListItem[]>([])
+  const [_loading, setLoading] = useState(true)
+  const [_error, setError] = useState('')
+
+
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      try {
+        const response = await publicService.getVendors({ page: 1 })
+        setSuppliers(response.data)
+      } catch (err) {
+        setError('Failed to load suppliers')
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchSuppliers()
+  }, [])
+
+
+
+
   const trackRef = useRef<HTMLDivElement>(null)
   const isDragging = useRef(false)
   const startX = useRef(0)
@@ -257,10 +283,17 @@ const VerifiedSuppliers = () => {
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        {suppliers.map((supplier, index) => (
+        {suppliers.map((vendor, index) => (
           <SupplierCard
-            key={supplier.id}
-            supplier={supplier}
+            key={vendor.id}
+            supplier={{
+              id: vendor.id,
+              name: vendor.business_name,
+              category: vendor.category?.name || 'Uncategorized',
+              location: vendor.location,
+              logo: getImageUrl(vendor.image_path),
+              logoRound: true,
+            }}
             featured={index === 0}
           />
         ))}

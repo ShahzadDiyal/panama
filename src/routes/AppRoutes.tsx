@@ -18,6 +18,8 @@ import DealDetails from '../pages/deals/DealsDetails'
 import Sourcing from '../pages/sourcing/Sourcing'
 import Servicing from '../pages/servicing/Servicing'
 import Pricing from '../pages/pricing/Pricing'
+import Quotes from '../pages/quotes/Quotes'
+import QuoteDetails from '../pages/quotes/QuoteDetails'
 
 export default function AppRoutes() {
     return (
@@ -37,6 +39,8 @@ export default function AppRoutes() {
                 <Route path="/sourcing" element={<Sourcing />}/> 
                 <Route path="/servicing" element={<Servicing />}/> 
                 <Route path="/pricing" element={<Pricing />}/> 
+                  <Route path="/quotes" element={<Quotes />} />
+  <Route path="/quotes/:id" element={<QuoteDetails />} />
             </Route>
         </Routes>
     )

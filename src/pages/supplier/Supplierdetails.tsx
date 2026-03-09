@@ -1,5 +1,10 @@
 import { Link, useParams } from 'react-router-dom'
 import { useRef, useState, useEffect } from 'react'
+import { useAuth } from '../../context/AuthContext'
+import { getImageUrl, publicService } from '../../services/publicService'
+import { contactService } from '../../services/contactService'
+import { quoteService } from '../../services/quoteService'
+import type { VendorDetails, ProductListItem } from '../../types'
 
 import supplier_profile from '../../assets/supplier_details.png'
 import verified_badge from '../../assets/verified_tick_.png'
@@ -21,123 +26,6 @@ interface Deal {
   isPremium?: boolean // Flag for premium cards
 }
 
-// ── Mock data with premium flag ───────────────────────────────────────────
-const deals: Deal[] = [
-  {
-    id: 1,
-    title: 'Bulk Coffee Beans',
-    category: 'Food & Beverage',
-    moq: '500 kg',
-    priceRange: '$4.20 – $4.80 / kg',
-    location: 'Panama City',
-    verified: true,
-    isPremium: false,
-    images: [
-      'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=400&q=80',
-      'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400&q=80',
-      'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&q=80',
-    ],
-  },
-  {
-    id: 2,
-    title: 'Cotton T-Shirts',
-    category: 'Apparel',
-    moq: '1,000 pcs',
-    priceRange: '$2.10 – $2.60 / piece',
-    location: 'Colón',
-    verified: true,
-    isPremium: true,
-    images: [
-      'https://images.unsplash.com/photo-1562157873-818bc0726f68?w=400&q=80',
-      'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=80',
-    ],
-  },
-  {
-    id: 3,
-    title: 'LED Smart Lights',
-    category: 'Electronics',
-    moq: '300 units',
-    priceRange: '$9.50 – $12.00',
-    location: 'Panama Oeste',
-    verified: true,
-    isPremium: false,
-    images: [
-      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80',
-      'https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?w=400&q=80',
-    ],
-  },
-  {
-    id: 4,
-    title: 'Handmade Leather Bags',
-    category: 'Fashion',
-    moq: '50 pcs',
-    priceRange: '$18.00 – $25.00',
-    location: 'David',
-    verified: true,
-    isPremium: true,
-    images: [
-      'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&q=80',
-      'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&q=80',
-    ],
-  },
-  {
-    id: 5,
-    title: 'Organic Honey Jars',
-    category: 'Food & Beverage',
-    moq: '200 units',
-    priceRange: '$3.50 – $5.00 / jar',
-    location: 'Chiriqui',
-    verified: true,
-    isPremium: false,
-    images: [
-      'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=400&q=80',
-      'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=400&q=80',
-    ],
-  },
-  {
-    id: 6,
-    title: 'Premium Coffee Beans',
-    category: 'Food & Beverage',
-    moq: '250 kg',
-    priceRange: '$8.50 – $12.00 / kg',
-    location: 'Boquete',
-    verified: true,
-    isPremium: true,
-    images: [
-      'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=400&q=80',
-      'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&q=80',
-    ],
-  },
-  {
-    id: 7,
-    title: 'Designer T-Shirts',
-    category: 'Apparel',
-    moq: '500 pcs',
-    priceRange: '$5.50 – $8.00 / piece',
-    location: 'Panama City',
-    verified: true,
-    isPremium: true,
-    images: [
-      'https://images.unsplash.com/photo-1562157873-818bc0726f68?w=400&q=80',
-      'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=80',
-    ],
-  },
-  {
-    id: 8,
-    title: 'Smart Home Hub',
-    category: 'Electronics',
-    moq: '150 units',
-    priceRange: '$25.00 – $35.00',
-    location: 'David',
-    verified: true,
-    isPremium: false,
-    images: [
-      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80',
-      'https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?w=400&q=80',
-    ],
-  },
-]
-
 const CATEGORIES = ['All', 'Food & Beverage', 'Apparel', 'Electronics', 'Packaging & Materials', 'Beauty & Personal Care', 'Metals', 'Automotive', 'Healthcare', 'Handicrafts', 'Logistics', 'Marine & Fishing']
 const SUPPLIER_TYPES = ['All Types', 'Manufacturer', 'Wholesaler', 'Distributor', 'Exporter']
 const LOCATIONS = ['All Locations', 'Panama City', 'Colón', 'Panama Oeste', 'Chiriqui', 'Bocas del Toro', 'Veraguas']
@@ -146,12 +34,35 @@ const MOQ_RANGES = ['Any MOQ', 'Under $500', '$500–$2,000', '$2,000–$5,000',
 // ── DealCard Component ───────────────────────────────────────────────────
 function DealCard({ deal }: { deal: Deal }) {
   const [imgIndex, setImgIndex] = useState<number>(0)
+  const { user } = useAuth()
 
   const goTo = (i: number) => setImgIndex(i)
 
   const cardClasses = deal.isPremium
     ? "flex-shrink-0 w-[300px] sm:w-[250px] md:w-[260px] lg:w-[270px] xl:w-[280px] bg-white/20 backdrop-blur-lg rounded-3xl overflow-hidden border border-white/30 shadow-lg relative"
     : "flex-shrink-0 w-[300px] sm:w-[250px] md:w-[260px] lg:w-[270px] xl:w-[280px] bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-shadow duration-300 p-[10px]"
+
+  const handleRequestQuote = async () => {
+    if (!user) {
+      window.location.href = '/login'
+      return
+    }
+    
+    try {
+      await quoteService.createQuote({
+        product_id: deal.id,
+        quantity: 1000,
+        unit: 'pcs',
+        shipping_country: 'UAE',
+        shipping_city: 'Dubai',
+        note: 'I need best price for bulk order. Please share lead time and MOQ.'
+      })
+      alert('Quote request sent successfully!')
+    } catch (err) {
+      console.error('Failed to send quote', err)
+      alert('Failed to send quote request')
+    }
+  }
 
   return (
     <div className={`${cardClasses} p-[10px]`}>
@@ -235,7 +146,10 @@ function DealCard({ deal }: { deal: Deal }) {
             )}
           </div>
 
-          <Link to={`/deals/${deal.id}`} className="group mt-auto flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-slate-200 hover:bg-[#162B60] hover:border-[#162B60] hover:text-white text-slate-700 text-[13px] font-medium transition-all duration-200 bg-[#C3E8FF]">
+          <button 
+            onClick={handleRequestQuote}
+            className="group mt-auto flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-slate-200 hover:bg-[#162B60] hover:border-[#162B60] hover:text-white text-slate-700 text-[13px] font-medium transition-all duration-200 bg-[#C3E8FF]"
+          >
             Request Quote
             <svg
               className="w-8 h-8 transition-transform duration-300 group-hover:rotate-310 bg-[#CFF6FF] rounded-full text-black p-1"
@@ -243,7 +157,7 @@ function DealCard({ deal }: { deal: Deal }) {
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
-          </Link>
+          </button>
         </div>
       </div>
     </div>
@@ -251,7 +165,13 @@ function DealCard({ deal }: { deal: Deal }) {
 }
 
 // ── Section 1 Component ─────────────────────────────────────────────────
-function Section1({ supplier, onNext, isMobile }: { supplier: any; onNext: () => void; isMobile: boolean }) {
+function Section1({ supplier, onNext, isMobile, onWhatsAppClick, whatsappLoading }: { 
+  supplier: any; 
+  onNext: () => void; 
+  isMobile: boolean;
+  onWhatsAppClick: () => void;
+  whatsappLoading: boolean;
+}) {
   const handleClick = (e: React.MouseEvent) => {
     if (isMobile) return
     const target = e.target as HTMLElement
@@ -270,17 +190,21 @@ function Section1({ supplier, onNext, isMobile }: { supplier: any; onNext: () =>
           {/* Main Supplier Card */}
           <div className="px-4 sm:px-6 md:px-10 py-4 my-12 sm:py-6 bg-white/40 rounded-2xl md:rounded-full inline-flex flex-col justify-center items-center gap-4 w-full">
             <div className="w-full flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
-              <img className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full" src={supplier_profile} alt={supplier.name} />
+              <img 
+                className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full object-cover" 
+                src={supplier?.image || supplier_profile} 
+                alt={supplier?.name || 'Supplier'} 
+              />
               <div className="flex flex-col justify-center items-start gap-4 flex-1 md:ml-8 w-full">
                 <div className="w-full flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <div className="w-full md:w-80 flex flex-col justify-start items-start gap-1">
                     <div className="self-stretch justify-start text-zinc-800 text-xl sm:text-2xl font-medium capitalize leading-7 sm:leading-9">
-                      {supplier.name}
+                      {supplier?.name}
                     </div>
                     <div className="flex justify-start items-center gap-3">
                       <img src={verified_badge} alt="verified_badge" className="w-5 h-5" />
                       <div className="text-right justify-start text-blue-600 text-sm sm:text-base font-medium">
-                        {supplier.verified ? 'Verified Supplier' : 'Supplier'}
+                        {supplier?.verified ? 'Verified Supplier' : 'Supplier'}
                       </div>
                     </div>
                   </div>
@@ -288,23 +212,23 @@ function Section1({ supplier, onNext, isMobile }: { supplier: any; onNext: () =>
                     <div className="flex justify-start items-center gap-2">
                       <img src={star_icon} alt="" className="w-4 h-4" />
                       <div className="text-right justify-start text-zinc-800/40 text-sm sm:text-base font-medium">
-                        {supplier.rating} Rating
+                        {supplier?.rating} Rating
                       </div>
                     </div>
                     <div className="self-stretch flex justify-center items-center gap-2">
                       <img src={recent_icon} alt="" className="w-4 h-4" />
                       <div className="text-right justify-start text-zinc-800/60 text-sm sm:text-base font-medium">
-                        Responds in {supplier.responseTime}
+                        Responds in {supplier?.responseTime}
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="self-stretch flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-0">
                   <div className="text-right justify-start text-zinc-800/60 text-sm sm:text-base font-medium">
-                    {supplier.category}
+                    {supplier?.category}
                   </div>
                   <div className="justify-start text-zinc-800/60 text-sm sm:text-base font-medium">
-                    {supplier.country}
+                    {supplier?.country}
                   </div>
                 </div>
               </div>
@@ -312,8 +236,14 @@ function Section1({ supplier, onNext, isMobile }: { supplier: any; onNext: () =>
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4 w-full">
-              <button className="w-full sm:w-auto px-6 sm:px-10 py-2 sm:py-3 bg-sky-200 rounded-[76px] flex justify-center items-center gap-2.5 hover:bg-sky-300 transition-colors">
-                <div className="justify-start text-zinc-800 text-sm sm:text-base font-semibold">Contact via WhatsApp</div>
+              <button 
+                onClick={onWhatsAppClick}
+                disabled={whatsappLoading}
+                className="w-full sm:w-auto px-6 sm:px-10 py-2 sm:py-3 bg-sky-200 rounded-[76px] flex justify-center items-center gap-2.5 hover:bg-sky-300 transition-colors disabled:opacity-50"
+              >
+                <div className="justify-start text-zinc-800 text-sm sm:text-base font-semibold">
+                  {whatsappLoading ? 'Loading...' : 'Contact via WhatsApp'}
+                </div>
                 <img src={arrow_left_icon} alt="" className="w-4 h-4" />
               </button>
               <button className="w-full sm:w-auto px-6 sm:px-10 py-2 sm:py-3 bg-sky-200 rounded-[76px] flex justify-center items-center gap-2.5 hover:bg-sky-300 transition-colors">
@@ -330,25 +260,25 @@ function Section1({ supplier, onNext, isMobile }: { supplier: any; onNext: () =>
                 About This Supplier
               </div>
               <div className="self-stretch justify-start text-zinc-800/50 text-sm sm:text-base font-medium capitalize leading-6 sm:leading-8 tracking-tight">
-                {supplier.description}
+                {supplier?.description}
               </div>
             </div>
             <div className="flex-1 self-stretch flex flex-col justify-between items-start gap-4 w-full">
               <div className="self-stretch flex justify-between items-center">
                 <div className="justify-start text-zinc-800/50 text-sm sm:text-base font-medium capitalize leading-6">Business Type</div>
-                <div className="justify-start text-zinc-800/70 text-sm sm:text-base font-medium capitalize leading-6">{supplier.businessType}</div>
+                <div className="justify-start text-zinc-800/70 text-sm sm:text-base font-medium capitalize leading-6">{supplier?.businessType}</div>
               </div>
               <div className="self-stretch flex justify-between items-center">
                 <div className="justify-start text-zinc-800/50 text-sm sm:text-base font-medium capitalize leading-6">Years in Business</div>
-                <div className="justify-start text-zinc-800/70 text-sm sm:text-base font-medium capitalize leading-6">{supplier.yearsInBusiness}</div>
+                <div className="justify-start text-zinc-800/70 text-sm sm:text-base font-medium capitalize leading-6">{supplier?.yearsInBusiness}</div>
               </div>
               <div className="self-stretch flex justify-between items-center">
                 <div className="justify-start text-zinc-800/50 text-sm sm:text-base font-medium capitalize leading-6">Export Markets</div>
-                <div className="justify-start text-zinc-800/70 text-sm sm:text-base font-medium capitalize leading-6">{supplier.exportMarkets}</div>
+                <div className="justify-start text-zinc-800/70 text-sm sm:text-base font-medium capitalize leading-6">{supplier?.exportMarkets}</div>
               </div>
               <div className="self-stretch flex justify-between items-center">
                 <div className="justify-start text-zinc-800/50 text-sm sm:text-base font-medium capitalize leading-6">Languages</div>
-                <div className="justify-start text-zinc-800/70 text-sm sm:text-base font-medium capitalize leading-6">{supplier.languages}</div>
+                <div className="justify-start text-zinc-800/70 text-sm sm:text-base font-medium capitalize leading-6">{supplier?.languages}</div>
               </div>
             </div>
           </div>
@@ -359,7 +289,12 @@ function Section1({ supplier, onNext, isMobile }: { supplier: any; onNext: () =>
 }
 
 // ── Section 2 Component ─────────────────────────────────────────────────
-function Section2({ onNext, onPrev, isMobile }: { onNext: () => void; onPrev: () => void; isMobile: boolean }) {
+function Section2({ onNext, onPrev, isMobile, products }: { 
+  onNext: () => void; 
+  onPrev: () => void; 
+  isMobile: boolean;
+  products: ProductListItem[];
+}) {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('All')
   const [supplierType, setSupplierType] = useState('All Types')
@@ -383,6 +318,18 @@ function Section2({ onNext, onPrev, isMobile }: { onNext: () => void; onPrev: ()
     }
   }
 
+  // Filter products based on search and category
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = search === '' || 
+      product.title.toLowerCase().includes(search.toLowerCase()) ||
+      product.short_description.toLowerCase().includes(search.toLowerCase())
+    
+    const matchesCategory = category === 'All' || 
+      product.category?.name === category
+    
+    return matchesSearch && matchesCategory
+  })
+
   return (
     <div
       className={`min-h-screen ${!isMobile ? 'cursor-pointer' : ''}`}
@@ -397,7 +344,7 @@ function Section2({ onNext, onPrev, isMobile }: { onNext: () => void; onPrev: ()
             <div className="relative w-full">
               <input
                 type="text"
-                placeholder="Search suppliers, products, or categories..."
+                placeholder="Search products..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-4 sm:pl-5 pr-10 sm:pr-12 py-3 sm:py-3.5 border border-gray-400
@@ -465,11 +412,30 @@ function Section2({ onNext, onPrev, isMobile }: { onNext: () => void; onPrev: ()
           </div>
 
           {/* Grid Layout for Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 justify-items-center">
-            {deals.map((deal) => (
-              <DealCard key={deal.id} deal={deal} />
-            ))}
-          </div>
+          {filteredProducts.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-slate-500 text-lg">No products found</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 justify-items-center">
+              {filteredProducts.map((product) => (
+                <DealCard 
+                  key={product.id} 
+                  deal={{
+                    id: product.id,
+                    title: product.title,
+                    category: product.category?.name || 'Uncategorized',
+                    moq: `${product.moq} units`,
+                    priceRange: `$${product.price} – $${product.old_price || product.price} / unit`,
+                    location: product.location,
+                    verified: true,
+                    images: product.images.map(img => getImageUrl(img.path)),
+                    isPremium: false // You can add logic for premium products
+                  }} 
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -588,9 +554,16 @@ const TOTAL_SECTIONS = 3
 
 export default function SupplierDetails() {
   const { id } = useParams()
+  const { user } = useAuth()
   const [section, setSection] = useState(0)
   const [leavingUp, setLeavingUp] = useState(false)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+  const [vendorData, setVendorData] = useState<VendorDetails | null>(null)
+  const [products, setProducts] = useState<ProductListItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [whatsappLoading, setWhatsappLoading] = useState(false)
+  
   const isAnimatingRef = useRef(false)
   const sectionRef = useRef(0)
 
@@ -599,6 +572,26 @@ export default function SupplierDetails() {
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
+
+  useEffect(() => {
+    const fetchVendorData = async () => {
+      if (!id) return
+      try {
+        setLoading(true)
+        const vendorResponse = await publicService.getVendorDetails(Number(id))
+        setVendorData(vendorResponse)
+        
+        const productsResponse = await publicService.getVendorProducts(Number(id))
+        setProducts(productsResponse.products.data)
+      } catch (err) {
+        setError('Failed to load supplier details')
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchVendorData()
+  }, [id])
 
   const updateSection = (n: number) => {
     sectionRef.current = n
@@ -639,29 +632,86 @@ export default function SupplierDetails() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [isMobile])
 
-  // Static mock data
-  const supplier = {
-    id,
-    name: 'Panama Fresh Exports S.A.',
-    category: 'Agriculture & Produce',
-    country: 'Panama City, Panama',
-    rating: 4.8,
-    reviews: 312,
-    verified: true,
-    responseTime: '24 hrs',
-    description: 'Panama Fresh Exports S.A. is a verified exporter specializing in high-quality agricultural products. They supply international wholesalers, retailers, and distributors with reliable bulk quantities and competitive pricing.',
-    businessType: 'Manufacturer & Exporter',
-    yearsInBusiness: '12+ Years',
-    exportMarkets: 'USA, Canada, UK',
-    languages: 'English, Spanish',
+  const handleWhatsAppContact = async () => {
+    if (!user) {
+      window.location.href = '/login'
+      return
+    }
+    
+    if (!id) return
+    
+    setWhatsappLoading(true)
+    try {
+      const response = await contactService.getVendorWhatsApp(Number(id))
+      if (response.whatsapp) {
+        window.open(`https://wa.me/${response.whatsapp}`, '_blank')
+      }
+    } catch (err) {
+      alert('You need an active subscription to contact suppliers via WhatsApp')
+    } finally {
+      setWhatsappLoading(false)
+    }
+  }
+
+  // Build supplier object from API data
+  const supplier = vendorData ? {
+    id: vendorData.id,
+    name: vendorData.business_name,
+    category: vendorData.category?.name || 'Uncategorized',
+    country: vendorData.location,
+    rating: 4.8, // Keep static
+    reviews: 312, // Keep static
+    verified: vendorData.status === 'approved',
+    responseTime: '24 hrs', // Keep static
+    description: vendorData.about || 'No description available',
+    businessType: 'Manufacturer & Exporter', // Keep static
+    yearsInBusiness: `${vendorData.years_in_business}+ Years`,
+    exportMarkets: vendorData.export_markets.join(', ') || 'Global',
+    languages: vendorData.languages.join(', ') || 'English',
+    image: getImageUrl(vendorData.image_path)
+  } : null
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#162B60]"></div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (error || !supplier) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-red-500 text-center">
+          <p className="text-xl font-semibold">Error</p>
+          <p>{error || 'Supplier not found'}</p>
+          <Link to="/supplier" className="mt-4 inline-block px-6 py-2 bg-[#162B60] text-white rounded-lg">
+            Back to Suppliers
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   // On mobile: render all sections stacked, normal scroll
   if (isMobile) {
     return (
       <div className="w-full">
-        <Section1 supplier={supplier} onNext={goNext} isMobile={true} />
-        <Section2 onNext={goNext} onPrev={goPrev} isMobile={true} />
+        <Section1 
+          supplier={supplier} 
+          onNext={goNext} 
+          isMobile={true} 
+          onWhatsAppClick={handleWhatsAppContact}
+          whatsappLoading={whatsappLoading}
+        />
+        <Section2 
+          onNext={goNext} 
+          onPrev={goPrev} 
+          isMobile={true} 
+          products={products} 
+        />
         <Section3 onPrev={goPrev} isMobile={true} />
       </div>
     )
@@ -692,8 +742,23 @@ export default function SupplierDetails() {
 
       <div className="w-full overflow-hidden">
         <div className={cls}>
-          {section === 0 && <Section1 supplier={supplier} onNext={goNext} isMobile={false} />}
-          {section === 1 && <Section2 onNext={goNext} onPrev={goPrev} isMobile={false} />}
+          {section === 0 && (
+            <Section1 
+              supplier={supplier} 
+              onNext={goNext} 
+              isMobile={false} 
+              onWhatsAppClick={handleWhatsAppContact}
+              whatsappLoading={whatsappLoading}
+            />
+          )}
+          {section === 1 && (
+            <Section2 
+              onNext={goNext} 
+              onPrev={goPrev} 
+              isMobile={false} 
+              products={products} 
+            />
+          )}
           {section === 2 && <Section3 onPrev={goPrev} isMobile={false} />}
         </div>
       </div>

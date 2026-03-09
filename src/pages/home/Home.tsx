@@ -4,12 +4,34 @@ import LatestDeals from "../../components/home/LatestDeals";
 import VerifiedSupplier from "../../components/home/VerifiedSupplier";
 import PricingSection from "../../components/home/PricingSection";
 import { useNavbar } from "../../context/NavbarContext";
+import { publicService } from '../../services/publicService';
+import type { Category } from '../../types';
 
 // ── StickyInfoBar ─────────────────────────────────────────────────────────
 function StickyInfoBar({ visible }: { visible: boolean }) {
-  const [category, setCategory] = useState("");
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [loadingCategories, setLoadingCategories] = useState(true);
   const [supplierType, setSupplierType] = useState("");
   const [search, setSearch] = useState("");
+
+  useEffect(() => {
+  const fetchCategories = async () => {
+    try {
+      const data = await publicService.getCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error('Failed to load categories', error);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+  fetchCategories();
+}, []);
+
+  // const dropdownClass = `appearance-none bg-white border border-gray-200 rounded-[10px]
+  //   pl-3 pr-8 py-2 text-xs sm:text-sm text-slate-600 font-medium w-full
+  //   focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all`
 
   return (
     <div
@@ -60,19 +82,22 @@ function StickyInfoBar({ visible }: { visible: boolean }) {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-full border border-gray-300 text-sm focus:outline-none"
-          >
-            <option value="">Category</option>
-            <option value="food">Food & Beverage</option>
-            <option value="apparel">Apparel</option>
-            <option value="electronics">Electronics</option>
-            <option value="packaging">Packaging</option>
-            <option value="beauty">Beauty</option>
-            <option value="fashion">Fashion</option>
-          </select>
+          <select 
+  value={selectedCategory} // This expects a string, not Category[]
+  onChange={(e) => setSelectedCategory(e.target.value)} 
+  className="w-full sm:w-auto px-4 py-2.5 rounded-full border border-gray-300 text-sm focus:outline-none"
+>
+  <option value="All">All Categories</option>
+  {loadingCategories ? (
+    <option disabled>Loading...</option>
+  ) : (
+    categories.map((cat) => (
+      <option key={cat.id} value={cat.name}>
+        {cat.name}
+      </option>
+    ))
+  )}
+</select>
 
           <select
             value={supplierType}
