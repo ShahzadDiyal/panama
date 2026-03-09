@@ -172,18 +172,11 @@ function Section1({ supplier, onNext, isMobile, onWhatsAppClick, whatsappLoading
   onWhatsAppClick: () => void;
   whatsappLoading: boolean;
 }) {
-  const handleClick = (e: React.MouseEvent) => {
-    if (isMobile) return
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, textarea, [role="button"], .no-section-click')
-    if (!isInteractive) onNext()
-  }
-
+  // No click handler – navigation only via drag or keyboard
   return (
     <div
-      className={`min-h-screen ${!isMobile ? 'cursor-pointer' : ''}`}
+      className={`min-h-screen ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(160deg, #E8DDFF 0%, #f5f0ff 60%, #FFFFFF 100%)' }}
-      onClick={handleClick}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pt-28">
         <div className="space-y-6">
@@ -239,14 +232,14 @@ function Section1({ supplier, onNext, isMobile, onWhatsAppClick, whatsappLoading
               <button 
                 onClick={onWhatsAppClick}
                 disabled={whatsappLoading}
-                className="w-full sm:w-auto px-6 sm:px-10 py-2 sm:py-3 bg-sky-200 rounded-[76px] flex justify-center items-center gap-2.5 hover:bg-sky-300 transition-colors disabled:opacity-50"
+                className="w-full sm:w-auto px-6 sm:px-10 py-2 sm:py-3 bg-sky-200 rounded-[76px] flex justify-center items-center gap-2.5 hover:bg-sky-300 transition-colors disabled:opacity-50 no-section-click"
               >
                 <div className="justify-start text-zinc-800 text-sm sm:text-base font-semibold">
                   {whatsappLoading ? 'Loading...' : 'Contact via WhatsApp'}
                 </div>
                 <img src={arrow_left_icon} alt="" className="w-4 h-4" />
               </button>
-              <button className="w-full sm:w-auto px-6 sm:px-10 py-2 sm:py-3 bg-sky-200 rounded-[76px] flex justify-center items-center gap-2.5 hover:bg-sky-300 transition-colors">
+              <button className="w-full sm:w-auto px-6 sm:px-10 py-2 sm:py-3 bg-sky-200 rounded-[76px] flex justify-center items-center gap-2.5 hover:bg-sky-300 transition-colors no-section-click">
                 <div className="justify-start text-zinc-800 text-sm sm:text-base font-semibold">Request Quote</div>
                 <img src={arrow_left_icon} alt="" className="w-4 h-4" />
               </button>
@@ -305,18 +298,7 @@ function Section2({ onNext, onPrev, isMobile, products }: {
     pl-3 pr-8 py-2 text-xs sm:text-sm text-slate-600 font-medium w-full
     focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all`
 
-  const handleClick = (e: React.MouseEvent) => {
-    if (isMobile) return
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, textarea, [role="button"], .no-section-click')
-    if (!isInteractive) {
-      if (e.clientY < window.innerHeight / 2) {
-        onPrev()
-      } else {
-        onNext()
-      }
-    }
-  }
+  // No click handler – navigation only via drag or keyboard
 
   // Filter products based on search and category
   const filteredProducts = products.filter(product => {
@@ -332,9 +314,8 @@ function Section2({ onNext, onPrev, isMobile, products }: {
 
   return (
     <div
-      className={`min-h-screen ${!isMobile ? 'cursor-pointer' : ''}`}
+      className={`min-h-screen ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(160deg, #f5f0ff 0%, #eef1fb 60%, #FFFFFF 100%)' }}
-      onClick={handleClick}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pt-28">
         <div className="mt-8">
@@ -350,7 +331,7 @@ function Section2({ onNext, onPrev, isMobile, products }: {
                 className="w-full pl-4 sm:pl-5 pr-10 sm:pr-12 py-3 sm:py-3.5 border border-gray-400
                 rounded-full text-slate-700 placeholder-gray-400 text-sm sm:text-[15px] font-medium
                 bg-white/60 focus:bg-white focus:outline-none focus:border-blue-300
-                focus:ring-2 focus:ring-blue-100 transition-all"
+                focus:ring-2 focus:ring-blue-100 transition-all no-section-click"
               />
               <span className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2">
                 <svg className="w-5 h-5 sm:w-6 sm:h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -368,7 +349,7 @@ function Section2({ onNext, onPrev, isMobile, products }: {
               <div className="justify-between flex flex-wrap">
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                   <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
-                    <select value={category} onChange={(e) => setCategory(e.target.value)} className={dropdownClass}>
+                    <select value={category} onChange={(e) => setCategory(e.target.value)} className={`${dropdownClass} no-section-click`}>
                       <option value="All">Category</option>
                       {CATEGORIES.filter(c => c !== 'All').map(c => <option key={c}>{c}</option>)}
                     </select>
@@ -376,21 +357,21 @@ function Section2({ onNext, onPrev, isMobile, products }: {
                   </div>
 
                   <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
-                    <select value={supplierType} onChange={(e) => setSupplierType(e.target.value)} className={dropdownClass}>
+                    <select value={supplierType} onChange={(e) => setSupplierType(e.target.value)} className={`${dropdownClass} no-section-click`}>
                       {SUPPLIER_TYPES.map(t => <option key={t}>{t}</option>)}
                     </select>
                     <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
                   </div>
 
                   <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
-                    <select value={location} onChange={(e) => setLocation(e.target.value)} className={dropdownClass}>
+                    <select value={location} onChange={(e) => setLocation(e.target.value)} className={`${dropdownClass} no-section-click`}>
                       {LOCATIONS.map(l => <option key={l}>{l}</option>)}
                     </select>
                     <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
                   </div>
 
                   <div className="relative flex-1 min-w-[110px] sm:flex-none sm:w-auto">
-                    <select value={moq} onChange={(e) => setMoq(e.target.value)} className={dropdownClass}>
+                    <select value={moq} onChange={(e) => setMoq(e.target.value)} className={`${dropdownClass} no-section-click`}>
                       {MOQ_RANGES.map(m => <option key={m}>{m}</option>)}
                     </select>
                     <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
@@ -399,7 +380,7 @@ function Section2({ onNext, onPrev, isMobile, products }: {
 
                 <button
                   onClick={() => { setCategory('All'); setSupplierType('All Types'); setLocation('All Locations'); setMoq('Any MOQ'); setSearch('') }}
-                  className="w-9 h-9 flex items-center justify-center hover:bg-yellow-100 rounded-lg transition-all flex-shrink-0"
+                  className="w-9 h-9 flex items-center justify-center hover:bg-yellow-100 rounded-lg transition-all flex-shrink-0 no-section-click"
                   title="Reset filters"
                 >
                   <svg className="w-5 h-5 sm:w-6 sm:h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -444,18 +425,11 @@ function Section2({ onNext, onPrev, isMobile, products }: {
 
 // ── Section 3 Component ─────────────────────────────────────────────────
 function Section3({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean }) {
-  const handleClick = (e: React.MouseEvent) => {
-    if (isMobile) return
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, textarea, [role="button"], .no-section-click')
-    if (!isInteractive) onPrev()
-  }
-
+  // No click handler – navigation only via drag or keyboard
   return (
     <div
-      className={`min-h-screen ${!isMobile ? 'cursor-pointer' : ''}`}
+      className={`min-h-screen ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(160deg, #eef1fb 0%, #f5f0ff 60%, #eaf4ff 100%)' }}
-      onClick={handleClick}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pt-28">
         <div className="my-8 sm:my-16 relative">
@@ -564,6 +538,11 @@ export default function SupplierDetails() {
   const [error, setError] = useState('')
   const [whatsappLoading, setWhatsappLoading] = useState(false)
   
+  // Drag state
+  const [dragStartY, setDragStartY] = useState<number | null>(null)
+  const [dragEndY, setDragEndY] = useState<number | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+
   const isAnimatingRef = useRef(false)
   const sectionRef = useRef(0)
 
@@ -631,6 +610,41 @@ export default function SupplierDetails() {
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
   }, [isMobile])
+
+  // Drag handlers for section navigation
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement
+    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
+    if (!isInteractive && !isMobile) {
+      setDragStartY(e.clientY)
+      setIsDragging(true)
+    }
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || isMobile) return
+    setDragEndY(e.clientY)
+  }
+
+  const handleMouseUp = () => {
+    if (isDragging && dragStartY !== null && dragEndY !== null && !isMobile) {
+      const dragDistance = dragEndY - dragStartY
+      
+      // If dragged down significantly (pull to go to previous section)
+      if (dragDistance > 50) {
+        goPrevRef.current()
+      }
+      // If dragged up significantly (push to go to next section)
+      else if (dragDistance < -50) {
+        goNextRef.current()
+      }
+    }
+    
+    // Reset drag state
+    setDragStartY(null)
+    setDragEndY(null)
+    setIsDragging(false)
+  }
 
   const handleWhatsAppContact = async () => {
     if (!user) {
@@ -740,7 +754,13 @@ export default function SupplierDetails() {
         }
       `}</style>
 
-      <div className="w-full overflow-hidden">
+      <div 
+        className="w-full overflow-hidden"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
         <div className={cls}>
           {section === 0 && (
             <Section1 

@@ -91,7 +91,14 @@ export default function Navbar2() {
           {/* Desktop Right Side — Auth Buttons or User Menu */}
           <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
             {user ? (
-              <div className="relative" ref={userMenuRef}>
+                <div className="relative flex flex-wrap items-center" ref={userMenuRef}>
+                <Link
+                      to="/quotes"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                     My Quotes
+                    </Link>
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors duration-200"
@@ -116,13 +123,7 @@ export default function Navbar2() {
                       <p className="text-sm font-medium text-gray-900">{user.name}</p>
                       <p className="text-xs text-gray-500">{user.email}</p>
                     </div>
-                   <Link
-                      to="/quotes"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                     My Quotes
-                    </Link>
+                  
                     <button
                       onClick={handleLogout}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

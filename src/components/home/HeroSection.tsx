@@ -50,7 +50,7 @@ export default function HeroSection() {
           src={herobg}
           alt=""
           aria-hidden="true"
-          className="w-full hidden min-[1124px]:block opacity-0 pointer-events-none select-none"
+          className="w-full hidden min-[1124px]:block opacity-0 pointer-events-none select-none "
         />
         <div
           className="block min-[1300px]:hidden"

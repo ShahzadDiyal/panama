@@ -219,14 +219,7 @@ function SupplierGridSection({ onNext, isMobile }: { onNext: () => void; isMobil
   const [loadingSuppliers, setLoadingSuppliers] = useState(true);
   const [suppliersError, setSuppliersError] = useState('');
 
-  const handleClick = (e: React.MouseEvent) => {
-    if (isMobile) return
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest(
-      'a, button, input, select, textarea, [role="button"], .no-section-click'
-    )
-    if (!isInteractive) onNext()
-  }
+  // No click handler – navigation only via drag or keyboard
 
   // Fetch categories
   useEffect(() => {
@@ -318,9 +311,8 @@ function SupplierGridSection({ onNext, isMobile }: { onNext: () => void; isMobil
 
   return (
     <div
-      className={`min-h-screen pb-10 ${!isMobile ? 'cursor-pointer' : ''}`}
+      className={`min-h-screen pb-10 ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(160deg, #E8DDFF 0%, #f5f0ff 60%, #FFFFFF 100%)' }}
-      onClick={handleClick}
     >
       {/* ── Header ── */}
       <div className="pt-24 sm:pt-28 pb-6 sm:pb-8 px-4 sm:px-8 lg:px-16">
@@ -346,7 +338,7 @@ function SupplierGridSection({ onNext, isMobile }: { onNext: () => void; isMobil
               className="w-full pl-4 sm:pl-5 pr-10 sm:pr-12 py-3 sm:py-3.5 border border-gray-400
                 rounded-full text-slate-700 placeholder-gray-400 text-sm sm:text-[15px] font-medium
                 bg-white/60 focus:bg-white focus:outline-none focus:border-blue-300
-                focus:ring-2 focus:ring-blue-100 transition-all"
+                focus:ring-2 focus:ring-blue-100 transition-all no-section-click"
             />
             <span className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2">
               <svg className="w-5 h-5 sm:w-6 sm:h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -361,14 +353,15 @@ function SupplierGridSection({ onNext, isMobile }: { onNext: () => void; isMobil
         <div className="no-section-click max-w-7xl mx-auto mt-4 sm:mt-6"
           onClick={(e) => e.stopPropagation()}>
           <div className="bg-white/50 rounded-xl p-3 sm:p-4">
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <div className="flex justify-between flex-wrap ">
 
-              {/* Category */}
+              <div className='flex justify-between flex-wrap items-center gap-2 sm:gap-3'>
+                {/* Category */}
               <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className={dropdownClass}
+                  className={`${dropdownClass} no-section-click`}
                 >
                   <option value="All">All Categories</option>
                   {loadingCategories ? (
@@ -386,7 +379,7 @@ function SupplierGridSection({ onNext, isMobile }: { onNext: () => void; isMobil
 
               {/* Supplier Type */}
               <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
-                <select value={supplierType} onChange={(e) => setSupplierType(e.target.value)} className={dropdownClass}>
+                <select value={supplierType} onChange={(e) => setSupplierType(e.target.value)} className={`${dropdownClass} no-section-click`}>
                   {SUPPLIER_TYPES.map(t => <option key={t}>{t}</option>)}
                 </select>
                 <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
@@ -394,7 +387,7 @@ function SupplierGridSection({ onNext, isMobile }: { onNext: () => void; isMobil
 
               {/* Location */}
               <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
-                <select value={selectedLocation} onChange={(e) => setSelectedLocation(e.target.value)} className={dropdownClass}>
+                <select value={selectedLocation} onChange={(e) => setSelectedLocation(e.target.value)} className={`${dropdownClass} no-section-click`}>
                   {LOCATIONS.map(l => <option key={l}>{l}</option>)}
                 </select>
                 <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
@@ -402,10 +395,11 @@ function SupplierGridSection({ onNext, isMobile }: { onNext: () => void; isMobil
 
               {/* MOQ */}
               <div className="relative flex-1 min-w-[110px] sm:flex-none sm:w-auto">
-                <select value={moq} onChange={(e) => setMoq(e.target.value)} className={dropdownClass}>
+                <select value={moq} onChange={(e) => setMoq(e.target.value)} className={`${dropdownClass} no-section-click`}>
                   {MOQ_RANGES.map(m => <option key={m}>{m}</option>)}
                 </select>
                 <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
+              </div>
               </div>
 
               {/* Reset */}
@@ -417,7 +411,7 @@ function SupplierGridSection({ onNext, isMobile }: { onNext: () => void; isMobil
                   setMoq('Any MOQ'); 
                   setSearch('') 
                 }}
-                className="w-9 h-9 flex items-center justify-center hover:bg-yellow-100 rounded-lg transition-all flex-shrink-0"
+                className="w-9 h-9 flex items-center justify-center hover:bg-yellow-100 rounded-lg transition-all flex-shrink-0 no-section-click"
                 title="Reset filters"
               >
                 <svg className="w-5 h-5 sm:w-6 sm:h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -446,7 +440,7 @@ function SupplierGridSection({ onNext, isMobile }: { onNext: () => void; isMobil
               <p className="text-red-500">{suppliersError}</p>
               <button 
                 onClick={() => window.location.reload()} 
-                className="mt-4 px-6 py-2 bg-[#162B60] text-white rounded-lg"
+                className="mt-4 px-6 py-2 bg-[#162B60] text-white rounded-lg no-section-click"
               >
                 Try Again
               </button>
@@ -480,18 +474,11 @@ function SupplierGridSection({ onNext, isMobile }: { onNext: () => void; isMobil
 
 // ── Upsell Section ────────────────────────────────────────────────────────
 function UpsellSection({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean }) {
-  const handleClick = (e: React.MouseEvent) => {
-    if (isMobile) return
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
-    if (!isInteractive) onPrev()
-  }
-
+  // No click handler – navigation only via drag or keyboard
   return (
     <div
-      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? 'cursor-pointer' : ''}`}
+      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(160deg, #eef1fb 0%, #f5f0ff 60%, #eaf4ff 100%)' }}
-      onClick={handleClick}
     >
       <div className="max-w-7xl mx-auto">
 
@@ -574,18 +561,11 @@ function UpsellSection({ onPrev, isMobile }: { onPrev: () => void; isMobile: boo
 
 // ── Upsell Section 2 ────────────────────────────────────────────────────────
 function UpsellSection2({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean }) {
-  const handleClick = (e: React.MouseEvent) => {
-    if (isMobile) return
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
-    if (!isInteractive) onPrev()
-  }
-
+  // No click handler – navigation only via drag or keyboard
   return (
     <div
-      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? 'cursor-pointer' : ''}`}
+      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(160deg, #eaf4ff 0%, #f5f0ff 60%, #eef1fb 100%)' }}
-      onClick={handleClick}
     >
       <div className="max-w-7xl mx-auto">
 
@@ -677,6 +657,11 @@ export default function Supplier() {
   const isAnimatingRef = useRef(false)
   const sectionRef = useRef(0)
 
+  // Drag state
+  const [dragStartY, setDragStartY] = useState<number | null>(null)
+  const [dragEndY, setDragEndY] = useState<number | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+
   useEffect(() => {
     setShowNavbar2(true)
     return () => setShowNavbar2(false)
@@ -727,6 +712,41 @@ export default function Supplier() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [isMobile])
 
+  // Drag handlers for section navigation
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement
+    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
+    if (!isInteractive && !isMobile) {
+      setDragStartY(e.clientY)
+      setIsDragging(true)
+    }
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || isMobile) return
+    setDragEndY(e.clientY)
+  }
+
+  const handleMouseUp = () => {
+    if (isDragging && dragStartY !== null && dragEndY !== null && !isMobile) {
+      const dragDistance = dragEndY - dragStartY
+      
+      // If dragged down significantly (pull to go to previous section)
+      if (dragDistance > 50) {
+        goPrevRef.current()
+      }
+      // If dragged up significantly (push to go to next section)
+      else if (dragDistance < -50) {
+        goNextRef.current()
+      }
+    }
+    
+    // Reset drag state
+    setDragStartY(null)
+    setDragEndY(null)
+    setIsDragging(false)
+  }
+
   // On mobile: render all sections stacked, normal scroll
   if (isMobile) {
     return (
@@ -761,7 +781,13 @@ export default function Supplier() {
         }
       `}</style>
 
-      <div className="w-full overflow-hidden">
+      <div 
+        className="w-full overflow-hidden"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
         <div className={cls}>
           {section === 0 && <SupplierGridSection onNext={goNext} isMobile={false} />}
           {section === 1 && <UpsellSection onPrev={goPrev} isMobile={false} />}

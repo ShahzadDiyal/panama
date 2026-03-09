@@ -17,18 +17,11 @@ import { publicService } from '../../services/publicService'
 
 // ── Section 1: Upsell Section ────────────────────────────────────────────
 function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean }) {
-  const handleClick = (e: React.MouseEvent) => {
-    if (isMobile) return
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
-    if (!isInteractive) onNext()
-  }
-
+  // No onClick handler – navigation only via drag or keyboard
   return (
     <div
-      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? 'cursor-pointer' : ''}`}
+      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(160deg, #FDFDFD 0%, #f5f0ff 60%, #CDE7FF 100%)' }}
-      onClick={handleClick}
     >
       <div className="max-w-7xl mx-auto">
         <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden px-5 sm:px-10 py-20">
@@ -88,19 +81,7 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
 
 // ── Section 2: How It Works & What We Source ─────────────────────────────
 function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: () => void; isMobile: boolean }) {
-  const handleClick = (e: React.MouseEvent) => {
-    if (isMobile) return
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
-    if (!isInteractive) {
-      if (e.clientY < window.innerHeight / 2) {
-        onPrev()
-      } else {
-        onNext()
-      }
-    }
-  }
-
+  // No onClick handler
   const steps = [
     { number: 1, title: 'Submit Your Product Request', description: 'Tell us what product you’re looking for, quantity, and budget.' },
     { number: 2, title: 'We Source & Verify', description: 'Our local team contacts suppliers, checks pricing, and verifies legitimacy.' },
@@ -126,9 +107,8 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
 
   return (
     <div
-      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? 'cursor-pointer' : ''}`}
+      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%)' }}
-      onClick={handleClick}
     >
       <div className="max-w-7xl mx-auto space-y-16 no-section-click">
         {/* Row 1 - HOW IT WORKS */}
@@ -205,7 +185,6 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [loadingCategories, setLoadingCategories] = useState(true);
 
-
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -220,26 +199,12 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
     fetchCategories();
   }, []);
 
-
-
-  const handleClick = (e: React.MouseEvent) => {
-    if (isMobile) return
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
-    if (!isInteractive) {
-      if (e.clientY < window.innerHeight / 2) {
-        onPrev()
-      } else {
-        onNext()
-      }
-    }
-  }
+  // No onClick handler
 
   return (
     <div
-      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? 'cursor-pointer' : ''}`}
+      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-40 ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(135deg, #f5f0ff 0%, #eef1fb 100%)' }}
-      onClick={handleClick}
     >
       <div className="max-w-7xl mx-auto">
         {/* Back icon - row 1 */}
@@ -289,7 +254,7 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
                   <input type="text" placeholder="Product Name" className="no-section-click p-3 bg-white p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#162B60] w-full" />
                   <div className="relative w-full">
                     <select
-                      value={selectedCategory} // This expects a string, not Category[]
+                      value={selectedCategory}
                       onChange={(e) => setSelectedCategory(e.target.value)}
                       className="no-section-click appearance-none p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#162B60] w-full bg-white pr-10"
                       style={{ WebkitAppearance: 'none', MozAppearance: 'none' }}
@@ -305,9 +270,6 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
                         ))
                       )}
                     </select>
-
-
-
                     <img
                       src={dropdown_icon}
                       alt=""
@@ -316,20 +278,19 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
                   </div>
                 </div>
 
-                {/* Row 3 - Estimated Quantity */}
+                {/* Row 3 - Estimated Quantity & File Upload */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 no-section-click">
-                  <input type="text" placeholder="Full Name" className="no-section-click p-3 bg-white p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#162B60] w-full" />
-                  <input type="file" placeholder="Email" className="no-section-click p-3 bg-white p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#162B60] w-full" />
+                  <input type="text" placeholder="Estimated Quantity" className="no-section-click p-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#162B60] w-full" />
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Upload Product Image</label>
+                    <input type="file" className="no-section-click w-full p-2 border border-slate-300 rounded-lg focus:outline-none" />
+                  </div>
                 </div>
-
-
-
               </div>
 
               {/* Row 5 - Button centered */}
               <div className="mt-12 flex justify-center no-section-click">
                 <button
-
                   onClick={(e) => e.stopPropagation()}
                   className="no-section-click inline-flex items-center gap-3 bg-black hover:bg-blue-900
                     text-white font-semibold px-16 py-3 sm:py-3.5 rounded-[10px] text-sm sm:text-[15px]
@@ -354,13 +315,6 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
 
 // ── Section 4: Why Use Remote Sourcing & FAQ ─────────────────────────────
 function Section4({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: () => void; isMobile: boolean }) {
-  const handleClick = (e: React.MouseEvent) => {
-    if (isMobile) return
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
-    if (!isInteractive) onPrev()
-  }
-
   const [openFaq, setOpenFaq] = useState<number | null>(0)
 
   const faqs = [
@@ -369,11 +323,12 @@ function Section4({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
     { q: 'Do you handle shipping?', a: 'We can connect you with logistics partners, but shipping arrangements are handled separately.' },
   ]
 
+  // No onClick handler
+
   return (
     <div
-      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? 'cursor-pointer' : ''}`}
+      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(135deg, #eef1fb 0%, #f5f0ff 100%)' }}
-      onClick={handleClick}
     >
       <div className="max-w-5xl mx-auto space-y-8 no-section-click">
         {/* Row 1: Why Use Remote Sourcing? */}
@@ -419,17 +374,17 @@ function Section4({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
             Ready to Source From Panama Remotely?
           </h3>
           <div className="mt-2 flex justify-center no-section-click">
-            <button
+            <Link to='/pricing'
               onClick={(e) => e.stopPropagation()}
               className="no-section-click inline-flex items-center gap-3 bg-[#162B60] hover:bg-blue-900
                     text-white font-semibold px-6 sm:px-8 py-3 sm:py-3.5 rounded-[20px] text-sm sm:text-[15px]
-                    transition-all duration-200 hover:scale-105 shadow-lg"
+                    transition-all duration-200 hover:scale-105 shadow-lg cursor-pointer"
             >
               Submit Your Request Now
               <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#CFF6FF] flex items-center justify-center flex-shrink-0 no-section-click">
                 <img src={arrow_icon} alt="" />
               </span>
-            </button>
+            </Link>
           </div>
         </div>
       </div>
@@ -439,13 +394,6 @@ function Section4({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
 
 // ── Section 5: Duplicate of FAQ & CTA (for layout purposes) ──────────────
 function Section5({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean }) {
-  const handleClick = (e: React.MouseEvent) => {
-    if (isMobile) return
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
-    if (!isInteractive) onPrev()
-  }
-
   const [openFaq, setOpenFaq] = useState<number | null>(0)
 
   const faqs = [
@@ -454,11 +402,12 @@ function Section5({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean 
     { q: 'Do you handle shipping?', a: 'We can connect you with logistics partners, but shipping arrangements are handled separately.' },
   ]
 
+  // No onClick handler
+
   return (
     <div
-      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-10 pt-40  ${!isMobile ? 'cursor-pointer' : ''}`}
+      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-10 pt-40  ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(135deg, #eef1fb 0%, #f5f0ff 100%)' }}
-      onClick={handleClick}
     >
       <div className="max-w-5xl mx-auto space-y-8 no-section-click">
 
@@ -491,17 +440,17 @@ function Section5({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean 
             Ready to Source From Panama Remotely?
           </h3>
           <div className="mt-2 flex justify-center no-section-click">
-            <button
+            <Link to='/pricing'
               onClick={(e) => e.stopPropagation()}
               className="no-section-click inline-flex items-center gap-3 bg-[#162B60] hover:bg-blue-900
                     text-white font-semibold px-6 sm:px-8 py-3 sm:py-3.5 rounded-[20px] text-sm sm:text-[15px]
-                    transition-all duration-200 hover:scale-105 shadow-lg"
+                    transition-all duration-200 hover:scale-105 shadow-lg  cursor-pointer"
             >
               Submit Your Request Now
               <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#CFF6FF] flex items-center justify-center flex-shrink-0 no-section-click">
                 <img src={arrow_icon} alt="" />
               </span>
-            </button>
+            </Link>
           </div>
         </div>
       </div>
@@ -519,6 +468,10 @@ export default function Sourcing() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
   const isAnimatingRef = useRef(false)
   const sectionRef = useRef(0)
+
+  const [dragStartY, setDragStartY] = useState<number | null>(null)
+  const [dragEndY, setDragEndY] = useState<number | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
 
   useEffect(() => {
     setShowNavbar2(true)
@@ -570,6 +523,41 @@ export default function Sourcing() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [isMobile])
 
+  // Drag handlers for section navigation
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement
+    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
+    if (!isInteractive && !isMobile) {
+      setDragStartY(e.clientY)
+      setIsDragging(true)
+    }
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || isMobile) return
+    setDragEndY(e.clientY)
+  }
+
+  const handleMouseUp = () => {
+    if (isDragging && dragStartY !== null && dragEndY !== null && !isMobile) {
+      const dragDistance = dragEndY - dragStartY
+      
+      // If dragged down significantly (pull to go to previous section)
+      if (dragDistance > 50) {
+        goPrev()
+      }
+      // If dragged up significantly (push to go to next section)
+      else if (dragDistance < -50) {
+        goNext()
+      }
+    }
+    
+    // Reset drag state
+    setDragStartY(null)
+    setDragEndY(null)
+    setIsDragging(false)
+  }
+
   // On mobile: render all sections stacked, normal scroll
   if (isMobile) {
     return (
@@ -606,7 +594,13 @@ export default function Sourcing() {
         }
       `}</style>
 
-      <div className="w-full overflow-hidden">
+      <div 
+        className="w-full overflow-hidden"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
         <div className={cls}>
           {section === 0 && <Section1 onNext={goNext} isMobile={false} />}
           {section === 1 && <Section2 onPrev={goPrev} onNext={goNext} isMobile={false} />}

@@ -16,29 +16,25 @@ function StickyInfoBar({ visible }: { visible: boolean }) {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-  const fetchCategories = async () => {
-    try {
-      const data = await publicService.getCategories();
-      setCategories(data);
-    } catch (error) {
-      console.error('Failed to load categories', error);
-    } finally {
-      setLoadingCategories(false);
-    }
-  };
-  fetchCategories();
-}, []);
-
-  // const dropdownClass = `appearance-none bg-white border border-gray-200 rounded-[10px]
-  //   pl-3 pr-8 py-2 text-xs sm:text-sm text-slate-600 font-medium w-full
-  //   focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all`
+    const fetchCategories = async () => {
+      try {
+        const data = await publicService.getCategories();
+        setCategories(data);
+      } catch (error) {
+        console.error('Failed to load categories', error);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   return (
     <div
       className={`
         sticky top-20 z-30 bg-white
         transition-all duration-300
-        py-3 sm:py-4
+        pt-14 py-6
         shadow-sm
         ${visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 pointer-events-none"}
       `}
@@ -71,7 +67,7 @@ function StickyInfoBar({ visible }: { visible: boolean }) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search suppliers, products, or categories"
-            className="w-full pl-4 pr-10 py-2.5 rounded-full border border-gray-300 text-sm focus:outline-none focus:border-slate-500"
+            className="w-full pl-4 pr-10 py-2.5 rounded-full border border-gray-300 text-sm focus:outline-none focus:border-slate-500 no-section-click"
           />
           <span className="absolute right-3 top-1/2 -translate-y-1/2">
             <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,26 +79,26 @@ function StickyInfoBar({ visible }: { visible: boolean }) {
 
         <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
           <select 
-  value={selectedCategory} // This expects a string, not Category[]
-  onChange={(e) => setSelectedCategory(e.target.value)} 
-  className="w-full sm:w-auto px-4 py-2.5 rounded-full border border-gray-300 text-sm focus:outline-none"
->
-  <option value="All">All Categories</option>
-  {loadingCategories ? (
-    <option disabled>Loading...</option>
-  ) : (
-    categories.map((cat) => (
-      <option key={cat.id} value={cat.name}>
-        {cat.name}
-      </option>
-    ))
-  )}
-</select>
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)} 
+            className="w-full sm:w-auto px-4 py-2.5 rounded-full border border-gray-300 text-sm focus:outline-none no-section-click"
+          >
+            <option value="All">All Categories</option>
+            {loadingCategories ? (
+              <option disabled>Loading...</option>
+            ) : (
+              categories.map((cat) => (
+                <option key={cat.id} value={cat.name}>
+                  {cat.name}
+                </option>
+              ))
+            )}
+          </select>
 
           <select
             value={supplierType}
             onChange={(e) => setSupplierType(e.target.value)}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-full border border-gray-300 text-sm focus:outline-none"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-full border border-gray-300 text-sm focus:outline-none no-section-click"
           >
             <option value="">Supplier Type</option>
             <option value="manufacturer">Manufacturer</option>
@@ -127,10 +123,14 @@ export default function Home() {
   const [barVisible, setBarVisible] = useState(false);
   const [leavingUp, setLeavingUp] = useState(false);
 
+  // Drag state
+  const [dragStartY, setDragStartY] = useState<number | null>(null);
+  const [dragEndY, setDragEndY] = useState<number | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
   // Refs so timeouts / event handlers always read latest values
   const currentSectionRef = useRef(0);
   const isAnimatingRef = useRef(false);
-  const wheelCooldown = useRef(false);
 
   const updateSection = (next: number) => {
     currentSectionRef.current = next;
@@ -180,29 +180,38 @@ export default function Home() {
     }
   }, [currentSection, isMobile, setShowNavbar2]);
 
-  // ── Desktop: block native scroll ──────────────────────────────────────
-  useEffect(() => {
-    if (isMobile) return;
-    const prevent = (e: WheelEvent) => e.preventDefault();
-    window.addEventListener("wheel", prevent, { passive: false });
-    return () => window.removeEventListener("wheel", prevent);
-  }, [isMobile]);
+  // ── Desktop: drag handlers ───────────────────────────────────────────
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click');
+    if (!isInteractive && !isMobile) {
+      setDragStartY(e.clientY);
+      setIsDragging(true);
+    }
+  };
 
-  // ── Wheel handler ─────────────────────────────────────────────────────
-  useEffect(() => {
-    if (isMobile) return;
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || isMobile) return;
+    setDragEndY(e.clientY);
+  };
 
-    const handleWheel = (e: WheelEvent) => {
-      if (wheelCooldown.current) return;
-      if (e.deltaY > 0) goNextRef.current();
-      else goPrevRef.current();
-      wheelCooldown.current = true;
-      setTimeout(() => { wheelCooldown.current = false; }, 750);
-    };
-
-    window.addEventListener("wheel", handleWheel, { passive: false });
-    return () => window.removeEventListener("wheel", handleWheel);
-  }, [isMobile]);
+  const handleMouseUp = () => {
+    if (isDragging && dragStartY !== null && dragEndY !== null && !isMobile) {
+      const dragDistance = dragEndY - dragStartY;
+      // If dragged down significantly (pull to go to previous section)
+      if (dragDistance > 50) {
+        goPrevRef.current();
+      }
+      // If dragged up significantly (push to go to next section)
+      else if (dragDistance < -50) {
+        goNextRef.current();
+      }
+    }
+    // Reset drag state
+    setDragStartY(null);
+    setDragEndY(null);
+    setIsDragging(false);
+  };
 
   // ── Arrow key handler ─────────────────────────────────────────────────
   useEffect(() => {
@@ -253,15 +262,6 @@ export default function Home() {
     };
   }, [isMobile, setShowNavbar2]);
 
-  // ── Click handler: advance section unless clicking interactive element ─
-  const handleSectionClick = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    const isInteractive = target.closest(
-      'a, button, input, select, textarea, [role="button"], .no-section-click'
-    );
-    if (!isInteractive) goNextRef.current();
-  };
-
   // ── Desktop section renderer ──────────────────────────────────────────
   const renderCurrentSection = () => {
     const cls = leavingUp ? "animate-leave-up" : "animate-enter-down";
@@ -269,21 +269,13 @@ export default function Home() {
     switch (currentSection) {
       case 0:
         return (
-          <div
-            key="hero"
-            className={`${cls} cursor-pointer`}
-            onClick={handleSectionClick}
-          >
+          <div key="hero" className={cls}>
             <HeroSection />
           </div>
         );
       case 1:
         return (
-          <div
-            key="deals"
-            className={`bg-white min-h-screen ${cls} cursor-pointer`}
-            onClick={handleSectionClick}
-          >
+          <div key="deals" className={`bg-white min-h-screen ${cls}`}>
             <StickyInfoBar visible={true} />
             <div className="px-4 sm:px-6 lg:px-8 mt-8">
               <LatestDeals />
@@ -292,11 +284,7 @@ export default function Home() {
         );
       case 2:
         return (
-          <div
-            key="suppliers"
-            className={`bg-white min-h-screen ${cls} cursor-pointer`}
-            onClick={handleSectionClick}
-          >
+          <div key="suppliers" className={`bg-white min-h-screen ${cls}`}>
             <StickyInfoBar visible={true} />
             <div className="px-4 sm:px-6 lg:px-8">
               <VerifiedSupplier />
@@ -305,7 +293,6 @@ export default function Home() {
         );
       case 3:
         return (
-          // Last section — no click to advance
           <div key="pricing" className={cls}>
             <PricingSection />
           </div>
@@ -354,7 +341,13 @@ export default function Home() {
         }
       `}</style>
 
-      <div className="w-full overflow-x-hidden">
+      <div 
+        className="w-full overflow-x-hidden"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
         {isMobile ? renderAllSections() : renderCurrentSection()}
       </div>
     </>

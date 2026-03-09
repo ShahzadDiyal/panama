@@ -13,18 +13,11 @@ import arrow_icon from '../../assets/arrow_left_icon.svg'
 
 // ── Section 1: Hero ──────────────────────────────────────────────────────
 function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean }) {
-  const handleClick = (e: React.MouseEvent) => {
-    if (isMobile) return
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
-    if (!isInteractive) onNext()
-  }
-
+  // No click navigation – only drag or keyboard
   return (
     <div
-      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? 'cursor-pointer' : ''}`}
+      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(160deg, #FDFDFD 0%, #f5f0ff 60%, #CDE7FF 100%)' }}
-      onClick={handleClick}
     >
       <div className="max-w-7xl mx-auto">
         <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden px-4 sm:px-6 md:px-10 py-12 sm:py-20">
@@ -132,19 +125,7 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
     }
   }
 
-  const handleClick = (e: React.MouseEvent) => {
-    if (isMobile) return
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
-    if (!isInteractive) {
-      if (e.clientY < window.innerHeight / 2) {
-        onPrev()
-      } else {
-        onNext()
-      }
-    }
-  }
-
+  // No click navigation – only drag or keyboard
   // Check if user has this plan already
   const hasActivePlan = (planId: number) => {
     return subscription?.status === 'active' && subscription.plan_id === planId
@@ -231,9 +212,8 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
 
   return (
     <div
-      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? 'cursor-pointer' : ''}`}
+      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(135deg, #f5f0ff 0%, #eef1fb 100%)' }}
-      onClick={handleClick}
     >
       <div className="max-w-7xl mx-auto no-section-click">
         {/* Trust badges */}
@@ -277,7 +257,7 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
 
         {/* Cards */}
         {!loading && !error && plans.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-24">
             {plans.map((plan, index) => {
               const display = getPlanDisplay(plan, index)
               const isActive = isPlanActive(plan.id)
@@ -298,9 +278,9 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
                   <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-1">{display.name}</h3>
                   <p className="text-slate-500 text-xs sm:text-sm mb-4">{display.tagline}</p>
 
-                  <ul className="flex-1 mb-6 space-y-2">
+                  <ul className="flex-1 mb-6 space-y-1">
                     {display.features.map((feature, i) => (
-                      <li key={i} className="flex items-start gap-2 text-slate-700">
+                      <li key={i} className="flex items-start font-semibold gap-2 text-slate-700">
                         <span className="text-green-600 font-bold text-base sm:text-lg flex-shrink-0">✓</span>
                         <span className="text-xs sm:text-sm">{feature}</span>
                       </li>
@@ -320,7 +300,10 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
                     <button 
                       onClick={() => handleSubscribe(display.id)}
                       disabled={subscribing === display.id}
-                      className="no-section-click w-full flex items-center justify-between gap-2 bg-[#E9F6FE] hover:bg-blue-900 hover:text-white text-black font-semibold px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl transition-all duration-200 group text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="no-section-click w-full flex items-center justify-between gap-2 bg-[#E9F6FE] hover:bg-blue-900 
+                      hover:text-white text-black font-semibold px-4 py-3 sm:px-5 sm:py-3 rounded-[5px] 
+                      transition-all duration-200 group text-sm sm:text-base border
+                      disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {subscribing === display.id ? 'Processing...' : display.buttonText}
                       <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white group-hover:bg-white/30 flex items-center justify-center flex-shrink-0 transition-all">
@@ -401,19 +384,7 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
     }
   }
 
-  const handleClick = (e: React.MouseEvent) => {
-    if (isMobile) return
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
-    if (!isInteractive) {
-      if (e.clientY < window.innerHeight / 2) {
-        onPrev()
-      } else {
-        onNext()
-      }
-    }
-  }
-
+  // No click navigation – only drag or keyboard
   // Check if user has this plan already
   const hasActivePlan = (planId: number) => {
     return subscription?.status === 'active' && subscription.plan_id === planId
@@ -500,9 +471,8 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
 
   return (
     <div
-      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? 'cursor-pointer' : ''}`}
+      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(135deg, #f5f0ff 0%, #eef1fb 100%)' }}
-      onClick={handleClick}
     >
       <div className="max-w-7xl mx-auto no-section-click pt-12 sm:pt-20">
         {/* Loading state */}
@@ -534,7 +504,7 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
 
         {/* Cards */}
         {!loading && !error && plans.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-20">
             {plans.map((plan, index) => {
               const display = getPlanDisplay(plan, index)
               const isActive = isPlanActive(plan.id)
@@ -577,7 +547,10 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
                     <button 
                       onClick={() => handleSubscribe(display.id)}
                       disabled={subscribing === display.id}
-                      className="no-section-click w-full flex items-center justify-between gap-2 bg-[#E9F6FE] hover:bg-blue-900 hover:text-white text-black font-semibold px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl transition-all duration-200 group text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="no-section-click w-full flex items-center justify-between gap-2 bg-[#E9F6FE] 
+                      hover:bg-blue-900 hover:text-white text-black font-semibold px-4 py-2.5 
+                      sm:px-5 sm:py-3 rounded-[5px] border cursor-pointer transition-all duration-200 group text-sm sm:text-base 
+                      disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {subscribing === display.id ? 'Processing...' : display.buttonText}
                       <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white group-hover:bg-white/30 flex items-center justify-center flex-shrink-0 transition-all">
@@ -605,6 +578,10 @@ export default function Pricing() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
   const isAnimatingRef = useRef(false)
   const sectionRef = useRef(0)
+
+  const [dragStartY, setDragStartY] = useState<number | null>(null)
+  const [dragEndY, setDragEndY] = useState<number | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
 
   useEffect(() => {
     setShowNavbar2(true)
@@ -655,6 +632,41 @@ export default function Pricing() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [isMobile])
 
+  // Drag handlers for section navigation
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement
+    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
+    if (!isInteractive && !isMobile) {
+      setDragStartY(e.clientY)
+      setIsDragging(true)
+    }
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || isMobile) return
+    setDragEndY(e.clientY)
+  }
+
+  const handleMouseUp = () => {
+    if (isDragging && dragStartY !== null && dragEndY !== null && !isMobile) {
+      const dragDistance = dragEndY - dragStartY
+      
+      // If dragged down significantly (pull to go to previous section)
+      if (dragDistance > 50) {
+        goPrev()
+      }
+      // If dragged up significantly (push to go to next section)
+      else if (dragDistance < -50) {
+        goNext()
+      }
+    }
+    
+    // Reset drag state
+    setDragStartY(null)
+    setDragEndY(null)
+    setIsDragging(false)
+  }
+
   // Mobile: stacked sections
   if (isMobile) {
     return (
@@ -689,7 +701,13 @@ export default function Pricing() {
         }
       `}</style>
 
-      <div className="w-full overflow-hidden">
+      <div 
+        className="w-full overflow-hidden"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
         <div className={cls}>
           {section === 0 && <Section1 onNext={goNext} isMobile={false} />}
           {section === 1 && <Section2 onPrev={goPrev} onNext={goNext} isMobile={false} />}

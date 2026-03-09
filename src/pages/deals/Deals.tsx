@@ -1,11 +1,6 @@
-import {  Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useRef, useState, useEffect } from 'react'
-
-// import supplier_profile from '../../assets/supplier_details.png'
-// import verified_badge from '../../assets/verified_tick_.png'
-// import recent_icon from '../../assets/recent_icon.svg'
-// import star_icon from '../../assets/star_icon.png'
-// import arrow_left_icon from '../../assets/arrow_left_icon.svg'
+import { useAuth } from '../../context/AuthContext'
 import dropdown_icon from '../../assets/dropdown_icon.png'
 import sourcing_illustrator from '../../assets/souring_illustrator.png'
 import { publicService, getImageUrl } from '../../services/publicService'
@@ -21,10 +16,9 @@ interface Deal {
   location: string
   verified: boolean
   images: string[]
-  isPremium?: boolean // Flag for premium cards
+  isPremium?: boolean
 }
 
-// const CATEGORIES = ['All', 'Food & Beverage', 'Apparel', 'Electronics', 'Packaging & Materials', 'Beauty & Personal Care', 'Metals', 'Automotive', 'Healthcare', 'Handicrafts', 'Logistics', 'Marine & Fishing']
 const SUPPLIER_TYPES = ['All Types', 'Manufacturer', 'Wholesaler', 'Distributor', 'Exporter']
 const LOCATIONS = ['All Locations', 'Panama City', 'Colón', 'Panama Oeste', 'Chiriqui', 'Bocas del Toro', 'Veraguas']
 const MOQ_RANGES = ['Any MOQ', 'Under $500', '$500–$2,000', '$2,000–$5,000', '$5,000+']
@@ -138,149 +132,128 @@ function DealCard({ deal }: { deal: Deal }) {
 
 // ── Section 1 Component (Deals Grid) ────────────────────────────────────
 function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean }) {
+  const { subscription } = useAuth()
   const [search, setSearch] = useState('')
-  // const [category, setCategory] = useState('All')
   const [supplierType, setSupplierType] = useState('All Types')
   const [location, setLocation] = useState('All Locations')
   const [moq, setMoq] = useState('Any MOQ')
 
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [categories, setCategories] = useState<Category[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<string>('All')
+  const [loadingCategories, setLoadingCategories] = useState(true)
   
-  // New state for API deals
-  const [deals, setDeals] = useState<Deal[]>([]);
-  const [loadingDeals, setLoadingDeals] = useState(true);
-  const [dealsError, setDealsError] = useState('');
+  const [deals, setDeals] = useState<Deal[]>([])
+  const [loadingDeals, setLoadingDeals] = useState(true)
+  const [dealsError, setDealsError] = useState('')
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const data = await publicService.getCategories();
-        setCategories(data);
+        const data = await publicService.getCategories()
+        setCategories(data)
       } catch (error) {
-        console.error('Failed to load categories', error);
+        console.error('Failed to load categories', error)
       } finally {
-        setLoadingCategories(false);
+        setLoadingCategories(false)
       }
-    };
-    fetchCategories();
-  }, []);
+    }
+    fetchCategories()
+  }, [])
 
   // Fetch deals from API
   useEffect(() => {
     const fetchDeals = async () => {
       try {
-        setLoadingDeals(true);
-        
-        // Fetch first page of vendors
-        const vendorsResponse = await publicService.getVendors({ page: 1 });
-        
-        // Collect all products from all vendors (limit to first 5 vendors for performance)
-        let allProducts: ProductListItem[] = [];
-        const vendorsToFetch = vendorsResponse.data.slice(0, 5);
-        
-        // Fetch products for each vendor in parallel
-        const productPromises = vendorsToFetch.map(vendor => 
+        setLoadingDeals(true)
+        const vendorsResponse = await publicService.getVendors({ page: 1 })
+        let allProducts: ProductListItem[] = []
+        const vendorsToFetch = vendorsResponse.data.slice(0, 5)
+
+        const productPromises = vendorsToFetch.map(vendor =>
           publicService.getVendorProducts(vendor.id).catch(err => {
-            console.error(`Failed to fetch products for vendor ${vendor.id}`, err);
-            return null;
+            console.error(`Failed to fetch products for vendor ${vendor.id}`, err)
+            return null
           })
-        );
-        
-        const productResponses = await Promise.all(productPromises);
-        
-        // Combine all products
+        )
+
+        const productResponses = await Promise.all(productPromises)
+
         productResponses.forEach(response => {
           if (response && response.products && response.products.data) {
-            allProducts = [...allProducts, ...response.products.data];
+            allProducts = [...allProducts, ...response.products.data]
           }
-        });
-        
-        // Filter to only show deals (is_deal === true)
-        const dealProducts = allProducts.filter(product => product.is_deal === true);
-        
-        // Sort by created_at (newest first) to show latest deals
-        const sortedProducts = dealProducts.sort((a, b) => 
+        })
+
+        const dealProducts = allProducts.filter(product => product.is_deal === true)
+        const sortedProducts = dealProducts.sort((a, b) =>
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-        
-        // Map to Deal format
-        const formattedDeals = sortedProducts.map(mapProductToDeal);
-        setDeals(formattedDeals);
-        setDealsError('');
+        )
+
+        const formattedDeals = sortedProducts.map(mapProductToDeal)
+        setDeals(formattedDeals)
+        setDealsError('')
       } catch (err) {
-        console.error('Failed to fetch deals', err);
-        setDealsError('Failed to load deals');
+        console.error('Failed to fetch deals', err)
+        setDealsError('Failed to load deals')
       } finally {
-        setLoadingDeals(false);
+        setLoadingDeals(false)
       }
-    };
-    
-    fetchDeals();
-  }, []);
+    }
+
+    fetchDeals()
+  }, [])
 
   // Helper function to convert API product to Deal format
   const mapProductToDeal = (product: ProductListItem): Deal => {
-    // Get all image URLs
-    const imageUrls = product.images && Array.isArray(product.images) && product.images.length > 0
-      ? product.images.map(img => getImageUrl(img.path))
-      : product.cover_image 
+    const imageUrls =
+      product.images && Array.isArray(product.images) && product.images.length > 0
+        ? product.images.map(img => getImageUrl(img.path))
+        : product.cover_image
         ? [getImageUrl(product.cover_image)]
-        : ['https://via.placeholder.com/400x400?text=No+Image'];
-    
-    // Format price range
-    const price = parseFloat(product.price).toFixed(2);
-    const priceRange = product.old_price 
+        : ['https://via.placeholder.com/400x400?text=No+Image']
+
+    const price = parseFloat(product.price).toFixed(2)
+    const priceRange = product.old_price
       ? `$${price} – $${parseFloat(product.old_price).toFixed(2)} / unit`
-      : `$${price} / unit`;
-    
-    // Format MOQ
-    const moqText = `${product.moq} units`;
-    
-    // Determine premium status (customize as needed)
-    const isPremium = product.id % 3 === 0; // Example: every 3rd product is premium
-    
+      : `$${price} / unit`
+
+    const moqText = `${product.moq} units`
+
+    // Determine premium status: if user has active subscription, no premium cards; otherwise mark some as premium
+    const hasActiveSubscription = subscription?.status === 'active'
+    const isPremium = hasActiveSubscription ? false : product.id % 3 === 0
+
     return {
       id: product.id,
       title: product.title,
       category: product.category?.name || 'Uncategorized',
       moq: moqText,
-      priceRange: priceRange,
+      priceRange,
       location: product.location,
       verified: true,
       images: imageUrls,
-      isPremium: isPremium
-    };
-  };
+      isPremium,
+    }
+  }
 
   // Apply search and category filters
   const filteredDeals = deals.filter(deal => {
-    const matchesSearch = search === '' || 
+    const matchesSearch =
+      search === '' ||
       deal.title.toLowerCase().includes(search.toLowerCase()) ||
-      deal.category.toLowerCase().includes(search.toLowerCase());
-    
-    const matchesCategory = selectedCategory === 'All' || deal.category === selectedCategory;
-    
-    return matchesSearch && matchesCategory;
-  });
+      deal.category.toLowerCase().includes(search.toLowerCase())
+    const matchesCategory = selectedCategory === 'All' || deal.category === selectedCategory
+    return matchesSearch && matchesCategory
+  })
 
   const dropdownClass = `appearance-none bg-white border border-gray-200 rounded-[10px]
     pl-3 pr-8 py-2 text-xs sm:text-sm text-slate-600 font-medium w-full
     focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all`
 
-  const handleClick = (e: React.MouseEvent) => {
-    if (isMobile) return
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, textarea, [role="button"], .no-section-click')
-    if (!isInteractive) onNext()
-  }
-
   return (
     <div
-      className={`min-h-screen ${!isMobile ? 'cursor-pointer' : ''}`}
+      className={`min-h-screen ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(160deg, #f5f0ff 0%, #eef1fb 60%, #FFFFFF 100%)' }}
-      onClick={handleClick}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pt-28">
         <div className="mt-8">
@@ -292,9 +265,9 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
               Browse limited-time bulk offers directly from verified distributors and suppliers.
             </p>
           </div>
+
           {/* Search */}
-          <div className="no-section-click max-w-4xl mx-auto mt-4 sm:mt-5"
-            onClick={(e) => e.stopPropagation()}>
+          <div className="no-section-click max-w-4xl mx-auto mt-4 sm:mt-5" onClick={(e) => e.stopPropagation()}>
             <div className="relative w-full">
               <input
                 type="text"
@@ -302,9 +275,9 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-4 sm:pl-5 pr-10 sm:pr-12 py-3 sm:py-3.5 border border-gray-400
-                rounded-full text-slate-700 placeholder-gray-400 text-sm sm:text-[15px] font-medium
-                bg-white/60 focus:bg-white focus:outline-none focus:border-blue-300
-                focus:ring-2 focus:ring-blue-100 transition-all"
+                  rounded-full text-slate-700 placeholder-gray-400 text-sm sm:text-[15px] font-medium
+                  bg-white/60 focus:bg-white focus:outline-none focus:border-blue-300
+                  focus:ring-2 focus:ring-blue-100 transition-all"
               />
               <span className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2">
                 <svg className="w-5 h-5 sm:w-6 sm:h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -316,11 +289,11 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
           </div>
 
           {/* Filters */}
-          <div className="no-section-click max-w-7xl mx-auto mt-4 sm:mt-6 my-6"
-            onClick={(e) => e.stopPropagation()}>
+          <div className="no-section-click max-w-7xl mx-auto mt-4 sm:mt-6 my-6" onClick={(e) => e.stopPropagation()}>
             <div className="bg-white/50 rounded-xl p-3 sm:p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                  {/* Category */}
                   <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
                     <select
                       value={selectedCategory}
@@ -341,6 +314,7 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
                     <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
                   </div>
 
+                  {/* Supplier Type */}
                   <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
                     <select value={supplierType} onChange={(e) => setSupplierType(e.target.value)} className={dropdownClass}>
                       {SUPPLIER_TYPES.map(t => <option key={t}>{t}</option>)}
@@ -348,6 +322,7 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
                     <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
                   </div>
 
+                  {/* Location */}
                   <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
                     <select value={location} onChange={(e) => setLocation(e.target.value)} className={dropdownClass}>
                       {LOCATIONS.map(l => <option key={l}>{l}</option>)}
@@ -355,6 +330,7 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
                     <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
                   </div>
 
+                  {/* MOQ */}
                   <div className="relative flex-1 min-w-[110px] sm:flex-none sm:w-auto">
                     <select value={moq} onChange={(e) => setMoq(e.target.value)} className={dropdownClass}>
                       {MOQ_RANGES.map(m => <option key={m}>{m}</option>)}
@@ -363,13 +339,14 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
                   </div>
                 </div>
 
+                {/* Reset */}
                 <button
-                  onClick={() => { 
-                    setSelectedCategory('All'); 
-                    setSupplierType('All Types'); 
-                    setLocation('All Locations'); 
-                    setMoq('Any MOQ'); 
-                    setSearch('') 
+                  onClick={() => {
+                    setSelectedCategory('All')
+                    setSupplierType('All Types')
+                    setLocation('All Locations')
+                    setMoq('Any MOQ')
+                    setSearch('')
                   }}
                   className="w-9 h-9 flex items-center justify-center hover:bg-yellow-100 rounded-lg transition-all flex-shrink-0"
                   title="Reset filters"
@@ -383,34 +360,29 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
             </div>
           </div>
 
-          {/* Loading State */}
+          {/* Loading / Error / Empty states */}
           {loadingDeals && (
             <div className="flex justify-center items-center py-20">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#162B60]"></div>
             </div>
           )}
 
-          {/* Error State */}
           {!loadingDeals && dealsError && (
             <div className="text-center py-20">
               <p className="text-red-500">{dealsError}</p>
-              <button 
-                onClick={() => window.location.reload()} 
-                className="mt-4 px-6 py-2 bg-[#162B60] text-white rounded-lg"
-              >
+              <button onClick={() => window.location.reload()} className="mt-4 px-6 py-2 bg-[#162B60] text-white rounded-lg">
                 Try Again
               </button>
             </div>
           )}
 
-          {/* No Deals State */}
           {!loadingDeals && !dealsError && filteredDeals.length === 0 && (
             <div className="text-center py-20">
               <p className="text-slate-500 text-lg">No deals found matching your criteria.</p>
             </div>
           )}
 
-          {/* Grid Layout for Cards */}
+          {/* Deal Cards Grid */}
           {!loadingDeals && !dealsError && filteredDeals.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 justify-items-center">
               {filteredDeals.map((deal) => (
@@ -426,55 +398,33 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
 
 // ── Section 2 Component (Upsell Section) ─────────────────────────────────
 function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: () => void; isMobile: boolean }) {
-  const handleClick = (e: React.MouseEvent) => {
-    if (isMobile) return
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
-    if (!isInteractive) {
-      if (e.clientY < window.innerHeight / 2) {
-        onPrev()
-      } else {
-        onNext()
-      }
-    }
-  }
-
   return (
     <div
-      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? 'cursor-pointer' : ''}`}
+      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(160deg, #eef1fb 0%, #f5f0ff 60%, #eaf4ff 100%)' }}
-      onClick={handleClick}
     >
       <div className="max-w-7xl mx-auto">
-
-        {/* Why Trusted */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-5 sm:mb-6">
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-800 leading-tight">
             Why Our Suppliers Are Trusted
           </h2>
           <p className="text-slate-400 text-xs sm:text-sm leading-relaxed sm:max-w-xs sm:text-right">
-            All suppliers listed are reviewed for legitimacy, business
-            registration, and export capability.
+            All suppliers listed are reviewed for legitimacy, business registration, and export capability.
           </p>
         </div>
 
-        {/* Trust pills — 2 cols on mobile, 4 on md+ */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-8 sm:mb-10">
           {['✓ Business Verified', '✓ Export Ready', '✓ Direct Communication', '✓ No Middlemen'].map((pill) => (
             <span key={pill}
-              className="bg-white text-slate-600 text-[12px] sm:text-[14px] font-medium
-                px-3 sm:px-5 py-2 sm:py-2.5 rounded-full text-center shadow-sm">
+              className="bg-white text-slate-600 text-[12px] sm:text-[14px] font-medium px-3 sm:px-5 py-2 sm:py-2.5 rounded-full text-center shadow-sm">
               {pill}
             </span>
           ))}
         </div>
 
-        {/* CTA Banner */}
-        <div
-          className="relative rounded-2xl sm:rounded-3xl overflow-hidden px-5 sm:px-10 py-8 sm:py-12"
+        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden px-5 sm:px-10 py-8 sm:py-12"
           style={{ background: 'linear-gradient(130deg, #B7B7FF 0%, #c6c6ff 40%, #FFFFFF 100%)' }}
         >
-          {/* Text + Image row */}
           <div className="flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-10">
             <div className="flex flex-col items-start">
               <h3 className="text-xl sm:text-2xl lg:text-[40px] font-extrabold text-slate-800 leading-snug mb-2 sm:mb-3">
@@ -486,15 +436,10 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
             </div>
 
             <div className="flex-shrink-0 w-full lg:w-auto flex justify-center">
-              <img
-                src={sourcing_illustrator}
-                alt=""
-                className="w-full max-w-[240px] sm:max-w-[300px] lg:max-w-[340px] object-contain"
-              />
+              <img src={sourcing_illustrator} alt="" className="w-full max-w-[240px] sm:max-w-[300px] lg:max-w-[340px] object-contain" />
             </div>
           </div>
 
-          {/* Button centered below */}
           <div className="mt-2 sm:mt-8 flex justify-center">
             <Link
               to="/pricing"
@@ -513,7 +458,6 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
             </Link>
           </div>
 
-          {/* Blobs */}
           <div className="absolute top-0 right-0 w-48 sm:w-64 h-48 sm:h-64 rounded-full opacity-30 pointer-events-none"
             style={{ background: 'radial-gradient(circle, #a5b4fc 0%, transparent 70%)', transform: 'translate(30%, -30%)' }} />
           <div className="absolute bottom-0 left-1/3 w-36 sm:w-48 h-36 sm:h-48 rounded-full opacity-20 pointer-events-none"
@@ -526,49 +470,33 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
 
 // ── Section 3 Component (Upsell Section 2) ───────────────────────────────
 function Section3({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean }) {
-  const handleClick = (e: React.MouseEvent) => {
-    if (isMobile) return
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
-    if (!isInteractive) onPrev()
-  }
-
   return (
     <div
-      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? 'cursor-pointer' : ''}`}
+      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(160deg, #eef1fb 0%, #f5f0ff 60%, #eaf4ff 100%)' }}
-      onClick={handleClick}
     >
       <div className="max-w-7xl mx-auto">
-
-        {/* Why Trusted */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-5 sm:mb-6">
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-800 leading-tight">
             Why Our Suppliers Are Trusted
           </h2>
           <p className="text-slate-400 text-xs sm:text-sm leading-relaxed sm:max-w-xs sm:text-right">
-            All suppliers listed are reviewed for legitimacy, business
-            registration, and export capability.
+            All suppliers listed are reviewed for legitimacy, business registration, and export capability.
           </p>
         </div>
 
-        {/* Trust pills — 2 cols on mobile, 4 on md+ */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-8 sm:mb-10">
           {['✓ Business Verified', '✓ Export Ready', '✓ Direct Communication', '✓ No Middlemen'].map((pill) => (
             <span key={pill}
-              className="bg-white text-slate-600 text-[12px] sm:text-[14px] font-medium
-                px-3 sm:px-5 py-2 sm:py-2.5 rounded-full text-center shadow-sm">
+              className="bg-white text-slate-600 text-[12px] sm:text-[14px] font-medium px-3 sm:px-5 py-2 sm:py-2.5 rounded-full text-center shadow-sm">
               {pill}
             </span>
           ))}
         </div>
 
-        {/* CTA Banner */}
-        <div
-          className="relative rounded-2xl sm:rounded-3xl overflow-hidden px-5 sm:px-10 py-8 sm:py-12"
+        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden px-5 sm:px-10 py-8 sm:py-12"
           style={{ background: 'linear-gradient(130deg, #B7B7FF 0%, #c6c6ff 40%, #FFFFFF 100%)' }}
         >
-          {/* Text + Image row */}
           <div className="flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-10">
             <div className="flex flex-col items-start">
               <h3 className="text-xl sm:text-2xl lg:text-[40px] font-extrabold text-slate-800 leading-snug mb-2 sm:mb-3">
@@ -580,15 +508,10 @@ function Section3({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean 
             </div>
 
             <div className="flex-shrink-0 w-full lg:w-auto flex justify-center">
-              <img
-                src={sourcing_illustrator}
-                alt=""
-                className="w-full max-w-[240px] sm:max-w-[300px] lg:max-w-[340px] object-contain"
-              />
+              <img src={sourcing_illustrator} alt="" className="w-full max-w-[240px] sm:max-w-[300px] lg:max-w-[340px] object-contain" />
             </div>
           </div>
 
-          {/* Button centered below */}
           <div className="mt-2 sm:mt-8 flex justify-center">
             <Link
               to="/pricing"
@@ -607,7 +530,6 @@ function Section3({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean 
             </Link>
           </div>
 
-          {/* Blobs */}
           <div className="absolute top-0 right-0 w-48 sm:w-64 h-48 sm:h-64 rounded-full opacity-30 pointer-events-none"
             style={{ background: 'radial-gradient(circle, #a5b4fc 0%, transparent 70%)', transform: 'translate(30%, -30%)' }} />
           <div className="absolute bottom-0 left-1/3 w-36 sm:w-48 h-36 sm:h-48 rounded-full opacity-20 pointer-events-none"
@@ -618,16 +540,19 @@ function Section3({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean 
   )
 }
 
-// ── Main SupplierDetails Component ───────────────────────────────────────
+// ── Main Deals Component ─────────────────────────────────────────────────
 const TOTAL_SECTIONS = 3
 
 export default function Deals() {
-  // const { id } = useParams()
   const [section, setSection] = useState(0)
   const [leavingUp, setLeavingUp] = useState(false)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
   const isAnimatingRef = useRef(false)
   const sectionRef = useRef(0)
+
+  const [dragStartY, setDragStartY] = useState<number | null>(null)
+  const [dragEndY, setDragEndY] = useState<number | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768)
@@ -663,7 +588,6 @@ export default function Deals() {
   goNextRef.current = goNext
   goPrevRef.current = goPrev
 
-  // Arrow keys — desktop only
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (isMobile) return
@@ -674,7 +598,34 @@ export default function Deals() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [isMobile])
 
-  // On mobile: render all sections stacked, normal scroll
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement
+    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
+    if (!isInteractive && !isMobile) {
+      setDragStartY(e.clientY)
+      setIsDragging(true)
+    }
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || isMobile) return
+    setDragEndY(e.clientY)
+  }
+
+  const handleMouseUp = () => {
+    if (isDragging && dragStartY !== null && dragEndY !== null && !isMobile) {
+      const dragDistance = dragEndY - dragStartY
+      if (dragDistance > 50) {
+        goPrev()
+      } else if (dragDistance < -50) {
+        goNext()
+      }
+    }
+    setDragStartY(null)
+    setDragEndY(null)
+    setIsDragging(false)
+  }
+
   if (isMobile) {
     return (
       <div className="w-full">
@@ -685,7 +636,6 @@ export default function Deals() {
     )
   }
 
-  // Desktop: section-by-section with animation
   const cls = leavingUp ? 'supplier-leave-up' : 'supplier-enter-down'
 
   return (
@@ -708,7 +658,13 @@ export default function Deals() {
         }
       `}</style>
 
-      <div className="w-full overflow-hidden">
+      <div
+        className="w-full overflow-hidden"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
         <div className={cls}>
           {section === 0 && <Section1 onNext={goNext} isMobile={false} />}
           {section === 1 && <Section2 onPrev={goPrev} onNext={goNext} isMobile={false} />}

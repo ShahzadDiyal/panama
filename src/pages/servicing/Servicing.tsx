@@ -18,18 +18,11 @@ import { Link } from 'react-router-dom'
 
 // Section 1 – unchanged
 function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean }) {
-  const handleClick = (e: React.MouseEvent) => {
-    if (isMobile) return
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
-    if (!isInteractive) onNext()
-  }
-
+  // No click navigation – only drag or keyboard
   return (
     <div
-      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? 'cursor-pointer' : ''}`}
+      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(160deg, #FDFDFD 0%, #f5f0ff 60%, #CDE7FF 100%)' }}
-      onClick={handleClick}
     >
       <div className="max-w-7xl mx-auto">
         <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden px-5 sm:px-10 py-20">
@@ -58,19 +51,7 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
 
 // Section 2 – Core Services (4 cards, 2x2) with background "02"
 function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: () => void; isMobile: boolean }) {
-  const handleClick = (e: React.MouseEvent) => {
-    if (isMobile) return
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
-    if (!isInteractive) {
-      if (e.clientY < window.innerHeight / 2) {
-        onPrev()
-      } else {
-        onNext()
-      }
-    }
-  }
-
+  // No click navigation – only drag or keyboard
   const cards = [
     {
       title: 'Remote Sourcing',
@@ -100,9 +81,8 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
 
   return (
     <div
-      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 relative overflow-hidden ${!isMobile ? 'cursor-pointer' : ''}`}
+      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 relative overflow-hidden ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%)' }}
-      onClick={handleClick}
     >
       {/* Background number 02 */}
       <div className="absolute top-1/2 -translate-y-1/2 right-10 flex flex-col items-center text-[300px] font-bold text-[#162B60]/7 select-none pointer-events-none animate-pulse leading-none">
@@ -141,19 +121,7 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
 
 // Section 3 – Trusted by Entrepreneurs & Importers (3‑card carousel) with background "03"
 function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: () => void; isMobile: boolean }) {
-  const handleClick = (e: React.MouseEvent) => {
-    if (isMobile) return
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
-    if (!isInteractive) {
-      if (e.clientY < window.innerHeight / 2) {
-        onPrev()
-      } else {
-        onNext()
-      }
-    }
-  }
-
+  // No click navigation – only drag or keyboard
   // Expanded testimonials (6 items) for multi‑card carousel
   const testimonials = [
     {
@@ -207,9 +175,8 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
 
   return (
     <div
-      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 relative overflow-hidden ${!isMobile ? 'cursor-pointer' : ''}`}
+      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 relative overflow-hidden ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(135deg, #f5f0ff 0%, #eef1fb 100%)' }}
-      onClick={handleClick}
     >
       {/* Background number 03 */}
       <div className="absolute top-1/2 -translate-y-1/2 right-10 flex flex-col items-center text-[300px] font-bold text-[#162B60]/7 select-none pointer-events-none animate-pulse leading-none">
@@ -232,7 +199,6 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
           </div>
         </div>
 
-
         <h2 className="text-[24px] font-bold text-[#162B60] mb-12 text-start">
           Trusted by Entrepreneurs & Importers
         </h2>
@@ -248,7 +214,6 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
                 </div>
                 <h4 className="font-bold text-slate-800">{t.name}</h4>
                 <p className="text-slate-500 text-sm">{t.role}</p>
-
                 <p className="text-slate-700 mb-4">{t.text}</p>
               </div>
             ))}
@@ -296,24 +261,11 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
 }
 // Section 4 – Left‑Right with floating number "04"
 function Section4({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: () => void; isMobile: boolean }) {
-  const handleClick = (e: React.MouseEvent) => {
-    if (isMobile) return
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
-    if (!isInteractive) {
-      if (e.clientY < window.innerHeight / 2) {
-        onPrev()
-      } else {
-        onNext()
-      }
-    }
-  }
-
+  // No click navigation – only drag or keyboard
   return (
     <div
-      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-20 pt-40 sm:pt-28 relative overflow-hidden ${!isMobile ? 'cursor-pointer' : ''}`}
+      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-20 pt-40 sm:pt-28 relative overflow-hidden ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(135deg, #eef1fb 0%, #f5f0ff 100%)' }}
-      onClick={handleClick}
     >
       <div className="absolute top-1/2 -translate-y-1/2 right-10 flex flex-col items-center text-[300px] font-bold text-[#162B60]/7 select-none pointer-events-none animate-pulse leading-none">
         <span>0</span>
@@ -330,7 +282,6 @@ function Section4({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
             <p className="text-[20px] text-slate-700">
               Gain direct access to verified suppliers, expert guidance, and sourcing support — everything you need to confidently launch and grow your business in Panama.
             </p>
-
           </div>
 
           {/* Right side: image */}
@@ -354,15 +305,12 @@ function Section4({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
             <span className='bg-[#CFF6FF] rounded-full p-1'>
               <img src={arrow_icon} alt="" className="w-6 h-6" />
             </span>
-
           </button>
         </div>
       </div>
     </div>
   )
 }
-
-
 
 // Main component with section navigation
 const TOTAL_SECTIONS = 4
@@ -374,6 +322,10 @@ export default function Servicing() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
   const isAnimatingRef = useRef(false)
   const sectionRef = useRef(0)
+
+  const [dragStartY, setDragStartY] = useState<number | null>(null)
+  const [dragEndY, setDragEndY] = useState<number | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
 
   useEffect(() => {
     setShowNavbar2(true)
@@ -425,7 +377,42 @@ export default function Servicing() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [isMobile])
 
-  // Mobile: render all sections stacked
+  // Drag handlers for section navigation
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement
+    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
+    if (!isInteractive && !isMobile) {
+      setDragStartY(e.clientY)
+      setIsDragging(true)
+    }
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || isMobile) return
+    setDragEndY(e.clientY)
+  }
+
+  const handleMouseUp = () => {
+    if (isDragging && dragStartY !== null && dragEndY !== null && !isMobile) {
+      const dragDistance = dragEndY - dragStartY
+      
+      // If dragged down significantly (pull to go to previous section)
+      if (dragDistance > 50) {
+        goPrev()
+      }
+      // If dragged up significantly (push to go to next section)
+      else if (dragDistance < -50) {
+        goNext()
+      }
+    }
+    
+    // Reset drag state
+    setDragStartY(null)
+    setDragEndY(null)
+    setIsDragging(false)
+  }
+
+  // Mobile: render all sections stacked, normal scroll
   if (isMobile) {
     return (
       <div className="w-full">
@@ -460,7 +447,13 @@ export default function Servicing() {
         }
       `}</style>
 
-      <div className="w-full overflow-hidden">
+      <div 
+        className="w-full overflow-hidden"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
         <div className={cls}>
           {section === 0 && <Section1 onNext={goNext} isMobile={false} />}
           {section === 1 && <Section2 onPrev={goPrev} onNext={goNext} isMobile={false} />}
