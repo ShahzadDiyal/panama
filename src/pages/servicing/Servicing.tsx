@@ -452,7 +452,7 @@ export default function Servicing() {
         <div className={cls}>
           {/* Section 0 */}
           {currentSection === 0 && (
-            <div 
+            <div
               ref={(el: HTMLDivElement | null) => {
                 sectionRefs.current[0] = el;
               }}
@@ -463,10 +463,10 @@ export default function Servicing() {
               <Section1 isMobile={false} />
             </div>
           )}
-          
+
           {/* Section 1 */}
           {currentSection === 1 && (
-            <div 
+            <div
               ref={(el: HTMLDivElement | null) => {
                 sectionRefs.current[1] = el;
               }}
@@ -476,10 +476,10 @@ export default function Servicing() {
               <Section2 isMobile={false} />
             </div>
           )}
-          
+
           {/* Section 2 */}
           {currentSection === 2 && (
-            <div 
+            <div
               ref={(el: HTMLDivElement | null) => {
                 sectionRefs.current[2] = el;
               }}
@@ -489,10 +489,10 @@ export default function Servicing() {
               <Section3 isMobile={false} />
             </div>
           )}
-          
+
           {/* Section 3 */}
           {currentSection === 3 && (
-            <div 
+            <div
               ref={(el: HTMLDivElement | null) => {
                 sectionRefs.current[3] = el;
               }}

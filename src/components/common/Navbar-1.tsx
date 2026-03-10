@@ -79,8 +79,8 @@ export default function Navbar() {
                 className={({ isActive }) =>
                   `flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-[16px] transition-all duration-200
                   ${isActive
-                    ? 'text-amber-400 bg-amber-400/10'
-                    : 'text-slate-300 hover:text-white hover:bg-white/8'
+                    ? 'text-blue-700 bg-amber-400/10'
+                    : 'text-slate-400 hover:text-black hover:bg-white/8'
                   }`
                 }
               >

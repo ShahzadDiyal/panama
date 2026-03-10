@@ -140,7 +140,7 @@ function Section1({ isMobile }: { isMobile: boolean }) {
   const [categories, setCategories] = useState<Category[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>('All')
   const [loadingCategories, setLoadingCategories] = useState(true)
-  
+
   const [deals, setDeals] = useState<Deal[]>([])
   const [loadingDeals, setLoadingDeals] = useState(true)
   const [dealsError, setDealsError] = useState('')
@@ -206,8 +206,8 @@ function Section1({ isMobile }: { isMobile: boolean }) {
       product.images && Array.isArray(product.images) && product.images.length > 0
         ? product.images.map(img => getImageUrl(img.path))
         : product.cover_image
-        ? [getImageUrl(product.cover_image)]
-        : ['https://via.placeholder.com/400x400?text=No+Image']
+          ? [getImageUrl(product.cover_image)]
+          : ['https://via.placeholder.com/400x400?text=No+Image']
 
     const price = parseFloat(product.price).toFixed(2)
     const priceRange = product.old_price
@@ -376,7 +376,7 @@ function Section1({ isMobile }: { isMobile: boolean }) {
               ))}
             </div>
           )}
-            
+
         </div>
       </div>
     </div>
@@ -658,7 +658,7 @@ export default function Deals() {
         <div className={cls}>
           {/* Section 0 - Only visible when currentSection is 0 */}
           {currentSection === 0 && (
-            <div 
+            <div
               ref={(el: HTMLDivElement | null) => {
                 sectionRefs.current[0] = el;
               }}
@@ -673,10 +673,10 @@ export default function Deals() {
               <Section1 isMobile={false} />
             </div>
           )}
-          
+
           {/* Section 1 - Only visible when currentSection is 1 */}
           {currentSection === 1 && (
-            <div 
+            <div
               ref={(el: HTMLDivElement | null) => {
                 sectionRefs.current[1] = el;
               }}
@@ -686,10 +686,10 @@ export default function Deals() {
               <Section2 isMobile={false} />
             </div>
           )}
-          
+
           {/* Section 2 - Only visible when currentSection is 2 */}
           {currentSection === 2 && (
-            <div 
+            <div
               ref={(el: HTMLDivElement | null) => {
                 sectionRefs.current[2] = el;
               }}

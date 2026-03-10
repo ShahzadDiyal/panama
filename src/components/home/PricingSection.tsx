@@ -34,7 +34,7 @@ const services: Service[] = [
     title: 'Panama Business Tours',
     description: 'Curated supplier tours and factory visits.',
     icon: (
-   <img src={traveling_icon} alt="" />
+      <img src={traveling_icon} alt="" />
     ),
   },
 ]
@@ -67,24 +67,24 @@ const PricingSection = () => {
   const getPlanDisplay = (plan: Plan) => {
     // Format price with 2 decimal places
     const formattedPrice = parseFloat(plan.price).toFixed(2)
-    
+
     // Map plan_name to the expected title format
     let title = `${plan.plan_name}`
     let subtitle = ''
-    
+
     // Add appropriate subtitle based on plan
     if (plan.plan_name === 'Monthly') {
       subtitle = '– Business Builder'
     } else if (plan.plan_name === 'Yearly') {
       subtitle = '– Best Value'
     }
-    
+
     // Create features based on plan
     const features = []
-    
+
     // Common feature
     features.push(`${plan.validity_value} ${plan.validity_unit} access`)
-    
+
     // Add plan-specific features
     if (plan.plan_name === 'Day Pass') {
       features.push('Suppliers & Deals access')
@@ -99,7 +99,7 @@ const PricingSection = () => {
       features.push('Priority access to new suppliers')
       features.push('Best value pricing')
     }
-    
+
     return {
       title: `$${formattedPrice} ${title}`,
       subtitle: subtitle,
@@ -183,8 +183,8 @@ const PricingSection = () => {
         {!loading && error && (
           <div className="text-center py-20">
             <p className="text-red-500">{error}</p>
-            <button 
-              onClick={() => window.location.reload()} 
+            <button
+              onClick={() => window.location.reload()}
               className="mt-4 px-6 py-2 bg-[#162B60] text-white rounded-lg"
             >
               Try Again
@@ -244,12 +244,12 @@ const PricingSection = () => {
                       transition-all duration-200"
                   >
                     Get Access Now
-                  <svg
-              className="w-8 h-8 transition-transform duration-300 group-hover:rotate-310 bg-[#CFF6FF] rounded-full text-black p-1"
-              fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
+                    <svg
+                      className="w-8 h-8 transition-transform duration-300 group-hover:rotate-310 bg-[#CFF6FF] rounded-full text-black p-1"
+                      fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
                   </Link>
                 </div>
               )

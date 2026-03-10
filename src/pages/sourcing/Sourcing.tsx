@@ -31,7 +31,7 @@ function Section1({ isMobile }: { isMobile: boolean }) {
               <p className="text-slate-700 text-sm sm:text-[15px] font-semibold leading-relaxed">
                 Can’t travel to Panama? Our team will find verified suppliers, negotiate pricing, and connect you directly.
               </p>
-              
+
               <div className="mt-2 sm:mt-8 flex justify-center">
                 <Link
                   to="/pricing"
@@ -573,7 +573,7 @@ export default function Sourcing() {
         <div className={cls}>
           {/* Section 0 */}
           {currentSection === 0 && (
-            <div 
+            <div
               ref={(el: HTMLDivElement | null) => {
                 sectionRefs.current[0] = el;
               }}
@@ -584,10 +584,10 @@ export default function Sourcing() {
               <Section1 isMobile={false} />
             </div>
           )}
-          
+
           {/* Section 1 */}
           {currentSection === 1 && (
-            <div 
+            <div
               ref={(el: HTMLDivElement | null) => {
                 sectionRefs.current[1] = el;
               }}
@@ -597,10 +597,10 @@ export default function Sourcing() {
               <Section2 isMobile={false} />
             </div>
           )}
-          
+
           {/* Section 2 */}
           {currentSection === 2 && (
-            <div 
+            <div
               ref={(el: HTMLDivElement | null) => {
                 sectionRefs.current[2] = el;
               }}
@@ -610,10 +610,10 @@ export default function Sourcing() {
               <Section3 onPrev={goPrev} isMobile={false} />
             </div>
           )}
-          
+
           {/* Section 3 */}
           {currentSection === 3 && (
-            <div 
+            <div
               ref={(el: HTMLDivElement | null) => {
                 sectionRefs.current[3] = el;
               }}
@@ -623,10 +623,10 @@ export default function Sourcing() {
               <Section4 isMobile={false} />
             </div>
           )}
-          
+
           {/* Section 4 */}
           {currentSection === 4 && (
-            <div 
+            <div
               ref={(el: HTMLDivElement | null) => {
                 sectionRefs.current[4] = el;
               }}

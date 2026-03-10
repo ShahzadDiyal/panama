@@ -283,7 +283,7 @@ export default function Home() {
       <div className={cls}>
         {/* Section 0 - Hero */}
         {currentSection === 0 && (
-          <div 
+          <div
             ref={(el: HTMLDivElement | null) => {
               sectionRefs.current[0] = el;
             }}
@@ -294,10 +294,10 @@ export default function Home() {
             <HeroSection />
           </div>
         )}
-        
+
         {/* Section 1 - Deals */}
         {currentSection === 1 && (
-          <div 
+          <div
             ref={(el: HTMLDivElement | null) => {
               sectionRefs.current[1] = el;
             }}
@@ -310,10 +310,10 @@ export default function Home() {
             </div>
           </div>
         )}
-        
+
         {/* Section 2 - Suppliers */}
         {currentSection === 2 && (
-          <div 
+          <div
             ref={(el: HTMLDivElement | null) => {
               sectionRefs.current[2] = el;
             }}
@@ -326,10 +326,10 @@ export default function Home() {
             </div>
           </div>
         )}
-        
+
         {/* Section 3 - Pricing */}
         {currentSection === 3 && (
-          <div 
+          <div
             ref={(el: HTMLDivElement | null) => {
               sectionRefs.current[3] = el;
             }}

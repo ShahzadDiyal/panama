@@ -130,7 +130,7 @@ export default function HeroSection() {
 
             {/* Center: Explore button */}
             <div className="flex justify-center items-end pb-1 px-6">
-              
+
               <Link
                 to="/supplier"
                 className={`group mt-auto flex items-center justify-center gap-2 w-full lg:px-24  
@@ -143,11 +143,11 @@ export default function HeroSection() {
                 <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center
             transition-all duration-300 group-hover:rotate-[-45deg]
               bg-[#B8E4FF]` }>
-            <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor"
-              viewBox="0 0 24 24" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </span>
+                  <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </span>
               </Link>
             </div>
 
@@ -179,7 +179,7 @@ export default function HeroSection() {
                   </div>
                 </div>
 
- {/* <Link
+                {/* <Link
                 to="/supplier"
                 className={`group mt-auto flex items-center justify-center gap-2 w-full lg:px-24  
             py-4 sm:py-3 rounded-xl text-[16px] sm:text-[13px] font-semibold transition-all duration-200
@@ -201,20 +201,20 @@ export default function HeroSection() {
 
                 <Link
                   to="/supplier"
-                 className={`group mt-auto flex items-center justify-center gap-2 w-full lg:px-10  
+                  className={`group mt-auto flex items-center justify-center gap-2 w-full lg:px-10  
             py-4 sm:py-3 rounded-xl text-[16px] sm:text-[13px] font-semibold transition-all duration-200
             bg-[#162B60] text-white hover:bg-[#162B60] hover:text-white
              `}
                 >
                   View Profile
-                    <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center
+                  <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center
             transition-all duration-300 group-hover:rotate-[-45deg]
               bg-[#B8E4FF]` }>
-            <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor"
-              viewBox="0 0 24 24" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </span>
+                    <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor"
+                      viewBox="0 0 24 24" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </span>
                 </Link>
               </div>
             </div>

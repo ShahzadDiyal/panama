@@ -66,7 +66,7 @@ export default function DealDetails() {
   useEffect(() => {
     const fetchWhatsApp = async () => {
       if (!id || !product) return
-      
+
       if (subscription?.status === 'active') {
         try {
           const response = await contactService.getVendorWhatsApp(Number(id))
@@ -75,7 +75,7 @@ export default function DealDetails() {
             // If response has the expected structure
             if ('whatsapp_no' in response) {
               setWhatsappData(response as unknown as WhatsAppResponse)
-            } 
+            }
             // If response is just { whatsapp: string }
             else if ('whatsapp' in response) {
               // Create a proper WhatsAppResponse object
@@ -94,7 +94,7 @@ export default function DealDetails() {
         }
       }
     }
-    
+
     fetchWhatsApp()
   }, [id, product, subscription])
 
@@ -103,9 +103,9 @@ export default function DealDetails() {
       window.location.href = '/login'
       return
     }
-    
+
     if (!product) return
-    
+
     setQuoteLoading(true)
     try {
       await quoteService.createQuote({
@@ -130,9 +130,9 @@ export default function DealDetails() {
       window.location.href = '/login'
       return
     }
-    
+
     if (!product) return
-    
+
     if (subscription?.status !== 'active') {
       alert('You need an active subscription to contact suppliers via WhatsApp')
       return
@@ -148,11 +148,11 @@ export default function DealDetails() {
     setWhatsappLoading(true)
     try {
       const response = await contactService.getVendorWhatsApp(product.id)
-      
+
       // Handle the response
       let whatsappLink = ''
       let whatsappNo = ''
-      
+
       if (response && typeof response === 'object') {
         if ('whatsapp_link' in response) {
           whatsappLink = (response as any).whatsapp_link
@@ -162,7 +162,7 @@ export default function DealDetails() {
           whatsappLink = `https://wa.me/${(response as any).whatsapp.replace(/\D/g, '')}?text=Hi%2C+I+am+interested+in+your+product+%22${encodeURIComponent(product.title)}%22`
         }
       }
-      
+
       if (whatsappLink) {
         // Create proper WhatsAppResponse object
         setWhatsappData({
@@ -198,7 +198,7 @@ export default function DealDetails() {
     id: product.id,
     title: product.title,
     category: product.category?.name || 'Uncategorized',
-    discount: product.old_price ? `${Math.round((1 - parseFloat(product.price)/parseFloat(product.old_price)) * 100)}% OFF` : 'Special Deal',
+    discount: product.old_price ? `${Math.round((1 - parseFloat(product.price) / parseFloat(product.old_price)) * 100)}% OFF` : 'Special Deal',
     original: product.old_price ? `$${parseFloat(product.old_price).toFixed(2)} per unit` : '',
     price: `$${parseFloat(product.price).toFixed(2)} per unit`,
     expires: '7 days',
@@ -212,15 +212,15 @@ export default function DealDetails() {
     verified: true,
     hotDeal: product.is_deal || false,
     limitedStock: true,
-    images: product.images_list 
+    images: product.images_list
       ? product.images_list.map(img => img.url)
       : product.images?.map(img => getImageUrl(img.path)) || [getImageUrl(product.cover_image)],
   } : null
 
   const hasActiveSubscription = subscription?.status === 'active'
-  const hasRealContact = hasActiveSubscription && 
-                        whatsappData?.whatsapp_no && 
-                        whatsappData.whatsapp_no !== 'hidden'
+  const hasRealContact = hasActiveSubscription &&
+    whatsappData?.whatsapp_no &&
+    whatsappData.whatsapp_no !== 'hidden'
 
   if (loading) {
     return (
@@ -291,7 +291,7 @@ export default function DealDetails() {
                   </Link>
                 </div>
               )}
-              
+
               {/* Col 2 - Main Image (5/12) */}
               {visible && (
                 <div className="col-span-5 anim-left">
@@ -458,7 +458,7 @@ export default function DealDetails() {
                       {quoteLoading ? 'Sending...' : 'Request Quote'}
                       <span className="w-7 h-7 rounded-full group-hover:bg-white
                         flex items-center justify-center flex-shrink-0 transition-all p-1">
-                       <img src={lock_icon} alt="" />
+                        <img src={lock_icon} alt="" />
                       </span>
                     </button>
                   </div>
@@ -604,7 +604,7 @@ export default function DealDetails() {
 
                 {/* CTAs */}
                 <div className="flex flex-col sm:flex-row gap-3 mt-2">
-                  <button 
+                  <button
                     onClick={handleWhatsAppContact}
                     disabled={whatsappLoading}
                     className="flex-1 flex items-center justify-between gap-3 px-5 py-3 rounded-xl
@@ -621,7 +621,7 @@ export default function DealDetails() {
                     </span>
                   </button>
 
-                  <button 
+                  <button
                     onClick={handleRequestQuote}
                     disabled={quoteLoading}
                     className="flex-1 flex items-center justify-between gap-3 px-5 py-3 rounded-xl

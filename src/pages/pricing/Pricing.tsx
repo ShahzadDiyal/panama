@@ -99,7 +99,7 @@ function Section2({ isMobile }: { isMobile: boolean }) {
 
     try {
       setSubscribing(planId)
-      
+
       if (subscription) {
         // User has existing subscription - use upgrade
         await subscriptionService.upgrade(planId)
@@ -112,7 +112,7 @@ function Section2({ isMobile }: { isMobile: boolean }) {
         window.location.href = checkout_url
         return // Don't refresh subscription yet - will happen after payment
       }
-      
+
     } catch (err: any) {
       console.error('Subscription failed', err)
       const errorMessage = err.response?.data?.message || 'Failed to process subscription. Please try again.'
@@ -130,7 +130,7 @@ function Section2({ isMobile }: { isMobile: boolean }) {
   // Map API plan to the format expected by the UI
   const getPlanDisplay = (plan: Plan, _index: number) => {
     const formattedPrice = parseFloat(plan.price).toFixed(2)
-    
+
     // Map based on plan_name
     if (plan.plan_name === 'Day Pass') {
       return {
@@ -188,7 +188,7 @@ function Section2({ isMobile }: { isMobile: boolean }) {
         popular: true
       }
     }
-    
+
     // Fallback
     return {
       id: plan.id,
@@ -235,8 +235,8 @@ function Section2({ isMobile }: { isMobile: boolean }) {
         {!loading && error && (
           <div className="text-center py-20">
             <p className="text-red-500">{error}</p>
-            <button 
-              onClick={() => window.location.reload()} 
+            <button
+              onClick={() => window.location.reload()}
               className="mt-4 px-6 py-2 bg-[#162B60] text-white rounded-lg"
             >
               Try Again
@@ -257,20 +257,19 @@ function Section2({ isMobile }: { isMobile: boolean }) {
             {plans.map((plan, index) => {
               const display = getPlanDisplay(plan, index)
               const isActive = isPlanActive(plan.id)
-              
+
               return (
                 <div
                   key={plan.id}
-                  className={`relative bg-white rounded-2xl shadow-xl p-6 sm:p-8 flex flex-col ${
-                    isActive ? 'ring-2 ring-green-500' : ''
-                  }`}
+                  className={`relative bg-white rounded-2xl shadow-xl p-6 sm:p-8 flex flex-col ${isActive ? 'ring-2 ring-green-500' : ''
+                    }`}
                 >
                   {isActive && (
                     <div className="absolute -top-3 right-4 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full">
                       ACTIVE
                     </div>
                   )}
-                  
+
                   <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-1">{display.name}</h3>
                   <p className="text-slate-500 text-xs sm:text-sm mb-4">{display.tagline}</p>
 
@@ -293,7 +292,7 @@ function Section2({ isMobile }: { isMobile: boolean }) {
                       Current Plan
                     </div>
                   ) : (
-                    <button 
+                    <button
                       onClick={() => handleSubscribe(display.id)}
                       disabled={subscribing === display.id}
                       className="w-full flex items-center justify-between gap-2 bg-[#E9F6FE] hover:bg-blue-900 
@@ -357,7 +356,7 @@ function Section3({ isMobile }: { isMobile: boolean }) {
 
     try {
       setSubscribing(planId)
-      
+
       if (subscription) {
         // User has existing subscription - use upgrade
         await subscriptionService.upgrade(planId)
@@ -370,7 +369,7 @@ function Section3({ isMobile }: { isMobile: boolean }) {
         window.location.href = checkout_url
         return // Don't refresh subscription yet - will happen after payment
       }
-      
+
     } catch (err: any) {
       console.error('Subscription failed', err)
       const errorMessage = err.response?.data?.message || 'Failed to process subscription. Please try again.'
@@ -388,7 +387,7 @@ function Section3({ isMobile }: { isMobile: boolean }) {
   // Map API plan to the format expected by the UI
   const getPlanDisplay = (plan: Plan, _index: number) => {
     const formattedPrice = parseFloat(plan.price).toFixed(2)
-    
+
     // Map based on plan_name
     if (plan.plan_name === 'Day Pass') {
       return {
@@ -446,7 +445,7 @@ function Section3({ isMobile }: { isMobile: boolean }) {
         popular: true
       }
     }
-    
+
     // Fallback
     return {
       id: plan.id,
@@ -481,8 +480,8 @@ function Section3({ isMobile }: { isMobile: boolean }) {
         {!loading && error && (
           <div className="text-center py-20">
             <p className="text-red-500">{error}</p>
-            <button 
-              onClick={() => window.location.reload()} 
+            <button
+              onClick={() => window.location.reload()}
               className="mt-4 px-6 py-2 bg-[#162B60] text-white rounded-lg"
             >
               Try Again
@@ -503,20 +502,19 @@ function Section3({ isMobile }: { isMobile: boolean }) {
             {plans.map((plan, index) => {
               const display = getPlanDisplay(plan, index)
               const isActive = isPlanActive(plan.id)
-              
+
               return (
                 <div
                   key={plan.id}
-                  className={`relative bg-white rounded-2xl shadow-xl p-6 sm:p-8 flex flex-col ${
-                    isActive ? 'ring-2 ring-green-500' : ''
-                  }`}
+                  className={`relative bg-white rounded-2xl shadow-xl p-6 sm:p-8 flex flex-col ${isActive ? 'ring-2 ring-green-500' : ''
+                    }`}
                 >
                   {isActive && (
                     <div className="absolute -top-3 right-4 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full">
                       ACTIVE
                     </div>
                   )}
-                  
+
                   <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-1">{display.name}</h3>
                   <p className="text-slate-500 text-xs sm:text-sm mb-4">{display.tagline}</p>
 
@@ -539,7 +537,7 @@ function Section3({ isMobile }: { isMobile: boolean }) {
                       Current Plan
                     </div>
                   ) : (
-                    <button 
+                    <button
                       onClick={() => handleSubscribe(display.id)}
                       disabled={subscribing === display.id}
                       className="w-full flex items-center justify-between gap-2 bg-[#E9F6FE] 
@@ -700,7 +698,7 @@ export default function Pricing() {
         <div className={cls}>
           {/* Section 0 */}
           {currentSection === 0 && (
-            <div 
+            <div
               ref={(el: HTMLDivElement | null) => {
                 sectionRefs.current[0] = el;
               }}
@@ -711,10 +709,10 @@ export default function Pricing() {
               <Section1 isMobile={false} />
             </div>
           )}
-          
+
           {/* Section 1 */}
           {currentSection === 1 && (
-            <div 
+            <div
               ref={(el: HTMLDivElement | null) => {
                 sectionRefs.current[1] = el;
               }}
@@ -724,10 +722,10 @@ export default function Pricing() {
               <Section2 isMobile={false} />
             </div>
           )}
-          
+
           {/* Section 2 */}
           {currentSection === 2 && (
-            <div 
+            <div
               ref={(el: HTMLDivElement | null) => {
                 sectionRefs.current[2] = el;
               }}

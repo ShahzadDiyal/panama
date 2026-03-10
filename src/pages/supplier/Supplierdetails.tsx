@@ -40,10 +40,10 @@ const SUPPLIER_TYPES = ['All Types', 'Manufacturer', 'Wholesaler', 'Distributor'
 const LOCATIONS = ['All Locations', 'Panama City', 'Colón', 'Panama Oeste', 'Chiriqui', 'Bocas del Toro', 'Veraguas']
 const MOQ_RANGES = ['Any MOQ', 'Under $500', '$500–$2,000', '$2,000–$5,000', '$5,000+']
 
-function QuoteModal({ isOpen, onClose, product }: { 
-  isOpen: boolean; 
-  onClose: () => void; 
-  product: { id: number; title: string; supplier: string; moq?: number } | null 
+function QuoteModal({ isOpen, onClose, product }: {
+  isOpen: boolean;
+  onClose: () => void;
+  product: { id: number; title: string; supplier: string; moq?: number } | null
 }) {
   const { user } = useAuth()
   const [submitting, setSubmitting] = useState(false)
@@ -69,35 +69,35 @@ function QuoteModal({ isOpen, onClose, product }: {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
-    
+
     if (!formData.quantity) {
       newErrors.quantity = 'Quantity is required'
     } else if (Number(formData.quantity) <= 0) {
       newErrors.quantity = 'Quantity must be greater than 0'
     }
-    
+
     if (!formData.shipping_country) {
       newErrors.shipping_country = 'Shipping country is required'
     }
-    
+
     if (!formData.shipping_city) {
       newErrors.shipping_city = 'Shipping city is required'
     }
-    
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!user) {
       window.location.href = '/login'
       return
     }
-    
+
     if (!validateForm()) return
-    
+
     setSubmitting(true)
     try {
       await quoteService.createQuote({
@@ -108,7 +108,7 @@ function QuoteModal({ isOpen, onClose, product }: {
         shipping_city: formData.shipping_city,
         note: formData.note
       })
-      
+
       setFormData({
         quantity: '',
         unit: 'units',
@@ -116,7 +116,7 @@ function QuoteModal({ isOpen, onClose, product }: {
         shipping_city: '',
         note: ''
       })
-      
+
       onClose()
       alert('Quote request sent successfully!')
     } catch (err: any) {
@@ -134,7 +134,7 @@ function QuoteModal({ isOpen, onClose, product }: {
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-gray-900">Request Quote</h2>
-            <button 
+            <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 transition-colors"
               aria-label="Close"
@@ -144,7 +144,7 @@ function QuoteModal({ isOpen, onClose, product }: {
               </svg>
             </button>
           </div>
-          
+
           <div className="bg-blue-50 p-4 rounded-xl mb-6">
             <p className="font-semibold text-gray-900">{product.title}</p>
             <p className="text-sm text-gray-600 mt-1">Supplier: {product.supplier}</p>
@@ -152,7 +152,7 @@ function QuoteModal({ isOpen, onClose, product }: {
               <p className="text-xs text-gray-500 mt-2">Recommended MOQ: {product.moq} units</p>
             )}
           </div>
-          
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -163,22 +163,21 @@ function QuoteModal({ isOpen, onClose, product }: {
                 required
                 min="1"
                 value={formData.quantity}
-                onChange={(e) => setFormData({...formData, quantity: e.target.value})}
-                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#162B60] focus:border-transparent transition ${
-                  errors.quantity ? 'border-red-500' : 'border-gray-300'
-                }`}
+                onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#162B60] focus:border-transparent transition ${errors.quantity ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 placeholder="Enter quantity"
               />
               {errors.quantity && (
                 <p className="text-red-500 text-xs mt-1">{errors.quantity}</p>
               )}
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
               <select
                 value={formData.unit}
-                onChange={(e) => setFormData({...formData, unit: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#162B60] focus:border-transparent transition bg-white"
               >
                 <option value="units">Units</option>
@@ -190,7 +189,7 @@ function QuoteModal({ isOpen, onClose, product }: {
                 <option value="meters">Meters (m)</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Shipping Country <span className="text-red-500">*</span>
@@ -199,17 +198,16 @@ function QuoteModal({ isOpen, onClose, product }: {
                 type="text"
                 required
                 value={formData.shipping_country}
-                onChange={(e) => setFormData({...formData, shipping_country: e.target.value})}
-                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#162B60] focus:border-transparent transition ${
-                  errors.shipping_country ? 'border-red-500' : 'border-gray-300'
-                }`}
+                onChange={(e) => setFormData({ ...formData, shipping_country: e.target.value })}
+                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#162B60] focus:border-transparent transition ${errors.shipping_country ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 placeholder="e.g. United Arab Emirates"
               />
               {errors.shipping_country && (
                 <p className="text-red-500 text-xs mt-1">{errors.shipping_country}</p>
               )}
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Shipping City <span className="text-red-500">*</span>
@@ -218,30 +216,29 @@ function QuoteModal({ isOpen, onClose, product }: {
                 type="text"
                 required
                 value={formData.shipping_city}
-                onChange={(e) => setFormData({...formData, shipping_city: e.target.value})}
-                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#162B60] focus:border-transparent transition ${
-                  errors.shipping_city ? 'border-red-500' : 'border-gray-300'
-                }`}
+                onChange={(e) => setFormData({ ...formData, shipping_city: e.target.value })}
+                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#162B60] focus:border-transparent transition ${errors.shipping_city ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 placeholder="e.g. Dubai"
               />
               {errors.shipping_city && (
                 <p className="text-red-500 text-xs mt-1">{errors.shipping_city}</p>
               )}
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Additional Notes <span className="text-gray-400 text-xs">(optional)</span>
               </label>
               <textarea
                 value={formData.note}
-                onChange={(e) => setFormData({...formData, note: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, note: e.target.value })}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#162B60] focus:border-transparent transition resize-none"
                 rows={3}
                 placeholder="Any specific requirements, delivery timeline, quality standards, etc."
               />
             </div>
-            
+
             <div className="flex gap-3 pt-4">
               <button
                 type="button"
@@ -357,7 +354,7 @@ function DealCard({ deal, onQuoteClick }: { deal: Deal; onQuoteClick: (deal: Dea
             )}
           </div>
 
-          <button 
+          <button
             onClick={() => onQuoteClick(deal)}
             className="group mt-auto flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-slate-200 hover:bg-[#162B60] hover:border-[#162B60] hover:text-white text-slate-700 text-[13px] font-medium transition-all duration-200 bg-[#C3E8FF]"
           >
@@ -375,14 +372,14 @@ function DealCard({ deal, onQuoteClick }: { deal: Deal; onQuoteClick: (deal: Dea
   )
 }
 
-function Section1({ 
-  supplier, 
-  isMobile, 
-  onWhatsAppClick, 
+function Section1({
+  supplier,
+  isMobile,
+  onWhatsAppClick,
   whatsappLoading,
-  whatsappNumber 
-}: { 
-  supplier: any; 
+  whatsappNumber
+}: {
+  supplier: any;
   isMobile: boolean;
   onWhatsAppClick: () => void;
   whatsappLoading: boolean;
@@ -397,10 +394,10 @@ function Section1({
         <div className="space-y-6">
           <div className="px-4 sm:px-6 md:px-10 py-4 my-12 sm:py-6 bg-white/40 rounded-2xl md:rounded-full inline-flex flex-col justify-center items-center gap-4 w-full">
             <div className="w-full flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
-              <img 
-                className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full object-cover" 
-                src={supplier?.image || supplier_profile} 
-                alt={supplier?.name || 'Supplier'} 
+              <img
+                className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full object-cover"
+                src={supplier?.image || supplier_profile}
+                alt={supplier?.name || 'Supplier'}
               />
               <div className="flex flex-col justify-center items-start gap-4 flex-1 md:ml-8 w-full">
                 <div className="w-full flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -442,7 +439,7 @@ function Section1({
             </div>
 
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4 w-full">
-              <button 
+              <button
                 onClick={onWhatsAppClick}
                 disabled={whatsappLoading}
                 className="w-full sm:w-auto px-6 sm:px-10 py-2 sm:py-3 bg-sky-200 rounded-[76px] flex justify-center items-center gap-2.5 hover:bg-sky-300 transition-colors disabled:opacity-50"
@@ -489,11 +486,11 @@ function Section1({
   )
 }
 
-function Section2({ 
-  isMobile, 
+function Section2({
+  isMobile,
   products,
-  onQuoteClick 
-}: { 
+  onQuoteClick
+}: {
   isMobile: boolean;
   products: ProductListItem[];
   onQuoteClick: (deal: Deal) => void;
@@ -509,13 +506,13 @@ function Section2({
     focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all`
 
   const filteredProducts = products.filter(product => {
-    const matchesSearch = search === '' || 
+    const matchesSearch = search === '' ||
       product.title.toLowerCase().includes(search.toLowerCase()) ||
       product.short_description.toLowerCase().includes(search.toLowerCase())
-    
-    const matchesCategory = category === 'All' || 
+
+    const matchesCategory = category === 'All' ||
       product.category?.name === category
-    
+
     return matchesSearch && matchesCategory
   })
 
@@ -602,8 +599,8 @@ function Section2({
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 justify-items-center">
               {filteredProducts.map((product) => (
-                <DealCard 
-                  key={product.id} 
+                <DealCard
+                  key={product.id}
                   deal={{
                     id: product.id,
                     title: product.title,
@@ -612,9 +609,9 @@ function Section2({
                     priceRange: `$${parseFloat(product.price).toFixed(2)} – $${product.old_price ? parseFloat(product.old_price).toFixed(2) : parseFloat(product.price).toFixed(2)} / unit`,
                     location: product.location,
                     verified: true,
-                    images: product.images && Array.isArray(product.images) 
+                    images: product.images && Array.isArray(product.images)
                       ? product.images.map(img => getImageUrl(img.path))
-                      : product.cover_image 
+                      : product.cover_image
                         ? [getImageUrl(product.cover_image)]
                         : [],
                     isPremium: false
@@ -630,7 +627,7 @@ function Section2({
   )
 }
 
-function Section3({ isMobile, whatsappData }: { 
+function Section3({ isMobile, whatsappData }: {
   isMobile: boolean;
   whatsappData: WhatsAppResponse | null;
 }) {
@@ -638,11 +635,11 @@ function Section3({ isMobile, whatsappData }: {
   const hasActiveSubscription = subscription?.status === 'active'
 
   const whatsappNumber = whatsappData?.whatsapp_no || '+507 XXX XXXX'
-  
-  const hasRealContact = hasActiveSubscription && 
-                        whatsappData?.whatsapp_no && 
-                        whatsappData.whatsapp_no !== 'hidden' &&
-                        whatsappData.whatsapp_no !== '+507 XXX XXXX'
+
+  const hasRealContact = hasActiveSubscription &&
+    whatsappData?.whatsapp_no &&
+    whatsappData.whatsapp_no !== 'hidden' &&
+    whatsappData.whatsapp_no !== '+507 XXX XXXX'
 
   return (
     <div
@@ -659,9 +656,9 @@ function Section3({ isMobile, whatsappData }: {
                   {whatsappNumber}
                 </div>
               </div>
-               
+
             </div>
-            
+
             {!hasRealContact && (
               <div className="absolute left-1/2 -translate-x-1/2 top-[21px] flex flex-col justify-start items-center gap-1 w-full px-4">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 relative overflow-hidden">
@@ -752,7 +749,7 @@ export default function SupplierDetails() {
   const [whatsappData, setWhatsappData] = useState<WhatsAppResponse | null>(null)
   const [showQuoteModal, setShowQuoteModal] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<{ id: number; title: string; supplier: string; moq?: number } | null>(null)
-  
+
   const isAnimatingRef = useRef(false)
   const sectionRef = useRef(0)
   const wheelCooldown = useRef(false)
@@ -771,7 +768,7 @@ export default function SupplierDetails() {
         setLoading(true)
         const vendorResponse = await publicService.getVendorDetails(Number(id))
         setVendorData(vendorResponse)
-        
+
         const productsResponse = await publicService.getVendorProducts(Number(id))
         setProducts(productsResponse.products.data)
 
@@ -873,9 +870,9 @@ export default function SupplierDetails() {
       window.location.href = '/login'
       return
     }
-    
+
     if (!id) return
-    
+
     if (subscription?.status !== 'active') {
       alert('You need an active subscription to contact suppliers via WhatsApp')
       return
@@ -956,23 +953,23 @@ export default function SupplierDetails() {
   if (isMobile) {
     return (
       <div className="w-full">
-        <Section1 
-          supplier={supplier} 
-          isMobile={true} 
+        <Section1
+          supplier={supplier}
+          isMobile={true}
           onWhatsAppClick={handleWhatsAppContact}
           whatsappLoading={whatsappLoading}
           whatsappNumber={whatsappData?.whatsapp_no || null}
         />
-        <Section2 
-          isMobile={true} 
-          products={products} 
+        <Section2
+          isMobile={true}
+          products={products}
           onQuoteClick={handleQuoteClick}
         />
-        <Section3 
-          isMobile={true} 
-          whatsappData={whatsappData} 
+        <Section3
+          isMobile={true}
+          whatsappData={whatsappData}
         />
-        <QuoteModal 
+        <QuoteModal
           isOpen={showQuoteModal}
           onClose={() => setShowQuoteModal(false)}
           product={selectedProduct}
@@ -1007,7 +1004,7 @@ export default function SupplierDetails() {
         <div className={cls}>
           {/* Section 0 */}
           {currentSection === 0 && (
-            <div 
+            <div
               ref={(el: HTMLDivElement | null) => {
                 sectionRefs.current[0] = el;
               }}
@@ -1015,52 +1012,52 @@ export default function SupplierDetails() {
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               <style>{`div::-webkit-scrollbar { display: none; }`}</style>
-              <Section1 
-                supplier={supplier} 
-                isMobile={false} 
+              <Section1
+                supplier={supplier}
+                isMobile={false}
                 onWhatsAppClick={handleWhatsAppContact}
                 whatsappLoading={whatsappLoading}
                 whatsappNumber={whatsappData?.whatsapp_no || null}
               />
             </div>
           )}
-          
+
           {/* Section 1 */}
           {currentSection === 1 && (
-            <div 
+            <div
               ref={(el: HTMLDivElement | null) => {
                 sectionRefs.current[1] = el;
               }}
               className="h-screen overflow-y-auto"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              <Section2 
-                isMobile={false} 
-                products={products} 
+              <Section2
+                isMobile={false}
+                products={products}
                 onQuoteClick={handleQuoteClick}
               />
             </div>
           )}
-          
+
           {/* Section 2 */}
           {currentSection === 2 && (
-            <div 
+            <div
               ref={(el: HTMLDivElement | null) => {
                 sectionRefs.current[2] = el;
               }}
               className="h-screen overflow-y-auto"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              <Section3 
-                isMobile={false} 
-                whatsappData={whatsappData} 
+              <Section3
+                isMobile={false}
+                whatsappData={whatsappData}
               />
             </div>
           )}
         </div>
       </div>
 
-      <QuoteModal 
+      <QuoteModal
         isOpen={showQuoteModal}
         onClose={() => setShowQuoteModal(false)}
         product={selectedProduct}

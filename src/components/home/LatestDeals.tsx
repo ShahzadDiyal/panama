@@ -40,9 +40,8 @@ function DealCard({ deal }: { deal: Deal }) {
               src={src}
               alt={deal.title}
               draggable={false}
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out ${
-                i === imgIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
-              }`}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out ${i === imgIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                }`}
             />
           ))}
 
@@ -55,9 +54,8 @@ function DealCard({ deal }: { deal: Deal }) {
                   onMouseDown={(e) => e.stopPropagation()}
                   onClick={() => goTo(i)}
                   aria-label={`Image ${i + 1}`}
-                  className={`rounded-full transition-all duration-300 ${
-                    i === imgIndex ? 'w-4 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/55'
-                  }`}
+                  className={`rounded-full transition-all duration-300 ${i === imgIndex ? 'w-4 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/55'
+                    }`}
                 />
               ))}
             </div>
@@ -121,17 +119,17 @@ function DealCard({ deal }: { deal: Deal }) {
           >
             Request Quote
             {/* icon rotates 45° on hover */}
-               <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center
+            <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center
             transition-all duration-300 group-hover:rotate-[-45deg]
               bg-[#B8E4FF]` }>
-            <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor"
-              viewBox="0 0 24 24" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </span>
+              <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </span>
           </Link>
 
-           
+
 
         </div>
       </div>
@@ -144,19 +142,19 @@ const mapProductToDeal = (product: ProductListItem): Deal => {
   // Get all image URLs from images array
   const imageUrls = product.images && Array.isArray(product.images) && product.images.length > 0
     ? product.images.map(img => getImageUrl(img.path))
-    : product.cover_image 
+    : product.cover_image
       ? [getImageUrl(product.cover_image)]
       : ['https://via.placeholder.com/400x400?text=No+Image'];
-  
+
   // Format price range - check if old_price exists
   const price = parseFloat(product.price).toFixed(2);
-  const priceRange = product.old_price 
+  const priceRange = product.old_price
     ? `$${price} – $${parseFloat(product.old_price).toFixed(2)} / unit`
     : `$${price} / unit`;
-  
+
   // Format MOQ
   const moqText = `${product.moq} units`;
-  
+
   return {
     id: product.id,
     title: product.title,
@@ -174,7 +172,7 @@ const LatestDeals = () => {
   const [deals, setDeals] = useState<Deal[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  
+
   const trackRef = useRef<HTMLDivElement>(null)
   const isDragging = useRef(false)
   const startX = useRef(0)
@@ -187,24 +185,24 @@ const LatestDeals = () => {
     const fetchDeals = async () => {
       try {
         setLoading(true)
-        
+
         // Fetch first page of vendors
         const vendorsResponse = await publicService.getVendors({ page: 1 })
-        
+
         // Collect all products from all vendors (limit to first 5 vendors for performance)
         let allProducts: ProductListItem[] = []
         const vendorsToFetch = vendorsResponse.data.slice(0, 5) // Limit to first 5 vendors
-        
+
         // Fetch products for each vendor in parallel for better performance
-        const productPromises = vendorsToFetch.map(vendor => 
+        const productPromises = vendorsToFetch.map(vendor =>
           publicService.getVendorProducts(vendor.id).catch(err => {
             console.error(`Failed to fetch products for vendor ${vendor.id}`, err)
             return null
           })
         )
-        
+
         const productResponses = await Promise.all(productPromises)
-        
+
         // Combine all products
         productResponses.forEach(response => {
           if (response && response.products && response.products.data) {
@@ -212,18 +210,18 @@ const LatestDeals = () => {
           }
         })
         console.log('all producst: ', productResponses)
-        
+
         // Filter to only show deals (is_deal === true)
         const dealProducts = allProducts.filter(product => product.is_deal === true)
-        
+
         // Sort by created_at (newest first) to show latest deals
-        const sortedProducts = dealProducts.sort((a, b) => 
+        const sortedProducts = dealProducts.sort((a, b) =>
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         )
-        
+
         // Take first 12 products to avoid too many
         const recentDeals = sortedProducts.slice(0, 12)
-        
+
         // Map to Deal format
         const formattedDeals = recentDeals.map(mapProductToDeal)
         setDeals(formattedDeals)
@@ -235,7 +233,7 @@ const LatestDeals = () => {
         setLoading(false)
       }
     }
-    
+
     fetchDeals()
   }, [])
 
@@ -343,7 +341,7 @@ const LatestDeals = () => {
         {!loading && error && (
           <div className="text-center py-20 w-full">
             <p className="text-red-500">{error}</p>
-            <button 
+            <button
               onClick={() => window.location.reload()}
               className="mt-4 px-6 py-2 bg-[#162B60] text-white rounded-lg"
             >

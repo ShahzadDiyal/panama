@@ -238,22 +238,22 @@ function SupplierGridSection({ isMobile }: { isMobile: boolean }) {
     const fetchSuppliers = async () => {
       try {
         setLoadingSuppliers(true);
-        
+
         const filters: any = {
           page: 1
         };
-        
+
         if (selectedCategory !== 'All') {
           const categoryObj = categories.find(c => c.name === selectedCategory);
           if (categoryObj) {
             filters.category_id = categoryObj.id;
           }
         }
-        
+
         if (selectedLocation !== 'All Locations') {
           filters.location = selectedLocation;
         }
-        
+
         const response = await publicService.getVendors(filters);
         setApiSuppliers(response.data);
         setSuppliersError('');
@@ -274,7 +274,7 @@ function SupplierGridSection({ isMobile }: { isMobile: boolean }) {
   const mapVendorToSupplier = (vendor: VendorListItem, _index: number): Supplier => {
     // Determine premium status - you can customize this logic
     const isPremium = vendor.id % 3 === 0;
-    
+
     return {
       id: vendor.id,
       name: vendor.business_name,
@@ -294,8 +294,8 @@ function SupplierGridSection({ isMobile }: { isMobile: boolean }) {
       if (search) {
         const searchLower = search.toLowerCase();
         return vendor.business_name.toLowerCase().includes(searchLower) ||
-               (vendor.category?.name || '').toLowerCase().includes(searchLower) ||
-               (vendor.about || '').toLowerCase().includes(searchLower);
+          (vendor.category?.name || '').toLowerCase().includes(searchLower) ||
+          (vendor.about || '').toLowerCase().includes(searchLower);
       }
       return true;
     })
@@ -397,12 +397,12 @@ function SupplierGridSection({ isMobile }: { isMobile: boolean }) {
 
               {/* Reset */}
               <button
-                onClick={() => { 
-                  setSelectedCategory('All'); 
-                  setSupplierType('All Types'); 
-                  setSelectedLocation('All Locations'); 
-                  setMoq('Any MOQ'); 
-                  setSearch('') 
+                onClick={() => {
+                  setSelectedCategory('All');
+                  setSupplierType('All Types');
+                  setSelectedLocation('All Locations');
+                  setMoq('Any MOQ');
+                  setSearch('')
                 }}
                 className="w-9 h-9 flex items-center justify-center hover:bg-yellow-100 rounded-lg transition-all flex-shrink-0"
                 title="Reset filters"
@@ -431,8 +431,8 @@ function SupplierGridSection({ isMobile }: { isMobile: boolean }) {
           {!loadingSuppliers && suppliersError && (
             <div className="text-center py-20">
               <p className="text-red-500">{suppliersError}</p>
-              <button 
-                onClick={() => window.location.reload()} 
+              <button
+                onClick={() => window.location.reload()}
                 className="mt-4 px-6 py-2 bg-[#162B60] text-white rounded-lg"
               >
                 Try Again
@@ -761,7 +761,7 @@ export default function Supplier() {
         <div className={cls}>
           {/* Section 0 */}
           {currentSection === 0 && (
-            <div 
+            <div
               ref={(el: HTMLDivElement | null) => {
                 sectionRefs.current[0] = el;
               }}
@@ -772,10 +772,10 @@ export default function Supplier() {
               <SupplierGridSection isMobile={false} />
             </div>
           )}
-          
+
           {/* Section 1 */}
           {currentSection === 1 && (
-            <div 
+            <div
               ref={(el: HTMLDivElement | null) => {
                 sectionRefs.current[1] = el;
               }}
@@ -785,10 +785,10 @@ export default function Supplier() {
               <UpsellSection isMobile={false} />
             </div>
           )}
-          
+
           {/* Section 2 */}
           {currentSection === 2 && (
-            <div 
+            <div
               ref={(el: HTMLDivElement | null) => {
                 sectionRefs.current[2] = el;
               }}

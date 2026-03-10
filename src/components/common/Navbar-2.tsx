@@ -77,8 +77,8 @@ export default function Navbar2() {
                 className={({ isActive }) =>
                   `flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-[16px] transition-all duration-200
                   ${isActive
-                    ? 'text-amber-400 bg-amber-400/10'
-                    : 'text-slate-300 hover:text-white hover:bg-white/8'
+                    ? 'text-black-400 bg-red-400/10'
+                    : 'text-slate-300 hover:text-white hover:bg-black/8'
                   }`
                 }
               >
@@ -91,14 +91,14 @@ export default function Navbar2() {
           {/* Desktop Right Side — Auth Buttons or User Menu */}
           <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
             {user ? (
-                <div className="relative flex flex-wrap items-center" ref={userMenuRef}>
+              <div className="relative flex flex-wrap items-center" ref={userMenuRef}>
                 <Link
-                      to="/quotes"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                     My Quotes
-                    </Link>
+                  to="/quotes"
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={() => setUserMenuOpen(false)}
+                >
+                  My Quotes
+                </Link>
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors duration-200"
@@ -123,7 +123,7 @@ export default function Navbar2() {
                       <p className="text-sm font-medium text-gray-900">{user.name}</p>
                       <p className="text-xs text-gray-500">{user.email}</p>
                     </div>
-                  
+
                     <button
                       onClick={handleLogout}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -204,12 +204,12 @@ export default function Navbar2() {
                   <p className="text-xs text-gray-500">{user.email}</p>
                 </div>
                 <Link
-                      to="/quotes"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                     My Quotes
-                    </Link>
+                  to="/quotes"
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={() => setUserMenuOpen(false)}
+                >
+                  My Quotes
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

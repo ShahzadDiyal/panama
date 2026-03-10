@@ -81,7 +81,7 @@ function VerifiedBadgeIcon() {
 }
 
 // ── SupplierCard ──────────────────────────────────────────────────────────
-function SupplierCard({ supplier,  }: { supplier: Supplier; featured?: boolean }) {
+function SupplierCard({ supplier, }: { supplier: Supplier; featured?: boolean }) {
 
 
   return (
@@ -143,7 +143,7 @@ function SupplierCard({ supplier,  }: { supplier: Supplier; featured?: boolean }
 
 
 
-              
+
         {/* CTA button */}
         <Link
           to={`/supplier/${supplier.id}`}
@@ -154,7 +154,7 @@ function SupplierCard({ supplier,  }: { supplier: Supplier; featured?: boolean }
              `}
         >
           View Profile
-         <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center
+          <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center
             transition-all duration-300 group-hover:rotate-[-45deg]
               bg-[#B8E4FF]` }>
             <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor"
