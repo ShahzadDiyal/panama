@@ -121,13 +121,17 @@ function DealCard({ deal }: { deal: Deal }) {
           >
             Request Quote
             {/* icon rotates 45° on hover */}
-            <svg
-              className="w-8 h-8 transition-transform duration-300 group-hover:rotate-310 bg-[#CFF6FF] rounded-full text-black p-1"
-              fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}
-            >
+               <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center
+            transition-all duration-300 group-hover:rotate-[-45deg]
+              bg-[#B8E4FF]` }>
+            <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
+          </span>
           </Link>
+
+           
 
         </div>
       </div>
@@ -279,7 +283,7 @@ const LatestDeals = () => {
   const onTouchEnd = () => { isDragging.current = false }
 
   return (
-    <section className="w-full py-20 sm:py-16 bg-white overflow-hidden">
+    <section className="w-full py-10 sm:py-16 bg-white overflow-hidden">
 
       {/* Header: pl-5 (20px) on large, equal on small */}
       <div className="flex items-center justify-between mb-6 px-4 sm:px-5 lg:pl-8 lg:pr-8">

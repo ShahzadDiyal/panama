@@ -244,12 +244,12 @@ const PricingSection = () => {
                       transition-all duration-200"
                   >
                     Get Access Now
-                    <svg
-                      className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5"
-                      fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
+                  <svg
+              className="w-8 h-8 transition-transform duration-300 group-hover:rotate-310 bg-[#CFF6FF] rounded-full text-black p-1"
+              fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
                   </Link>
                 </div>
               )

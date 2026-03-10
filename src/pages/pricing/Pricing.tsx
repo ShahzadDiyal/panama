@@ -9,11 +9,9 @@ import type { Plan } from '../../types'
 // Assets
 import pricing_illustrator from '../../assets/pricing_herosection_img.svg'
 import arrow_icon from '../../assets/arrow_left_icon.svg'
-// import dropdown_icon from '../../assets/dropdown_icon.png'
 
 // ── Section 1: Hero ──────────────────────────────────────────────────────
-function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean }) {
-  // No click navigation – only drag or keyboard
+function Section1({ isMobile }: { isMobile: boolean }) {
   return (
     <div
       className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? '' : ''}`}
@@ -22,23 +20,22 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
       <div className="max-w-7xl mx-auto">
         <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden px-4 sm:px-6 md:px-10 py-12 sm:py-20">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-10">
-            <div className="flex flex-col items-start text-center lg:text-left no-section-click">
+            <div className="flex flex-col items-start text-center lg:text-left">
               <h3 className="text-2xl sm:text-3xl lg:text-[40px] font-bold text-slate-800 leading-snug mb-2 sm:mb-3">
                 Unlock Full Access to <br className="hidden sm:block" /> Verified Panama Suppliers
               </h3>
               <p className="text-slate-700 text-sm sm:text-[15px] font-semibold leading-relaxed">
                 Choose the plan that fits your business needs and start sourcing directly from trusted suppliers.
               </p>
-              <div className="mt-4 sm:mt-8 w-full flex justify-center lg:justify-start no-section-click">
+              <div className="mt-4 sm:mt-8 w-full flex justify-center lg:justify-start">
                 <Link
                   to="/pricing"
-                  onClick={(e) => e.stopPropagation()}
-                  className="no-section-click inline-flex items-center gap-3 bg-[#162B60] hover:bg-blue-900
+                  className="inline-flex items-center gap-3 bg-[#162B60] hover:bg-blue-900
                     text-white font-semibold px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-[20px] text-sm sm:text-[15px]
                     transition-all duration-200 hover:scale-105 shadow-lg"
                 >
                   Start a Sourcing Request
-                  <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#CFF6FF] flex items-center justify-center flex-shrink-0 no-section-click">
+                  <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#CFF6FF] flex items-center justify-center flex-shrink-0">
                     <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-black" fill="none" stroke="currentColor"
                       viewBox="0 0 24 24" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -48,7 +45,7 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
               </div>
             </div>
 
-            <div className="flex-shrink-0 w-full lg:w-auto flex justify-center no-section-click">
+            <div className="flex-shrink-0 w-full lg:w-auto flex justify-center">
               <img
                 src={pricing_illustrator}
                 alt=""
@@ -63,7 +60,7 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
 }
 
 // ── Section 2: Pricing Cards (first occurrence) ──────────────────────────
-function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: () => void; isMobile: boolean }) {
+function Section2({ isMobile }: { isMobile: boolean }) {
   const { user, subscription, refreshSubscription } = useAuth()
   const [plans, setPlans] = useState<Plan[]>([])
   const [loading, setLoading] = useState(true)
@@ -125,7 +122,6 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
     }
   }
 
-  // No click navigation – only drag or keyboard
   // Check if user has this plan already
   const hasActivePlan = (planId: number) => {
     return subscription?.status === 'active' && subscription.plan_id === planId
@@ -212,12 +208,12 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
 
   return (
     <div
-      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? '' : ''}`}
+      className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-36 ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(135deg, #f5f0ff 0%, #eef1fb 100%)' }}
     >
-      <div className="max-w-7xl mx-auto no-section-click">
+      <div className="max-w-7xl mx-auto">
         {/* Trust badges */}
-        <div className="no-section-click">
+        <div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-8 sm:mb-10 px-4 sm:px-6 lg:px-20">
             {['Secure payments', 'Cancel anytime', 'Direct supplier access', 'No hidden fees'].map((pill) => (
               <span key={pill}
@@ -265,7 +261,7 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
               return (
                 <div
                   key={plan.id}
-                  className={`relative bg-white rounded-2xl shadow-xl p-6 sm:p-8 flex flex-col no-section-click ${
+                  className={`relative bg-white rounded-2xl shadow-xl p-6 sm:p-8 flex flex-col ${
                     isActive ? 'ring-2 ring-green-500' : ''
                   }`}
                 >
@@ -300,7 +296,7 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
                     <button 
                       onClick={() => handleSubscribe(display.id)}
                       disabled={subscribing === display.id}
-                      className="no-section-click w-full flex items-center justify-between gap-2 bg-[#E9F6FE] hover:bg-blue-900 
+                      className="w-full flex items-center justify-between gap-2 bg-[#E9F6FE] hover:bg-blue-900 
                       hover:text-white text-black font-semibold px-4 py-3 sm:px-5 sm:py-3 rounded-[5px] 
                       transition-all duration-200 group text-sm sm:text-base border
                       disabled:opacity-50 disabled:cursor-not-allowed"
@@ -322,7 +318,7 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
 }
 
 // ── Section 3: Pricing Cards (second occurrence) ─────────────────────────
-function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: () => void; isMobile: boolean }) {
+function Section3({ isMobile }: { isMobile: boolean }) {
   const { user, subscription, refreshSubscription } = useAuth()
   const [plans, setPlans] = useState<Plan[]>([])
   const [loading, setLoading] = useState(true)
@@ -384,7 +380,6 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
     }
   }
 
-  // No click navigation – only drag or keyboard
   // Check if user has this plan already
   const hasActivePlan = (planId: number) => {
     return subscription?.status === 'active' && subscription.plan_id === planId
@@ -474,7 +469,7 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
       className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? '' : ''}`}
       style={{ background: 'linear-gradient(135deg, #f5f0ff 0%, #eef1fb 100%)' }}
     >
-      <div className="max-w-7xl mx-auto no-section-click pt-12 sm:pt-20">
+      <div className="max-w-7xl mx-auto pt-12 sm:pt-20">
         {/* Loading state */}
         {loading && (
           <div className="flex justify-center items-center py-20">
@@ -512,7 +507,7 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
               return (
                 <div
                   key={plan.id}
-                  className={`relative bg-white rounded-2xl shadow-xl p-6 sm:p-8 flex flex-col no-section-click ${
+                  className={`relative bg-white rounded-2xl shadow-xl p-6 sm:p-8 flex flex-col ${
                     isActive ? 'ring-2 ring-green-500' : ''
                   }`}
                 >
@@ -547,7 +542,7 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
                     <button 
                       onClick={() => handleSubscribe(display.id)}
                       disabled={subscribing === display.id}
-                      className="no-section-click w-full flex items-center justify-between gap-2 bg-[#E9F6FE] 
+                      className="w-full flex items-center justify-between gap-2 bg-[#E9F6FE] 
                       hover:bg-blue-900 hover:text-white text-black font-semibold px-4 py-2.5 
                       sm:px-5 sm:py-3 rounded-[5px] border cursor-pointer transition-all duration-200 group text-sm sm:text-base 
                       disabled:opacity-50 disabled:cursor-not-allowed"
@@ -573,15 +568,13 @@ const TOTAL_SECTIONS = 3
 
 export default function Pricing() {
   const { setShowNavbar2 } = useNavbar()
-  const [section, setSection] = useState(0)
+  const [currentSection, setCurrentSection] = useState(0)
   const [leavingUp, setLeavingUp] = useState(false)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
   const isAnimatingRef = useRef(false)
   const sectionRef = useRef(0)
-
-  const [dragStartY, setDragStartY] = useState<number | null>(null)
-  const [dragEndY, setDragEndY] = useState<number | null>(null)
-  const [isDragging, setIsDragging] = useState(false)
+  const wheelCooldown = useRef(false)
+  const sectionRefs = useRef<(HTMLDivElement | null)[]>([])
 
   useEffect(() => {
     setShowNavbar2(true)
@@ -596,7 +589,7 @@ export default function Pricing() {
 
   const updateSection = (n: number) => {
     sectionRef.current = n
-    setSection(n)
+    setCurrentSection(n)
   }
 
   const goNext = () => {
@@ -632,53 +625,55 @@ export default function Pricing() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [isMobile])
 
-  // Drag handlers for section navigation
-  const handleMouseDown = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
-    if (!isInteractive && !isMobile) {
-      setDragStartY(e.clientY)
-      setIsDragging(true)
-    }
-  }
+  // Scroll-based navigation
+  useEffect(() => {
+    if (isMobile) return
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || isMobile) return
-    setDragEndY(e.clientY)
-  }
+    const handleWheel = (e: WheelEvent) => {
+      if (wheelCooldown.current) return
+      if (isAnimatingRef.current) return
 
-  const handleMouseUp = () => {
-    if (isDragging && dragStartY !== null && dragEndY !== null && !isMobile) {
-      const dragDistance = dragEndY - dragStartY
-      
-      // If dragged down significantly (pull to go to previous section)
-      if (dragDistance > 50) {
-        goPrev()
+      const currentSectionEl = sectionRefs.current[sectionRef.current]
+      if (!currentSectionEl) return
+
+      const { scrollTop, scrollHeight, clientHeight } = currentSectionEl
+      const isAtTop = scrollTop <= 5
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 5
+
+      if (e.deltaY > 0 && isAtBottom) {
+        e.preventDefault()
+        goNextRef.current()
+        wheelCooldown.current = true
+        setTimeout(() => {
+          wheelCooldown.current = false
+        }, 800)
       }
-      // If dragged up significantly (push to go to next section)
-      else if (dragDistance < -50) {
-        goNext()
+      else if (e.deltaY < 0 && isAtTop) {
+        e.preventDefault()
+        goPrevRef.current()
+        wheelCooldown.current = true
+        setTimeout(() => {
+          wheelCooldown.current = false
+        }, 800)
       }
     }
-    
-    // Reset drag state
-    setDragStartY(null)
-    setDragEndY(null)
-    setIsDragging(false)
-  }
+
+    window.addEventListener('wheel', handleWheel, { passive: false })
+    return () => window.removeEventListener('wheel', handleWheel)
+  }, [isMobile])
 
   // Mobile: stacked sections
   if (isMobile) {
     return (
       <div className="w-full">
-        <Section1 onNext={goNext} isMobile={true} />
-        <Section2 onPrev={goPrev} onNext={goNext} isMobile={true} />
-        <Section3 onPrev={goPrev} onNext={goNext} isMobile={true} />
+        <Section1 isMobile={true} />
+        <Section2 isMobile={true} />
+        <Section3 isMobile={true} />
       </div>
     )
   }
 
-  // Desktop: animated sections
+  // Desktop: section-by-section with animation
   const cls = leavingUp ? 'sourcing-leave-up' : 'sourcing-enter-down'
 
   return (
@@ -701,17 +696,47 @@ export default function Pricing() {
         }
       `}</style>
 
-      <div 
-        className="w-full overflow-hidden"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-      >
+      <div className="w-full overflow-hidden">
         <div className={cls}>
-          {section === 0 && <Section1 onNext={goNext} isMobile={false} />}
-          {section === 1 && <Section2 onPrev={goPrev} onNext={goNext} isMobile={false} />}
-          {section === 2 && <Section3 onPrev={goPrev} onNext={goNext} isMobile={false} />}
+          {/* Section 0 */}
+          {currentSection === 0 && (
+            <div 
+              ref={(el: HTMLDivElement | null) => {
+                sectionRefs.current[0] = el;
+              }}
+              className="h-screen overflow-y-auto"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <style>{`div::-webkit-scrollbar { display: none; }`}</style>
+              <Section1 isMobile={false} />
+            </div>
+          )}
+          
+          {/* Section 1 */}
+          {currentSection === 1 && (
+            <div 
+              ref={(el: HTMLDivElement | null) => {
+                sectionRefs.current[1] = el;
+              }}
+              className="h-screen overflow-y-auto"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <Section2 isMobile={false} />
+            </div>
+          )}
+          
+          {/* Section 2 */}
+          {currentSection === 2 && (
+            <div 
+              ref={(el: HTMLDivElement | null) => {
+                sectionRefs.current[2] = el;
+              }}
+              className="h-screen overflow-y-auto"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <Section3 isMobile={false} />
+            </div>
+          )}
         </div>
       </div>
     </>

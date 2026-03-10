@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import herobg from '../../assets/heroImg.png'
-import arrow1 from '../../assets/arrow-1.png'
+// import arrow1 from '../../assets/arrow-1.png'
 import users from '../../assets/users_icon.png'
 import chat from '../../assets/telegram_icon.png'
 import verifiedbadge from '../../assets/verified_tick.png'
@@ -130,18 +130,24 @@ export default function HeroSection() {
 
             {/* Center: Explore button */}
             <div className="flex justify-center items-end pb-1 px-6">
+              
               <Link
                 to="/supplier"
-                className="flex justify-center items-center gap-2.5 w-full md:px-20 py-3.5 rounded-xl
-      bg-[#162B60] text-white font-semibold text-sm
-      backdrop-blur-sm border border-white/10 transition-all duration-200
-      shadow-xl hover:-translate-y-0.5"
+                className={`group mt-auto flex items-center justify-center gap-2 w-full lg:px-24  
+            py-4 sm:py-3 rounded-xl text-[16px] sm:text-[13px] font-semibold transition-all duration-200
+            bg-[#162B60] text-white hover:bg-[#162B60] hover:text-white
+             `}
               >
                 Explore Suppliers
 
-                <span className="w-6 h-6 rounded-full bg-[#CFF6FF] flex items-center justify-center">
-                  <img src={arrow1} alt="" />
-                </span>
+                <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center
+            transition-all duration-300 group-hover:rotate-[-45deg]
+              bg-[#B8E4FF]` }>
+            <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </span>
               </Link>
             </div>
 
@@ -173,15 +179,42 @@ export default function HeroSection() {
                   </div>
                 </div>
 
+ {/* <Link
+                to="/supplier"
+                className={`group mt-auto flex items-center justify-center gap-2 w-full lg:px-24  
+            py-4 sm:py-3 rounded-xl text-[16px] sm:text-[13px] font-semibold transition-all duration-200
+            bg-[#162B60] text-white hover:bg-[#162B60] hover:text-white
+             `}
+              >
+                Explore Suppliers
+
+                <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center
+            transition-all duration-300 group-hover:rotate-[-45deg]
+              bg-[#B8E4FF]` }>
+            <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </span>
+              </Link> */}
+
+
                 <Link
                   to="/supplier"
-                  className="flex items-center justify-center gap-2 w-full py-4 rounded-xl
-                    bg-slate-800 hover:bg-slate-700 text-white text-[16px] font-semibold transition-colors duration-200"
+                 className={`group mt-auto flex items-center justify-center gap-2 w-full lg:px-10  
+            py-4 sm:py-3 rounded-xl text-[16px] sm:text-[13px] font-semibold transition-all duration-200
+            bg-[#162B60] text-white hover:bg-[#162B60] hover:text-white
+             `}
                 >
                   View Profile
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
+                    <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center
+            transition-all duration-300 group-hover:rotate-[-45deg]
+              bg-[#B8E4FF]` }>
+            <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </span>
                 </Link>
               </div>
             </div>

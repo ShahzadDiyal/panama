@@ -12,8 +12,8 @@ import recent_icon from '../../assets/recent_icon.svg'
 import star_icon from '../../assets/star_icon.png'
 import arrow_left_icon from '../../assets/arrow_left_icon.svg'
 import dropdown_icon from '../../assets/dropdown_icon.png'
+import lock_icon from '../../assets/lock_icon_1.svg'
 
-// ── Types ─────────────────────────────────────────────────────────────────
 interface Deal {
   id: number
   title: string
@@ -23,7 +23,16 @@ interface Deal {
   location: string
   verified: boolean
   images: string[]
-  isPremium?: boolean // Flag for premium cards
+  isPremium?: boolean
+}
+
+interface WhatsAppResponse {
+  vendor_id: number
+  vendor_name: string
+  product_id: number
+  product_name: string
+  whatsapp_no: string
+  whatsapp_link: string
 }
 
 const CATEGORIES = ['All', 'Food & Beverage', 'Apparel', 'Electronics', 'Packaging & Materials', 'Beauty & Personal Care', 'Metals', 'Automotive', 'Healthcare', 'Handicrafts', 'Logistics', 'Marine & Fishing']
@@ -31,38 +40,240 @@ const SUPPLIER_TYPES = ['All Types', 'Manufacturer', 'Wholesaler', 'Distributor'
 const LOCATIONS = ['All Locations', 'Panama City', 'Colón', 'Panama Oeste', 'Chiriqui', 'Bocas del Toro', 'Veraguas']
 const MOQ_RANGES = ['Any MOQ', 'Under $500', '$500–$2,000', '$2,000–$5,000', '$5,000+']
 
-// ── DealCard Component ───────────────────────────────────────────────────
-function DealCard({ deal }: { deal: Deal }) {
-  const [imgIndex, setImgIndex] = useState<number>(0)
+function QuoteModal({ isOpen, onClose, product }: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  product: { id: number; title: string; supplier: string; moq?: number } | null 
+}) {
   const { user } = useAuth()
+  const [submitting, setSubmitting] = useState(false)
+  const [formData, setFormData] = useState({
+    quantity: product?.moq || '',
+    unit: 'units',
+    shipping_country: '',
+    shipping_city: '',
+    note: ''
+  })
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    if (product) {
+      setFormData(prev => ({
+        ...prev,
+        quantity: product.moq || ''
+      }))
+    }
+  }, [product])
+
+  if (!isOpen || !product) return null
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {}
+    
+    if (!formData.quantity) {
+      newErrors.quantity = 'Quantity is required'
+    } else if (Number(formData.quantity) <= 0) {
+      newErrors.quantity = 'Quantity must be greater than 0'
+    }
+    
+    if (!formData.shipping_country) {
+      newErrors.shipping_country = 'Shipping country is required'
+    }
+    
+    if (!formData.shipping_city) {
+      newErrors.shipping_city = 'Shipping city is required'
+    }
+    
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!user) {
+      window.location.href = '/login'
+      return
+    }
+    
+    if (!validateForm()) return
+    
+    setSubmitting(true)
+    try {
+      await quoteService.createQuote({
+        product_id: product.id,
+        quantity: Number(formData.quantity),
+        unit: formData.unit,
+        shipping_country: formData.shipping_country,
+        shipping_city: formData.shipping_city,
+        note: formData.note
+      })
+      
+      setFormData({
+        quantity: '',
+        unit: 'units',
+        shipping_country: '',
+        shipping_city: '',
+        note: ''
+      })
+      
+      onClose()
+      alert('Quote request sent successfully!')
+    } catch (err: any) {
+      console.error('Failed to send quote', err)
+      const errorMessage = err.response?.data?.message || 'Failed to send quote request. Please try again.'
+      alert(errorMessage)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-gray-900">Request Quote</h2>
+            <button 
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Close"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          
+          <div className="bg-blue-50 p-4 rounded-xl mb-6">
+            <p className="font-semibold text-gray-900">{product.title}</p>
+            <p className="text-sm text-gray-600 mt-1">Supplier: {product.supplier}</p>
+            {product.moq && (
+              <p className="text-xs text-gray-500 mt-2">Recommended MOQ: {product.moq} units</p>
+            )}
+          </div>
+          
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Quantity <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                required
+                min="1"
+                value={formData.quantity}
+                onChange={(e) => setFormData({...formData, quantity: e.target.value})}
+                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#162B60] focus:border-transparent transition ${
+                  errors.quantity ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Enter quantity"
+              />
+              {errors.quantity && (
+                <p className="text-red-500 text-xs mt-1">{errors.quantity}</p>
+              )}
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+              <select
+                value={formData.unit}
+                onChange={(e) => setFormData({...formData, unit: e.target.value})}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#162B60] focus:border-transparent transition bg-white"
+              >
+                <option value="units">Units</option>
+                <option value="kg">Kilograms (kg)</option>
+                <option value="pcs">Pieces (pcs)</option>
+                <option value="boxes">Boxes</option>
+                <option value="liters">Liters (L)</option>
+                <option value="tons">Tons</option>
+                <option value="meters">Meters (m)</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Shipping Country <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.shipping_country}
+                onChange={(e) => setFormData({...formData, shipping_country: e.target.value})}
+                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#162B60] focus:border-transparent transition ${
+                  errors.shipping_country ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="e.g. United Arab Emirates"
+              />
+              {errors.shipping_country && (
+                <p className="text-red-500 text-xs mt-1">{errors.shipping_country}</p>
+              )}
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Shipping City <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.shipping_city}
+                onChange={(e) => setFormData({...formData, shipping_city: e.target.value})}
+                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#162B60] focus:border-transparent transition ${
+                  errors.shipping_city ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="e.g. Dubai"
+              />
+              {errors.shipping_city && (
+                <p className="text-red-500 text-xs mt-1">{errors.shipping_city}</p>
+              )}
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Additional Notes <span className="text-gray-400 text-xs">(optional)</span>
+              </label>
+              <textarea
+                value={formData.note}
+                onChange={(e) => setFormData({...formData, note: e.target.value})}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#162B60] focus:border-transparent transition resize-none"
+                rows={3}
+                placeholder="Any specific requirements, delivery timeline, quality standards, etc."
+              />
+            </div>
+            
+            <div className="flex gap-3 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 py-3 px-4 border border-gray-300 rounded-xl text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                disabled={submitting}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="flex-1 py-3 px-4 bg-[#162B60] text-white font-medium rounded-xl hover:bg-blue-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submitting ? 'Sending...' : 'Submit Quote'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function DealCard({ deal, onQuoteClick }: { deal: Deal; onQuoteClick: (deal: Deal) => void }) {
+  const [imgIndex, setImgIndex] = useState<number>(0)
 
   const goTo = (i: number) => setImgIndex(i)
 
   const cardClasses = deal.isPremium
     ? "flex-shrink-0 w-[300px] sm:w-[250px] md:w-[260px] lg:w-[270px] xl:w-[280px] bg-white/20 backdrop-blur-lg rounded-3xl overflow-hidden border border-white/30 shadow-lg relative"
     : "flex-shrink-0 w-[300px] sm:w-[250px] md:w-[260px] lg:w-[270px] xl:w-[280px] bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-shadow duration-300 p-[10px]"
-
-  const handleRequestQuote = async () => {
-    if (!user) {
-      window.location.href = '/login'
-      return
-    }
-    
-    try {
-      await quoteService.createQuote({
-        product_id: deal.id,
-        quantity: 1000,
-        unit: 'pcs',
-        shipping_country: 'UAE',
-        shipping_city: 'Dubai',
-        note: 'I need best price for bulk order. Please share lead time and MOQ.'
-      })
-      alert('Quote request sent successfully!')
-    } catch (err) {
-      console.error('Failed to send quote', err)
-      alert('Failed to send quote request')
-    }
-  }
 
   return (
     <div className={`${cardClasses} p-[10px]`}>
@@ -147,7 +358,7 @@ function DealCard({ deal }: { deal: Deal }) {
           </div>
 
           <button 
-            onClick={handleRequestQuote}
+            onClick={() => onQuoteClick(deal)}
             className="group mt-auto flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-slate-200 hover:bg-[#162B60] hover:border-[#162B60] hover:text-white text-slate-700 text-[13px] font-medium transition-all duration-200 bg-[#C3E8FF]"
           >
             Request Quote
@@ -164,15 +375,19 @@ function DealCard({ deal }: { deal: Deal }) {
   )
 }
 
-// ── Section 1 Component ─────────────────────────────────────────────────
-function Section1({ supplier, onNext, isMobile, onWhatsAppClick, whatsappLoading }: { 
+function Section1({ 
+  supplier, 
+  isMobile, 
+  onWhatsAppClick, 
+  whatsappLoading,
+  whatsappNumber 
+}: { 
   supplier: any; 
-  onNext: () => void; 
   isMobile: boolean;
   onWhatsAppClick: () => void;
   whatsappLoading: boolean;
+  whatsappNumber: string | null;
 }) {
-  // No click handler – navigation only via drag or keyboard
   return (
     <div
       className={`min-h-screen ${!isMobile ? '' : ''}`}
@@ -180,7 +395,6 @@ function Section1({ supplier, onNext, isMobile, onWhatsAppClick, whatsappLoading
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pt-28">
         <div className="space-y-6">
-          {/* Main Supplier Card */}
           <div className="px-4 sm:px-6 md:px-10 py-4 my-12 sm:py-6 bg-white/40 rounded-2xl md:rounded-full inline-flex flex-col justify-center items-center gap-4 w-full">
             <div className="w-full flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
               <img 
@@ -227,26 +441,20 @@ function Section1({ supplier, onNext, isMobile, onWhatsAppClick, whatsappLoading
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4 w-full">
               <button 
                 onClick={onWhatsAppClick}
                 disabled={whatsappLoading}
-                className="w-full sm:w-auto px-6 sm:px-10 py-2 sm:py-3 bg-sky-200 rounded-[76px] flex justify-center items-center gap-2.5 hover:bg-sky-300 transition-colors disabled:opacity-50 no-section-click"
+                className="w-full sm:w-auto px-6 sm:px-10 py-2 sm:py-3 bg-sky-200 rounded-[76px] flex justify-center items-center gap-2.5 hover:bg-sky-300 transition-colors disabled:opacity-50"
               >
                 <div className="justify-start text-zinc-800 text-sm sm:text-base font-semibold">
-                  {whatsappLoading ? 'Loading...' : 'Contact via WhatsApp'}
+                  {whatsappLoading ? 'Loading...' : whatsappNumber ? `WhatsApp: ${whatsappNumber}` : 'Contact via WhatsApp'}
                 </div>
-                <img src={arrow_left_icon} alt="" className="w-4 h-4" />
-              </button>
-              <button className="w-full sm:w-auto px-6 sm:px-10 py-2 sm:py-3 bg-sky-200 rounded-[76px] flex justify-center items-center gap-2.5 hover:bg-sky-300 transition-colors no-section-click">
-                <div className="justify-start text-zinc-800 text-sm sm:text-base font-semibold">Request Quote</div>
                 <img src={arrow_left_icon} alt="" className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          {/* About & Details Section */}
           <div className="w-full p-4 sm:p-6 md:p-10 bg-white/30 mt-10 rounded-2xl flex flex-col lg:flex-row justify-start items-start gap-8 lg:gap-80">
             <div className="flex-1 flex flex-col justify-start items-start gap-4 w-full">
               <div className="self-stretch justify-start text-zinc-800/70 text-xl sm:text-2xl font-normal capitalize leading-7 sm:leading-9">
@@ -281,12 +489,14 @@ function Section1({ supplier, onNext, isMobile, onWhatsAppClick, whatsappLoading
   )
 }
 
-// ── Section 2 Component ─────────────────────────────────────────────────
-function Section2({ onNext, onPrev, isMobile, products }: { 
-  onNext: () => void; 
-  onPrev: () => void; 
+function Section2({ 
+  isMobile, 
+  products,
+  onQuoteClick 
+}: { 
   isMobile: boolean;
   products: ProductListItem[];
+  onQuoteClick: (deal: Deal) => void;
 }) {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('All')
@@ -298,9 +508,6 @@ function Section2({ onNext, onPrev, isMobile, products }: {
     pl-3 pr-8 py-2 text-xs sm:text-sm text-slate-600 font-medium w-full
     focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all`
 
-  // No click handler – navigation only via drag or keyboard
-
-  // Filter products based on search and category
   const filteredProducts = products.filter(product => {
     const matchesSearch = search === '' || 
       product.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -319,9 +526,7 @@ function Section2({ onNext, onPrev, isMobile, products }: {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pt-28">
         <div className="mt-8">
-          {/* Search */}
-          <div className="no-section-click max-w-4xl mx-auto mt-4 sm:mt-5"
-            onClick={(e) => e.stopPropagation()}>
+          <div className="max-w-4xl mx-auto mt-4 sm:mt-5">
             <div className="relative w-full">
               <input
                 type="text"
@@ -331,7 +536,7 @@ function Section2({ onNext, onPrev, isMobile, products }: {
                 className="w-full pl-4 sm:pl-5 pr-10 sm:pr-12 py-3 sm:py-3.5 border border-gray-400
                 rounded-full text-slate-700 placeholder-gray-400 text-sm sm:text-[15px] font-medium
                 bg-white/60 focus:bg-white focus:outline-none focus:border-blue-300
-                focus:ring-2 focus:ring-blue-100 transition-all no-section-click"
+                focus:ring-2 focus:ring-blue-100 transition-all"
               />
               <span className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2">
                 <svg className="w-5 h-5 sm:w-6 sm:h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -342,14 +547,12 @@ function Section2({ onNext, onPrev, isMobile, products }: {
             </div>
           </div>
 
-          {/* Filters */}
-          <div className="no-section-click max-w-7xl mx-auto mt-4 sm:mt-6 my-6"
-            onClick={(e) => e.stopPropagation()}>
+          <div className="max-w-7xl mx-auto mt-4 sm:mt-6 my-6">
             <div className="bg-white/50 rounded-xl p-3 sm:p-4">
               <div className="justify-between flex flex-wrap">
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                   <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
-                    <select value={category} onChange={(e) => setCategory(e.target.value)} className={`${dropdownClass} no-section-click`}>
+                    <select value={category} onChange={(e) => setCategory(e.target.value)} className={`${dropdownClass}`}>
                       <option value="All">Category</option>
                       {CATEGORIES.filter(c => c !== 'All').map(c => <option key={c}>{c}</option>)}
                     </select>
@@ -357,21 +560,21 @@ function Section2({ onNext, onPrev, isMobile, products }: {
                   </div>
 
                   <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
-                    <select value={supplierType} onChange={(e) => setSupplierType(e.target.value)} className={`${dropdownClass} no-section-click`}>
+                    <select value={supplierType} onChange={(e) => setSupplierType(e.target.value)} className={`${dropdownClass}`}>
                       {SUPPLIER_TYPES.map(t => <option key={t}>{t}</option>)}
                     </select>
                     <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
                   </div>
 
                   <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
-                    <select value={location} onChange={(e) => setLocation(e.target.value)} className={`${dropdownClass} no-section-click`}>
+                    <select value={location} onChange={(e) => setLocation(e.target.value)} className={`${dropdownClass}`}>
                       {LOCATIONS.map(l => <option key={l}>{l}</option>)}
                     </select>
                     <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
                   </div>
 
                   <div className="relative flex-1 min-w-[110px] sm:flex-none sm:w-auto">
-                    <select value={moq} onChange={(e) => setMoq(e.target.value)} className={`${dropdownClass} no-section-click`}>
+                    <select value={moq} onChange={(e) => setMoq(e.target.value)} className={`${dropdownClass}`}>
                       {MOQ_RANGES.map(m => <option key={m}>{m}</option>)}
                     </select>
                     <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
@@ -380,7 +583,7 @@ function Section2({ onNext, onPrev, isMobile, products }: {
 
                 <button
                   onClick={() => { setCategory('All'); setSupplierType('All Types'); setLocation('All Locations'); setMoq('Any MOQ'); setSearch('') }}
-                  className="w-9 h-9 flex items-center justify-center hover:bg-yellow-100 rounded-lg transition-all flex-shrink-0 no-section-click"
+                  className="w-9 h-9 flex items-center justify-center hover:bg-yellow-100 rounded-lg transition-all flex-shrink-0"
                   title="Reset filters"
                 >
                   <svg className="w-5 h-5 sm:w-6 sm:h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -392,7 +595,6 @@ function Section2({ onNext, onPrev, isMobile, products }: {
             </div>
           </div>
 
-          {/* Grid Layout for Cards */}
           {filteredProducts.length === 0 ? (
             <div className="text-center py-20">
               <p className="text-slate-500 text-lg">No products found</p>
@@ -407,12 +609,17 @@ function Section2({ onNext, onPrev, isMobile, products }: {
                     title: product.title,
                     category: product.category?.name || 'Uncategorized',
                     moq: `${product.moq} units`,
-                    priceRange: `$${product.price} – $${product.old_price || product.price} / unit`,
+                    priceRange: `$${parseFloat(product.price).toFixed(2)} – $${product.old_price ? parseFloat(product.old_price).toFixed(2) : parseFloat(product.price).toFixed(2)} / unit`,
                     location: product.location,
                     verified: true,
-                    images: product.images.map(img => getImageUrl(img.path)),
-                    isPremium: false // You can add logic for premium products
-                  }} 
+                    images: product.images && Array.isArray(product.images) 
+                      ? product.images.map(img => getImageUrl(img.path))
+                      : product.cover_image 
+                        ? [getImageUrl(product.cover_image)]
+                        : [],
+                    isPremium: false
+                  }}
+                  onQuoteClick={onQuoteClick}
                 />
               ))}
             </div>
@@ -423,9 +630,20 @@ function Section2({ onNext, onPrev, isMobile, products }: {
   )
 }
 
-// ── Section 3 Component ─────────────────────────────────────────────────
-function Section3({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean }) {
-  // No click handler – navigation only via drag or keyboard
+function Section3({ isMobile, whatsappData }: { 
+  isMobile: boolean;
+  whatsappData: WhatsAppResponse | null;
+}) {
+  const { subscription } = useAuth()
+  const hasActiveSubscription = subscription?.status === 'active'
+
+  const whatsappNumber = whatsappData?.whatsapp_no || '+507 XXX XXXX'
+  
+  const hasRealContact = hasActiveSubscription && 
+                        whatsappData?.whatsapp_no && 
+                        whatsappData.whatsapp_no !== 'hidden' &&
+                        whatsappData.whatsapp_no !== '+507 XXX XXXX'
+
   return (
     <div
       className={`min-h-screen ${!isMobile ? '' : ''}`}
@@ -433,37 +651,34 @@ function Section3({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean 
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pt-28">
         <div className="my-8 sm:my-16 relative">
-          {/* Unlock to Contact Section */}
-          <div className="relative w-full max-w-[90%] sm:max-w-[581px] mx-auto my-30">
-            <div className="w-full px-4 sm:px-10 py-4 sm:py-6 bg-zinc-100/40 rounded-full outline outline-1 outline-offset-[-1px] outline-black/10 flex flex-col justify-center items-center gap-4">
+          <div className="relative w-full max-w-[90%] sm:max-w-[581px] mx-auto my-30 ">
+            <div className="w-full px-4 sm:px-10 py-12 bg-zinc-100/40 rounded-full outline outline-1 outline-offset-[-1px] outline-black/10 flex flex-col justify-center items-center gap-4">
               <div className="self-stretch flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-0">
                 <div className="text-right justify-start text-zinc-800 text-sm sm:text-base font-medium">WhatsApp:</div>
-                <div className="justify-start text-zinc-800/60 text-sm sm:text-base font-medium blur-lg">+507 XXX XXXX</div>
+                <div className={`justify-start text-zinc-800/60 text-sm sm:text-base font-medium ${!hasRealContact ? 'blur-lg' : ''}`}>
+                  {whatsappNumber}
+                </div>
               </div>
-              <div className="self-stretch flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-0">
-                <div className="text-right justify-start text-zinc-800 text-sm sm:text-base font-medium">Email:</div>
-                <div className="justify-start text-zinc-800/60 text-sm sm:text-base font-medium blur-lg">contact@supplier.com</div>
-              </div>
+               
             </div>
-            <div className="absolute left-1/2 -translate-x-1/2 top-[21px] flex flex-col justify-start items-center gap-1 w-full px-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 relative overflow-hidden">
-                <svg className="w-8 h-8 sm:w-10 sm:h-10 text-black mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round"
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
+            
+            {!hasRealContact && (
+              <div className="absolute left-1/2 -translate-x-1/2 top-[21px] flex flex-col justify-start items-center gap-1 w-full px-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 relative overflow-hidden">
+                  <img src={lock_icon} alt="lock" />
+                </div>
+                <div className="self-stretch justify-start text-zinc-800 text-sm sm:text-base font-normal text-center whitespace-normal">
+                  Unlock to Contact Supplier
+                </div>
               </div>
-              <div className="self-stretch justify-start text-zinc-800 text-sm sm:text-base font-normal text-center whitespace-normal">Unlock to Contact Supplier</div>
-            </div>
+            )}
           </div>
 
-          {/* Reviews Header */}
           <div className="mb-6 sm:mb-8">
             <h2 className="text-zinc-800 text-2xl sm:text-3xl md:text-4xl font-medium">Reviews</h2>
           </div>
 
-          {/* Reviews Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 relative px-4 sm:px-0">
-            {/* Review Card 1 */}
             <div className="w-[280px] relative p-10 bg-[#F3F5F8] rounded-2xl flex flex-col gap-4">
               <div className="absolute top-[-40px] sm:top-[-60px] right-4 sm:right-6 text-gray-400 text-4xl sm:text-6xl font-semibold leading-none">
                 ,,
@@ -481,8 +696,7 @@ function Section3({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean 
               </div>
             </div>
 
-            {/* Review Card 2 */}
-            <div className="relative w-[280px]  p-10 bg-[#F3F5F8] rounded-2xl flex flex-col gap-4">
+            <div className="relative w-[280px] p-10 bg-[#F3F5F8] rounded-2xl flex flex-col gap-4">
               <div className="absolute top-[-40px] sm:top-[-60px] right-4 sm:right-6 text-gray-400 text-4xl sm:text-6xl font-semibold leading-none">
                 ,,
               </div>
@@ -499,7 +713,6 @@ function Section3({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean 
               </div>
             </div>
 
-            {/* Review Card 3 */}
             <div className="relative w-[280px] p-10 bg-[#F3F5F8] rounded-2xl flex flex-col gap-4">
               <div className="absolute top-[-40px] sm:top-[-60px] right-4 sm:right-6 text-gray-400 text-4xl sm:text-6xl font-semibold leading-none">
                 ,,
@@ -523,13 +736,12 @@ function Section3({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean 
   )
 }
 
-// ── Main SupplierDetails Component ───────────────────────────────────────
 const TOTAL_SECTIONS = 3
 
 export default function SupplierDetails() {
   const { id } = useParams()
-  const { user } = useAuth()
-  const [section, setSection] = useState(0)
+  const { user, subscription } = useAuth()
+  const [currentSection, setCurrentSection] = useState(0)
   const [leavingUp, setLeavingUp] = useState(false)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
   const [vendorData, setVendorData] = useState<VendorDetails | null>(null)
@@ -537,14 +749,14 @@ export default function SupplierDetails() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [whatsappLoading, setWhatsappLoading] = useState(false)
+  const [whatsappData, setWhatsappData] = useState<WhatsAppResponse | null>(null)
+  const [showQuoteModal, setShowQuoteModal] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState<{ id: number; title: string; supplier: string; moq?: number } | null>(null)
   
-  // Drag state
-  const [dragStartY, setDragStartY] = useState<number | null>(null)
-  const [dragEndY, setDragEndY] = useState<number | null>(null)
-  const [isDragging, setIsDragging] = useState(false)
-
   const isAnimatingRef = useRef(false)
   const sectionRef = useRef(0)
+  const wheelCooldown = useRef(false)
+  const sectionRefs = useRef<(HTMLDivElement | null)[]>([])
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768)
@@ -562,6 +774,16 @@ export default function SupplierDetails() {
         
         const productsResponse = await publicService.getVendorProducts(Number(id))
         setProducts(productsResponse.products.data)
+
+        if (subscription?.status === 'active' && productsResponse.products.data.length > 0) {
+          try {
+            const firstProductId = productsResponse.products.data[0].id
+            const whatsappResponse = await contactService.getVendorWhatsApp(firstProductId)
+            setWhatsappData(whatsappResponse as any)
+          } catch (err) {
+            console.error('Failed to fetch WhatsApp number', err)
+          }
+        }
       } catch (err) {
         setError('Failed to load supplier details')
         console.error(err)
@@ -570,11 +792,11 @@ export default function SupplierDetails() {
       }
     }
     fetchVendorData()
-  }, [id])
+  }, [id, subscription])
 
   const updateSection = (n: number) => {
     sectionRef.current = n
-    setSection(n)
+    setCurrentSection(n)
   }
 
   const goNext = () => {
@@ -600,7 +822,6 @@ export default function SupplierDetails() {
   goNextRef.current = goNext
   goPrevRef.current = goPrev
 
-  // Arrow keys — desktop only
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (isMobile) return
@@ -611,40 +832,41 @@ export default function SupplierDetails() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [isMobile])
 
-  // Drag handlers for section navigation
-  const handleMouseDown = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
-    if (!isInteractive && !isMobile) {
-      setDragStartY(e.clientY)
-      setIsDragging(true)
-    }
-  }
+  useEffect(() => {
+    if (isMobile) return
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || isMobile) return
-    setDragEndY(e.clientY)
-  }
+    const handleWheel = (e: WheelEvent) => {
+      if (wheelCooldown.current) return
+      if (isAnimatingRef.current) return
 
-  const handleMouseUp = () => {
-    if (isDragging && dragStartY !== null && dragEndY !== null && !isMobile) {
-      const dragDistance = dragEndY - dragStartY
-      
-      // If dragged down significantly (pull to go to previous section)
-      if (dragDistance > 50) {
-        goPrevRef.current()
-      }
-      // If dragged up significantly (push to go to next section)
-      else if (dragDistance < -50) {
+      const currentSectionEl = sectionRefs.current[sectionRef.current]
+      if (!currentSectionEl) return
+
+      const { scrollTop, scrollHeight, clientHeight } = currentSectionEl
+      const isAtTop = scrollTop <= 5
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 5
+
+      if (e.deltaY > 0 && isAtBottom) {
+        e.preventDefault()
         goNextRef.current()
+        wheelCooldown.current = true
+        setTimeout(() => {
+          wheelCooldown.current = false
+        }, 800)
+      }
+      else if (e.deltaY < 0 && isAtTop) {
+        e.preventDefault()
+        goPrevRef.current()
+        wheelCooldown.current = true
+        setTimeout(() => {
+          wheelCooldown.current = false
+        }, 800)
       }
     }
-    
-    // Reset drag state
-    setDragStartY(null)
-    setDragEndY(null)
-    setIsDragging(false)
-  }
+
+    window.addEventListener('wheel', handleWheel, { passive: false })
+    return () => window.removeEventListener('wheel', handleWheel)
+  }, [isMobile])
 
   const handleWhatsAppContact = async () => {
     if (!user) {
@@ -654,38 +876,61 @@ export default function SupplierDetails() {
     
     if (!id) return
     
-    setWhatsappLoading(true)
-    try {
-      const response = await contactService.getVendorWhatsApp(Number(id))
-      if (response.whatsapp) {
-        window.open(`https://wa.me/${response.whatsapp}`, '_blank')
-      }
-    } catch (err) {
+    if (subscription?.status !== 'active') {
       alert('You need an active subscription to contact suppliers via WhatsApp')
-    } finally {
-      setWhatsappLoading(false)
+      return
+    }
+
+    if (whatsappData?.whatsapp_link) {
+      window.open(whatsappData.whatsapp_link, '_blank')
+    } else {
+      setWhatsappLoading(true)
+      try {
+        if (products.length > 0) {
+          const response = await contactService.getVendorWhatsApp(products[0].id)
+          setWhatsappData(response as any)
+          window.open((response as any).whatsapp_link, '_blank')
+        }
+      } catch (err) {
+        alert('Failed to fetch WhatsApp contact')
+        console.error(err)
+      } finally {
+        setWhatsappLoading(false)
+      }
     }
   }
 
-  // Build supplier object from API data
+  const handleQuoteClick = (deal: Deal) => {
+    if (!user) {
+      window.location.href = '/login'
+      return
+    }
+    setSelectedProduct({
+      id: deal.id,
+      title: deal.title,
+      supplier: supplier?.name || 'Unknown Supplier',
+      moq: parseInt(deal.moq) || undefined
+    })
+    setShowQuoteModal(true)
+  }
+
   const supplier = vendorData ? {
     id: vendorData.id,
     name: vendorData.business_name,
     category: vendorData.category?.name || 'Uncategorized',
     country: vendorData.location,
-    rating: 4.8, // Keep static
-    reviews: 312, // Keep static
+    rating: 4.8,
+    reviews: 312,
     verified: vendorData.status === 'approved',
-    responseTime: '24 hrs', // Keep static
+    responseTime: '24 hrs',
     description: vendorData.about || 'No description available',
-    businessType: 'Manufacturer & Exporter', // Keep static
+    businessType: 'Manufacturer & Exporter',
     yearsInBusiness: `${vendorData.years_in_business}+ Years`,
     exportMarkets: vendorData.export_markets.join(', ') || 'Global',
     languages: vendorData.languages.join(', ') || 'English',
     image: getImageUrl(vendorData.image_path)
   } : null
 
-  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -694,7 +939,6 @@ export default function SupplierDetails() {
     )
   }
 
-  // Error state
   if (error || !supplier) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -709,29 +953,34 @@ export default function SupplierDetails() {
     )
   }
 
-  // On mobile: render all sections stacked, normal scroll
   if (isMobile) {
     return (
       <div className="w-full">
         <Section1 
           supplier={supplier} 
-          onNext={goNext} 
           isMobile={true} 
           onWhatsAppClick={handleWhatsAppContact}
           whatsappLoading={whatsappLoading}
+          whatsappNumber={whatsappData?.whatsapp_no || null}
         />
         <Section2 
-          onNext={goNext} 
-          onPrev={goPrev} 
           isMobile={true} 
           products={products} 
+          onQuoteClick={handleQuoteClick}
         />
-        <Section3 onPrev={goPrev} isMobile={true} />
+        <Section3 
+          isMobile={true} 
+          whatsappData={whatsappData} 
+        />
+        <QuoteModal 
+          isOpen={showQuoteModal}
+          onClose={() => setShowQuoteModal(false)}
+          product={selectedProduct}
+        />
       </div>
     )
   }
 
-  // Desktop: section-by-section with animation
   const cls = leavingUp ? 'supplier-leave-up' : 'supplier-enter-down'
 
   return (
@@ -754,34 +1003,68 @@ export default function SupplierDetails() {
         }
       `}</style>
 
-      <div 
-        className="w-full overflow-hidden"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-      >
+      <div className="w-full overflow-hidden">
         <div className={cls}>
-          {section === 0 && (
-            <Section1 
-              supplier={supplier} 
-              onNext={goNext} 
-              isMobile={false} 
-              onWhatsAppClick={handleWhatsAppContact}
-              whatsappLoading={whatsappLoading}
-            />
+          {/* Section 0 */}
+          {currentSection === 0 && (
+            <div 
+              ref={(el: HTMLDivElement | null) => {
+                sectionRefs.current[0] = el;
+              }}
+              className="h-screen overflow-y-auto"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <style>{`div::-webkit-scrollbar { display: none; }`}</style>
+              <Section1 
+                supplier={supplier} 
+                isMobile={false} 
+                onWhatsAppClick={handleWhatsAppContact}
+                whatsappLoading={whatsappLoading}
+                whatsappNumber={whatsappData?.whatsapp_no || null}
+              />
+            </div>
           )}
-          {section === 1 && (
-            <Section2 
-              onNext={goNext} 
-              onPrev={goPrev} 
-              isMobile={false} 
-              products={products} 
-            />
+          
+          {/* Section 1 */}
+          {currentSection === 1 && (
+            <div 
+              ref={(el: HTMLDivElement | null) => {
+                sectionRefs.current[1] = el;
+              }}
+              className="h-screen overflow-y-auto"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <Section2 
+                isMobile={false} 
+                products={products} 
+                onQuoteClick={handleQuoteClick}
+              />
+            </div>
           )}
-          {section === 2 && <Section3 onPrev={goPrev} isMobile={false} />}
+          
+          {/* Section 2 */}
+          {currentSection === 2 && (
+            <div 
+              ref={(el: HTMLDivElement | null) => {
+                sectionRefs.current[2] = el;
+              }}
+              className="h-screen overflow-y-auto"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <Section3 
+                isMobile={false} 
+                whatsappData={whatsappData} 
+              />
+            </div>
+          )}
         </div>
       </div>
+
+      <QuoteModal 
+        isOpen={showQuoteModal}
+        onClose={() => setShowQuoteModal(false)}
+        product={selectedProduct}
+      />
     </>
   )
 }

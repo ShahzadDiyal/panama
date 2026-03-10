@@ -117,12 +117,11 @@ function DealCard({ deal }: { deal: Deal }) {
 
           <Link to={`/deals/${deal.id}`} className="group mt-auto flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-slate-200 hover:bg-[#162B60] hover:border-[#162B60] hover:text-white text-slate-700 text-[13px] font-medium transition-all duration-200 bg-[#C3E8FF]">
             Request Quote
-            <svg
-              className="w-8 h-8 transition-transform duration-300 group-hover:rotate-310 bg-[#CFF6FF] rounded-full text-black p-1"
-              fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
+            <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center transition-all duration-300 group-hover:rotate-[-45deg] bg-[#B8E4FF]`}>
+              <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </span>
           </Link>
         </div>
       </div>
@@ -131,7 +130,7 @@ function DealCard({ deal }: { deal: Deal }) {
 }
 
 // ── Section 1 Component (Deals Grid) ────────────────────────────────────
-function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean }) {
+function Section1({ isMobile }: { isMobile: boolean }) {
   const { subscription } = useAuth()
   const [search, setSearch] = useState('')
   const [supplierType, setSupplierType] = useState('All Types')
@@ -160,7 +159,6 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
     fetchCategories()
   }, [])
 
-  // Fetch deals from API
   useEffect(() => {
     const fetchDeals = async () => {
       try {
@@ -203,7 +201,6 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
     fetchDeals()
   }, [])
 
-  // Helper function to convert API product to Deal format
   const mapProductToDeal = (product: ProductListItem): Deal => {
     const imageUrls =
       product.images && Array.isArray(product.images) && product.images.length > 0
@@ -219,7 +216,6 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
 
     const moqText = `${product.moq} units`
 
-    // Determine premium status: if user has active subscription, no premium cards; otherwise mark some as premium
     const hasActiveSubscription = subscription?.status === 'active'
     const isPremium = hasActiveSubscription ? false : product.id % 3 === 0
 
@@ -236,7 +232,6 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
     }
   }
 
-  // Apply search and category filters
   const filteredDeals = deals.filter(deal => {
     const matchesSearch =
       search === '' ||
@@ -266,8 +261,7 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
             </p>
           </div>
 
-          {/* Search */}
-          <div className="no-section-click max-w-4xl mx-auto mt-4 sm:mt-5" onClick={(e) => e.stopPropagation()}>
+          <div className="max-w-4xl mx-auto mt-4 sm:mt-5">
             <div className="relative w-full">
               <input
                 type="text"
@@ -288,12 +282,10 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
             </div>
           </div>
 
-          {/* Filters */}
-          <div className="no-section-click max-w-7xl mx-auto mt-4 sm:mt-6 my-6" onClick={(e) => e.stopPropagation()}>
+          <div className="max-w-7xl mx-auto mt-4 sm:mt-6 my-6">
             <div className="bg-white/50 rounded-xl p-3 sm:p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                  {/* Category */}
                   <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
                     <select
                       value={selectedCategory}
@@ -314,7 +306,6 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
                     <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
                   </div>
 
-                  {/* Supplier Type */}
                   <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
                     <select value={supplierType} onChange={(e) => setSupplierType(e.target.value)} className={dropdownClass}>
                       {SUPPLIER_TYPES.map(t => <option key={t}>{t}</option>)}
@@ -322,7 +313,6 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
                     <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
                   </div>
 
-                  {/* Location */}
                   <div className="relative flex-1 min-w-[120px] sm:flex-none sm:w-auto">
                     <select value={location} onChange={(e) => setLocation(e.target.value)} className={dropdownClass}>
                       {LOCATIONS.map(l => <option key={l}>{l}</option>)}
@@ -330,7 +320,6 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
                     <img src={dropdown_icon} alt="" className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
                   </div>
 
-                  {/* MOQ */}
                   <div className="relative flex-1 min-w-[110px] sm:flex-none sm:w-auto">
                     <select value={moq} onChange={(e) => setMoq(e.target.value)} className={dropdownClass}>
                       {MOQ_RANGES.map(m => <option key={m}>{m}</option>)}
@@ -339,7 +328,6 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
                   </div>
                 </div>
 
-                {/* Reset */}
                 <button
                   onClick={() => {
                     setSelectedCategory('All')
@@ -360,7 +348,6 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
             </div>
           </div>
 
-          {/* Loading / Error / Empty states */}
           {loadingDeals && (
             <div className="flex justify-center items-center py-20">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#162B60]"></div>
@@ -382,7 +369,6 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
             </div>
           )}
 
-          {/* Deal Cards Grid */}
           {!loadingDeals && !dealsError && filteredDeals.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 justify-items-center">
               {filteredDeals.map((deal) => (
@@ -390,6 +376,7 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
               ))}
             </div>
           )}
+            
         </div>
       </div>
     </div>
@@ -397,7 +384,7 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
 }
 
 // ── Section 2 Component (Upsell Section) ─────────────────────────────────
-function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: () => void; isMobile: boolean }) {
+function Section2({ isMobile }: { isMobile: boolean }) {
   return (
     <div
       className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? '' : ''}`}
@@ -443,14 +430,14 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
           <div className="mt-2 sm:mt-8 flex justify-center">
             <Link
               to="/pricing"
-              onClick={(e) => e.stopPropagation()}
-              className="no-section-click inline-flex items-center gap-3 bg-[#162B60] hover:bg-blue-900
-                text-white font-semibold px-6 sm:px-8 py-3 sm:py-3.5 rounded-lg text-sm sm:text-[15px]
-                transition-all duration-200 hover:scale-105 shadow-lg"
+              className={`group flex items-center justify-center gap-2 lg:px-10 
+                py-2.5 sm:py-3 rounded-xl text-[16px] sm:text-[13px] font-semibold transition-all duration-200
+                bg-[#162B60] text-white hover:bg-[#162B60]`}
             >
               Unlock Access Now
-              <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" fill="none" stroke="currentColor"
+              <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center
+                transition-all duration-300 group-hover:rotate-[-45deg] bg-[#B8E4FF]`}>
+                <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor"
                   viewBox="0 0 24 24" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
@@ -469,7 +456,7 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
 }
 
 // ── Section 3 Component (Upsell Section 2) ───────────────────────────────
-function Section3({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean }) {
+function Section3({ isMobile }: { isMobile: boolean }) {
   return (
     <div
       className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? '' : ''}`}
@@ -515,14 +502,14 @@ function Section3({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean 
           <div className="mt-2 sm:mt-8 flex justify-center">
             <Link
               to="/pricing"
-              onClick={(e) => e.stopPropagation()}
-              className="no-section-click inline-flex items-center gap-3 bg-[#162B60] hover:bg-blue-900
-                text-white font-semibold px-6 sm:px-8 py-3 sm:py-3.5 rounded-lg text-sm sm:text-[15px]
-                transition-all duration-200 hover:scale-105 shadow-lg"
+              className={`group flex items-center justify-center gap-2 lg:px-10 
+                py-2.5 sm:py-3 rounded-xl text-[16px] sm:text-[13px] font-semibold transition-all duration-200
+                bg-[#162B60] text-white hover:bg-[#162B60]`}
             >
               Unlock Access Now
-              <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" fill="none" stroke="currentColor"
+              <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center
+                transition-all duration-300 group-hover:rotate-[-45deg] bg-[#B8E4FF]`}>
+                <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor"
                   viewBox="0 0 24 24" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
@@ -544,15 +531,13 @@ function Section3({ onPrev, isMobile }: { onPrev: () => void; isMobile: boolean 
 const TOTAL_SECTIONS = 3
 
 export default function Deals() {
-  const [section, setSection] = useState(0)
+  const [currentSection, setCurrentSection] = useState(0)
   const [leavingUp, setLeavingUp] = useState(false)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
   const isAnimatingRef = useRef(false)
   const sectionRef = useRef(0)
-
-  const [dragStartY, setDragStartY] = useState<number | null>(null)
-  const [dragEndY, setDragEndY] = useState<number | null>(null)
-  const [isDragging, setIsDragging] = useState(false)
+  const wheelCooldown = useRef(false)
+  const sectionRefs = useRef<(HTMLDivElement | null)[]>([])
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768)
@@ -562,7 +547,7 @@ export default function Deals() {
 
   const updateSection = (n: number) => {
     sectionRef.current = n
-    setSection(n)
+    setCurrentSection(n)
   }
 
   const goNext = () => {
@@ -598,40 +583,51 @@ export default function Deals() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [isMobile])
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
-    if (!isInteractive && !isMobile) {
-      setDragStartY(e.clientY)
-      setIsDragging(true)
-    }
-  }
+  // Scroll-based navigation - only triggers when scrolling past boundaries
+  useEffect(() => {
+    if (isMobile) return
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || isMobile) return
-    setDragEndY(e.clientY)
-  }
+    const handleWheel = (e: WheelEvent) => {
+      if (wheelCooldown.current) return
+      if (isAnimatingRef.current) return
 
-  const handleMouseUp = () => {
-    if (isDragging && dragStartY !== null && dragEndY !== null && !isMobile) {
-      const dragDistance = dragEndY - dragStartY
-      if (dragDistance > 50) {
-        goPrev()
-      } else if (dragDistance < -50) {
-        goNext()
+      const currentSectionEl = sectionRefs.current[sectionRef.current]
+      if (!currentSectionEl) return
+
+      const { scrollTop, scrollHeight, clientHeight } = currentSectionEl
+      const isAtTop = scrollTop <= 5
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 5
+
+      // Scrolling down and at the bottom of current section
+      if (e.deltaY > 0 && isAtBottom) {
+        e.preventDefault()
+        goNextRef.current()
+        wheelCooldown.current = true
+        setTimeout(() => {
+          wheelCooldown.current = false
+        }, 800)
+      }
+      // Scrolling up and at the top of current section
+      else if (e.deltaY < 0 && isAtTop) {
+        e.preventDefault()
+        goPrevRef.current()
+        wheelCooldown.current = true
+        setTimeout(() => {
+          wheelCooldown.current = false
+        }, 800)
       }
     }
-    setDragStartY(null)
-    setDragEndY(null)
-    setIsDragging(false)
-  }
+
+    window.addEventListener('wheel', handleWheel, { passive: false })
+    return () => window.removeEventListener('wheel', handleWheel)
+  }, [isMobile])
 
   if (isMobile) {
     return (
       <div className="w-full">
-        <Section1 onNext={goNext} isMobile={true} />
-        <Section2 onPrev={goPrev} onNext={goNext} isMobile={true} />
-        <Section3 onPrev={goPrev} isMobile={true} />
+        <Section1 isMobile={true} />
+        <Section2 isMobile={true} />
+        <Section3 isMobile={true} />
       </div>
     )
   }
@@ -658,17 +654,51 @@ export default function Deals() {
         }
       `}</style>
 
-      <div
-        className="w-full overflow-hidden"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-      >
+      <div className="w-full overflow-hidden">
         <div className={cls}>
-          {section === 0 && <Section1 onNext={goNext} isMobile={false} />}
-          {section === 1 && <Section2 onPrev={goPrev} onNext={goNext} isMobile={false} />}
-          {section === 2 && <Section3 onPrev={goPrev} isMobile={false} />}
+          {/* Section 0 - Only visible when currentSection is 0 */}
+          {currentSection === 0 && (
+            <div 
+              ref={(el: HTMLDivElement | null) => {
+                sectionRefs.current[0] = el;
+              }}
+              className="h-screen overflow-y-auto"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <style>{`
+                div::-webkit-scrollbar {
+                  display: none;
+                }
+              `}</style>
+              <Section1 isMobile={false} />
+            </div>
+          )}
+          
+          {/* Section 1 - Only visible when currentSection is 1 */}
+          {currentSection === 1 && (
+            <div 
+              ref={(el: HTMLDivElement | null) => {
+                sectionRefs.current[1] = el;
+              }}
+              className="h-screen overflow-y-auto"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <Section2 isMobile={false} />
+            </div>
+          )}
+          
+          {/* Section 2 - Only visible when currentSection is 2 */}
+          {currentSection === 2 && (
+            <div 
+              ref={(el: HTMLDivElement | null) => {
+                sectionRefs.current[2] = el;
+              }}
+              className="h-screen overflow-y-auto"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <Section3 isMobile={false} />
+            </div>
+          )}
         </div>
       </div>
     </>

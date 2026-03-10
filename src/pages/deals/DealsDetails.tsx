@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useNavbar } from '../../context/NavbarContext'
 import { publicService, getImageUrl } from '../../services/publicService'
+import { contactService } from '../../services/contactService'
 import { quoteService } from '../../services/quoteService'
 import { useAuth } from '../../context/AuthContext'
 import type { ProductDetails } from '../../types'
@@ -9,18 +10,28 @@ import hot_deals from '../../assets/hot_deals.png'
 import lock_icon from '../../assets/lock_icon.svg'
 import QuoteModal from '../../components/home/QuoteModal'
 
+interface WhatsAppResponse {
+  vendor_id: number
+  vendor_name: string
+  product_id: number
+  product_name: string
+  whatsapp_no: string
+  whatsapp_link: string
+}
 
 export default function DealDetails() {
   const { id } = useParams()
   const { setShowNavbar2 } = useNavbar()
-  const { user } = useAuth()
+  const { user, subscription } = useAuth()
   const [visible, setVisible] = useState(false)
   const [activeImg, setActiveImg] = useState(0)
   const [product, setProduct] = useState<ProductDetails | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [quoteLoading, setQuoteLoading] = useState(false)
-const [showQuoteModal, setShowQuoteModal] = useState(false)
+  const [showQuoteModal, setShowQuoteModal] = useState(false)
+  const [whatsappLoading, setWhatsappLoading] = useState(false)
+  const [whatsappData, setWhatsappData] = useState<WhatsAppResponse | null>(null)
 
   useEffect(() => {
     setShowNavbar2(true)
@@ -51,6 +62,42 @@ const [showQuoteModal, setShowQuoteModal] = useState(false)
     fetchProduct()
   }, [id])
 
+  // Fetch WhatsApp number if user has active subscription
+  useEffect(() => {
+    const fetchWhatsApp = async () => {
+      if (!id || !product) return
+      
+      if (subscription?.status === 'active') {
+        try {
+          const response = await contactService.getVendorWhatsApp(Number(id))
+          // Handle the response properly
+          if (response && typeof response === 'object') {
+            // If response has the expected structure
+            if ('whatsapp_no' in response) {
+              setWhatsappData(response as unknown as WhatsAppResponse)
+            } 
+            // If response is just { whatsapp: string }
+            else if ('whatsapp' in response) {
+              // Create a proper WhatsAppResponse object
+              setWhatsappData({
+                vendor_id: product?.vendor_id || 0,
+                vendor_name: product?.vendor?.business_name || 'Unknown',
+                product_id: product?.id || 0,
+                product_name: product?.title || '',
+                whatsapp_no: (response as any).whatsapp,
+                whatsapp_link: `https://wa.me/${(response as any).whatsapp.replace(/\D/g, '')}?text=Hi%2C+I+am+interested+in+your+product+%22${encodeURIComponent(product?.title || '')}%22`
+              })
+            }
+          }
+        } catch (err) {
+          console.error('Failed to fetch WhatsApp number', err)
+        }
+      }
+    }
+    
+    fetchWhatsApp()
+  }, [id, product, subscription])
+
   const handleRequestQuote = async () => {
     if (!user) {
       window.location.href = '/login'
@@ -78,24 +125,73 @@ const [showQuoteModal, setShowQuoteModal] = useState(false)
     }
   }
 
-  const handleWhatsAppContact = () => {
+  const handleWhatsAppContact = async () => {
     if (!user) {
       window.location.href = '/login'
       return
     }
-    // This would need a separate API endpoint for vendor WhatsApp
-    alert('Please contact the supplier through the quote request first')
+    
+    if (!product) return
+    
+    if (subscription?.status !== 'active') {
+      alert('You need an active subscription to contact suppliers via WhatsApp')
+      return
+    }
+
+    // If we already have whatsappData with a link, use it
+    if (whatsappData?.whatsapp_link) {
+      window.open(whatsappData.whatsapp_link, '_blank')
+      return
+    }
+
+    // Otherwise fetch it
+    setWhatsappLoading(true)
+    try {
+      const response = await contactService.getVendorWhatsApp(product.id)
+      
+      // Handle the response
+      let whatsappLink = ''
+      let whatsappNo = ''
+      
+      if (response && typeof response === 'object') {
+        if ('whatsapp_link' in response) {
+          whatsappLink = (response as any).whatsapp_link
+          whatsappNo = (response as any).whatsapp_no
+        } else if ('whatsapp' in response) {
+          whatsappNo = (response as any).whatsapp
+          whatsappLink = `https://wa.me/${(response as any).whatsapp.replace(/\D/g, '')}?text=Hi%2C+I+am+interested+in+your+product+%22${encodeURIComponent(product.title)}%22`
+        }
+      }
+      
+      if (whatsappLink) {
+        // Create proper WhatsAppResponse object
+        setWhatsappData({
+          vendor_id: product.vendor_id,
+          vendor_name: product.vendor?.business_name || 'Unknown',
+          product_id: product.id,
+          product_name: product.title,
+          whatsapp_no: whatsappNo,
+          whatsapp_link: whatsappLink
+        })
+        window.open(whatsappLink, '_blank')
+      } else {
+        alert('Could not get WhatsApp contact')
+      }
+    } catch (err) {
+      alert('Failed to fetch WhatsApp contact')
+      console.error(err)
+    } finally {
+      setWhatsappLoading(false)
+    }
   }
-
-
 
   const handleRequestQuoteClick = () => {
-  if (!user) {
-    window.location.href = '/login'
-    return
+    if (!user) {
+      window.location.href = '/login'
+      return
+    }
+    setShowQuoteModal(true)
   }
-  setShowQuoteModal(true)
-}
 
   // Format deal data from API
   const deal = product ? {
@@ -105,14 +201,14 @@ const [showQuoteModal, setShowQuoteModal] = useState(false)
     discount: product.old_price ? `${Math.round((1 - parseFloat(product.price)/parseFloat(product.old_price)) * 100)}% OFF` : 'Special Deal',
     original: product.old_price ? `$${parseFloat(product.old_price).toFixed(2)} per unit` : '',
     price: `$${parseFloat(product.price).toFixed(2)} per unit`,
-    expires: '7 days', // This might come from a deals endpoint
+    expires: '7 days',
     supplier: product.vendor?.business_name || 'Unknown Supplier',
     supplierId: product.vendor_id,
     location: product.location,
     description: product.description,
     idealFor: product.ideal_for || ['Retailers', 'Distributors', 'Importers'],
     moq: `${product.moq} units`,
-    stock: 12, // This might come from inventory endpoint
+    stock: 12,
     verified: true,
     hotDeal: product.is_deal || false,
     limitedStock: true,
@@ -120,6 +216,11 @@ const [showQuoteModal, setShowQuoteModal] = useState(false)
       ? product.images_list.map(img => img.url)
       : product.images?.map(img => getImageUrl(img.path)) || [getImageUrl(product.cover_image)],
   } : null
+
+  const hasActiveSubscription = subscription?.status === 'active'
+  const hasRealContact = hasActiveSubscription && 
+                        whatsappData?.whatsapp_no && 
+                        whatsappData.whatsapp_no !== 'hidden'
 
   if (loading) {
     return (
@@ -321,15 +422,23 @@ const [showQuoteModal, setShowQuoteModal] = useState(false)
                     </div>
                   </div>
 
+                  {/* WhatsApp Number Display (if available) */}
+                  {hasRealContact && (
+                    <div className="mt-2 text-sm text-green-600 font-medium">
+                      ✓ WhatsApp: {whatsappData?.whatsapp_no}
+                    </div>
+                  )}
+
                   {/* CTAs */}
                   <div className="flex flex-col gap-3 mt-2">
-                    <button
+                    {/* <button
                       onClick={handleWhatsAppContact}
+                      disabled={whatsappLoading}
                       className="flex items-center justify-between gap-3 px-5 py-3 rounded-full
                         bg-[#C3E8FF] hover:bg-[#162B60] text-slate-700 hover:text-white
-                        font-semibold text-[16px] transition-all duration-200 group"
+                        font-semibold text-[16px] transition-all duration-200 group disabled:opacity-50"
                     >
-                      Contact via WhatsApp
+                      {whatsappLoading ? 'Loading...' : hasRealContact ? `WhatsApp: ${whatsappData?.whatsapp_no}` : 'Contact via WhatsApp'}
                       <span className="w-7 h-7 rounded-full bg-white/60 group-hover:bg-white/20
                         flex items-center justify-center flex-shrink-0 transition-all">
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor"
@@ -337,23 +446,21 @@ const [showQuoteModal, setShowQuoteModal] = useState(false)
                           <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                         </svg>
                       </span>
-                    </button>
+                    </button> */}
 
                     <button
                       onClick={handleRequestQuoteClick}
                       disabled={quoteLoading}
                       className="flex items-center justify-between gap-3 px-5 py-3 rounded-full
                         bg-[#C3E8FF] hover:bg-[#162B60] text-slate-700 hover:text-white
-                        font-semibold text-[16px] transition-all duration-200 group disabled:opacity-50"
+                        font-semibold text-[16px] transition-all duration-200 group disabled:opacity-50 cursor-pointer"
                     >
                       {quoteLoading ? 'Sending...' : 'Request Quote'}
-                      <span className="w-7 h-7 rounded-full group-hover:bg-white/20
-                        flex items-center justify-center flex-shrink-0 transition-all">
+                      <span className="w-7 h-7 rounded-full group-hover:bg-white
+                        flex items-center justify-center flex-shrink-0 transition-all p-1">
                        <img src={lock_icon} alt="" />
                       </span>
                     </button>
-
-                   
                   </div>
                 </div>
               )}
@@ -488,15 +595,23 @@ const [showQuoteModal, setShowQuoteModal] = useState(false)
                   </div>
                 </div>
 
+                {/* WhatsApp Number Display (if available) */}
+                {hasRealContact && (
+                  <div className="mt-2 text-sm text-green-600 font-medium">
+                    ✓ WhatsApp: {whatsappData?.whatsapp_no}
+                  </div>
+                )}
+
                 {/* CTAs */}
                 <div className="flex flex-col sm:flex-row gap-3 mt-2">
                   <button 
                     onClick={handleWhatsAppContact}
+                    disabled={whatsappLoading}
                     className="flex-1 flex items-center justify-between gap-3 px-5 py-3 rounded-xl
                       bg-[#DAEEFF] hover:bg-[#162B60] text-slate-700 hover:text-white
-                      font-semibold text-sm transition-all duration-200 group"
+                      font-semibold text-sm transition-all duration-200 group disabled:opacity-50"
                   >
-                    Contact via WhatsApp
+                    {whatsappLoading ? 'Loading...' : hasRealContact ? `WhatsApp: ${whatsappData?.whatsapp_no}` : 'Contact via WhatsApp'}
                     <span className="w-7 h-7 rounded-full bg-white/60 group-hover:bg-white/20
                       flex items-center justify-center flex-shrink-0 transition-all">
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor"
@@ -528,20 +643,19 @@ const [showQuoteModal, setShowQuoteModal] = useState(false)
             )}
           </div>
         </div>
-         <QuoteModal
-  isOpen={showQuoteModal}
-  onClose={() => setShowQuoteModal(false)}
-  product={{
-    id: product?.id as any,
-    title: product?.title as any,
-    supplier: product?.vendor?.business_name || 'Unknown Supplier',
-    moq: product?.moq
-  }}
-  onSuccess={() => {
-    // Optional: redirect to quotes page or show success message
-    // navigate('/quotes')
-  }}
-/>
+        <QuoteModal
+          isOpen={showQuoteModal}
+          onClose={() => setShowQuoteModal(false)}
+          product={{
+            id: product?.id as any,
+            title: product?.title as any,
+            supplier: product?.vendor?.business_name || 'Unknown Supplier',
+            moq: product?.moq
+          }}
+          onSuccess={() => {
+            // Optional: redirect to quotes page or show success message
+          }}
+        />
       </div>
     </>
   )

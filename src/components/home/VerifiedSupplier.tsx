@@ -81,7 +81,7 @@ function VerifiedBadgeIcon() {
 }
 
 // ── SupplierCard ──────────────────────────────────────────────────────────
-function SupplierCard({ supplier, featured = false }: { supplier: Supplier; featured?: boolean }) {
+function SupplierCard({ supplier,  }: { supplier: Supplier; featured?: boolean }) {
 
 
   return (
@@ -141,25 +141,27 @@ function SupplierCard({ supplier, featured = false }: { supplier: Supplier; feat
           {supplier.location}
         </div>
 
+
+
+              
         {/* CTA button */}
         <Link
           to={`/supplier/${supplier.id}`}
           onMouseDown={(e) => e.stopPropagation()}
-          className={`group mt-auto flex items-center justify-center gap-2 w-full
-            py-2.5 rounded-xl text-[13px] font-semibold
-            transition-all duration-200
-            ${featured
-              ? 'bg-[#162B60] text-white hover:bg-blue-900'
-              : 'bg-[#DAEEFF] text-slate-700 hover:bg-[#162B60] hover:text-white'
-            }`}
+          className={`group mt-auto flex items-center justify-center gap-2 w-full lg:px-10  
+            py-4 sm:py-3 rounded-xl text-[16px] sm:text-[13px] font-semibold transition-all duration-200
+            bg-[#162B60] text-white hover:bg-[#162B60] hover:text-white
+             `}
         >
           View Profile
-          <svg
-            className="w-8 h-8 transition-transform duration-300 group-hover:rotate-310 bg-[#CFF6FF] rounded-full text-black p-1"
-            fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-          </svg>
+         <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center
+            transition-all duration-300 group-hover:rotate-[-45deg]
+              bg-[#B8E4FF]` }>
+            <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </span>
         </Link>
 
       </div>

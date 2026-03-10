@@ -4,7 +4,6 @@ import { useNavbar } from '../../context/NavbarContext'
 // Assets
 import servicing_illustrator from '../../assets/servicing_herosection_img.svg'
 import illustrator from '../../assets/souring_illustrator.png'
-import arrow_icon from '../../assets/arrow_left_icon.svg'
 import remote_sourcing_icon from '../../assets/remote_sourcing_icon.svg'
 import business_consulting_icon from '../../assets/bus_consulting_icon.svg'
 import idea_icon from '../../assets/ideas_icon1.svg'
@@ -16,9 +15,8 @@ import testimonial2 from '../../assets/testimonial2.svg'
 import testimonial3 from '../../assets/testimonial3.svg'
 import { Link } from 'react-router-dom'
 
-// Section 1 – unchanged
-function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean }) {
-  // No click navigation – only drag or keyboard
+// Section 1
+function Section1({ isMobile }: { isMobile: boolean }) {
   return (
     <div
       className={`min-h-screen px-4 sm:px-8 lg:px-16 py-16 pt-24 sm:pt-28 ${!isMobile ? '' : ''}`}
@@ -27,7 +25,7 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
       <div className="max-w-7xl mx-auto">
         <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden px-5 sm:px-10 py-20">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-10">
-            <div className="flex flex-col items-start no-section-click">
+            <div className="flex flex-col items-start">
               <h3 className="text-xl sm:text-2xl lg:text-[40px] font-bold text-slate-800 leading-snug mb-2 sm:mb-3">
                 Business Services to Help<br /> You Succeed in Panama
               </h3>
@@ -35,7 +33,7 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
                 Access expert sourcing, business consulting, AI validation tools, and on-ground tours designed to help you launch and scale with confidence.
               </p>
             </div>
-            <div className="flex-shrink-0 w-full lg:w-auto flex justify-center no-section-click">
+            <div className="flex-shrink-0 w-full lg:w-auto flex justify-center">
               <img
                 src={servicing_illustrator}
                 alt=""
@@ -50,8 +48,7 @@ function Section1({ onNext, isMobile }: { onNext: () => void; isMobile: boolean 
 }
 
 // Section 2 – Core Services (4 cards, 2x2) with background "02"
-function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: () => void; isMobile: boolean }) {
-  // No click navigation – only drag or keyboard
+function Section2({ isMobile }: { isMobile: boolean }) {
   const cards = [
     {
       title: 'Remote Sourcing',
@@ -90,13 +87,13 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
         <span>2</span>
       </div>
 
-      <div className="max-w-7xl mx-auto relative z-10 no-section-click">
+      <div className="max-w-7xl mx-auto relative z-10">
         <h2 className="text-[40px] sm:text-4xl font-bold text-[#162B60] mb-12">Core Services</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {cards.map((card, idx) => (
             <div
               key={idx}
-              className="bg-white rounded-2xl shadow-lg p-8 hover:shadow-xl transition-all duration-300 no-section-click"
+              className="bg-white rounded-2xl shadow-lg p-8 hover:shadow-xl transition-all duration-300"
             >
               <h3 className="text-2xl font-bold text-slate-800 mb-3">{card.title}</h3>
               <p className="text-slate-600 mb-4">{card.description}</p>
@@ -120,9 +117,7 @@ function Section2({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
 }
 
 // Section 3 – Trusted by Entrepreneurs & Importers (3‑card carousel) with background "03"
-function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: () => void; isMobile: boolean }) {
-  // No click navigation – only drag or keyboard
-  // Expanded testimonials (6 items) for multi‑card carousel
+function Section3({ isMobile }: { isMobile: boolean }) {
   const testimonials = [
     {
       name: 'Carlos Mendez',
@@ -146,7 +141,7 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
       name: 'Maria Gonzalez',
       role: 'Buyer, CoffeeChain',
       text: 'The Business Consulting session gave me clarity on supplier selection and pricing strategy. It helped me avoid mistakes and move forward with confidence',
-      image: testimonial1 // using same image for demo
+      image: testimonial1
     },
     {
       name: 'David Chen',
@@ -169,7 +164,6 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
   const nextSlide = () => setSlideIndex((prev) => (prev + 1) % totalSlides)
   const prevSlide = () => setSlideIndex((prev) => (prev - 1 + totalSlides) % totalSlides)
 
-  // Get current set of testimonials
   const startIdx = slideIndex * cardsPerSlide
   const visibleTestimonials = testimonials.slice(startIdx, startIdx + cardsPerSlide)
 
@@ -184,9 +178,9 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
         <span>3</span>
       </div>
 
-      <div className="max-w-7xl mx-auto relative z-10 no-section-click">
+      <div className="max-w-7xl mx-auto relative z-10">
         {/* Row 1: Why Work With Us? */}
-        <div className="no-section-click">
+        <div>
           <h2 className="text-[24px] font-bold text-[#162B60] mb-6">Why Work With Us?</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-8 sm:mb-10 ">
             {['✓  Save travel costs', '✓ Avoid fake suppliers', '✓ Local negotiation advantage', '✓ Faster supplier access'].map((pill) => (
@@ -205,7 +199,6 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
 
         {/* Carousel container */}
         <div className="relative">
-          {/* Cards grid – 3 columns on large screens, 1 on mobile */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-40">
             {visibleTestimonials.map((t, idx) => (
               <div key={startIdx + idx} className="bg-white shadow-lg p-6 flex flex-col items-center text-center">
@@ -219,12 +212,11 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
             ))}
           </div>
 
-          {/* Navigation arrows – only show if more than one slide */}
           {totalSlides > 1 && (
             <>
               <button
                 onClick={(e) => { e.stopPropagation(); prevSlide(); }}
-                className="no-section-click absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors"
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -232,7 +224,7 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); nextSlide(); }}
-                className="no-section-click absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors"
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -242,14 +234,13 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
           )}
         </div>
 
-        {/* Indicator lines – one per slide */}
         {totalSlides > 1 && (
           <div className="flex justify-center gap-2 mt-8">
             {Array.from({ length: totalSlides }).map((_, idx) => (
               <button
                 key={idx}
                 onClick={(e) => { e.stopPropagation(); setSlideIndex(idx); }}
-                className={`no-section-click h-1 rounded-full transition-all duration-300 ${idx === slideIndex ? 'w-20 bg-[#162B60]' : 'w-8 bg-gray-300'
+                className={`h-1 rounded-full transition-all duration-300 ${idx === slideIndex ? 'w-20 bg-[#162B60]' : 'w-8 bg-gray-300'
                   }`}
               />
             ))}
@@ -259,9 +250,9 @@ function Section3({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
     </div>
   )
 }
+
 // Section 4 – Left‑Right with floating number "04"
-function Section4({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: () => void; isMobile: boolean }) {
-  // No click navigation – only drag or keyboard
+function Section4({ isMobile }: { isMobile: boolean }) {
   return (
     <div
       className={`min-h-screen px-4 sm:px-8 lg:px-16 py-20 pt-40 sm:pt-28 relative overflow-hidden ${!isMobile ? '' : ''}`}
@@ -272,9 +263,8 @@ function Section4({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
         <span>4</span>
       </div>
 
-      <div className="max-w-7xl mx-auto relative z-10 no-section-click pt-20" >
+      <div className="max-w-7xl mx-auto relative z-10 pt-20" >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Left side: heading and text */}
           <div className="space-y-6">
             <h2 className="text-[24px] font-bold text-[#162B60] leading-tight">
               Ready to Build Your Panama Business?
@@ -284,7 +274,6 @@ function Section4({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
             </p>
           </div>
 
-          {/* Right side: image */}
           <div className="flex justify-center">
             <img
               src={illustrator}
@@ -294,16 +283,28 @@ function Section4({ onPrev, onNext, isMobile }: { onPrev: () => void; onNext: ()
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-4 pt-4">
-          <Link to='/pricing' className="no-section-click flex-1 py-4 px-6 bg-[#4042E1] hover:bg-blue-900 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg flex items-center justify-center gap-2">
+          <Link to='/pricing' className="group flex items-center justify-center gap-2 w-full lg:px-24  
+            py-4 sm:py-3 rounded-xl text-[16px] font-semibold transition-all duration-200
+            bg-[#4042E1] text-white hover:bg-[#162B60]">
             View Pricing Plans
-            <span className='bg-[#CFF6FF] rounded-full p-1'>
-              <img src={arrow_icon} alt="" className="w-6 h-6" />
+            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center
+              transition-all duration-300 group-hover:rotate-[-45deg] bg-[#B8E4FF]">
+              <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
             </span>
           </Link>
-          <button className="no-section-click flex-1 py-4 px-6 bg-[#4042E1] border-[#162B60] text-white hover:bg-[#162B60] hover:text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
+          <button className="group flex items-center justify-center gap-2 w-full lg:px-24  
+            py-4 sm:py-4 rounded-xl text-[16px] font-semibold transition-all duration-200
+            bg-[#4042E1] text-white hover:bg-[#162B60] cursor-pointer">
             Book a Consultation
-            <span className='bg-[#CFF6FF] rounded-full p-1'>
-              <img src={arrow_icon} alt="" className="w-6 h-6" />
+            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center
+              transition-all duration-300 group-hover:rotate-[-45deg] bg-[#B8E4FF]">
+              <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
             </span>
           </button>
         </div>
@@ -317,15 +318,13 @@ const TOTAL_SECTIONS = 4
 
 export default function Servicing() {
   const { setShowNavbar2 } = useNavbar()
-  const [section, setSection] = useState(0)
+  const [currentSection, setCurrentSection] = useState(0)
   const [leavingUp, setLeavingUp] = useState(false)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
   const isAnimatingRef = useRef(false)
   const sectionRef = useRef(0)
-
-  const [dragStartY, setDragStartY] = useState<number | null>(null)
-  const [dragEndY, setDragEndY] = useState<number | null>(null)
-  const [isDragging, setIsDragging] = useState(false)
+  const wheelCooldown = useRef(false)
+  const sectionRefs = useRef<(HTMLDivElement | null)[]>([])
 
   useEffect(() => {
     setShowNavbar2(true)
@@ -340,7 +339,7 @@ export default function Servicing() {
 
   const updateSection = (n: number) => {
     sectionRef.current = n
-    setSection(n)
+    setCurrentSection(n)
   }
 
   const goNext = () => {
@@ -377,49 +376,51 @@ export default function Servicing() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [isMobile])
 
-  // Drag handlers for section navigation
-  const handleMouseDown = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement
-    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click')
-    if (!isInteractive && !isMobile) {
-      setDragStartY(e.clientY)
-      setIsDragging(true)
-    }
-  }
+  // Scroll-based navigation
+  useEffect(() => {
+    if (isMobile) return
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || isMobile) return
-    setDragEndY(e.clientY)
-  }
+    const handleWheel = (e: WheelEvent) => {
+      if (wheelCooldown.current) return
+      if (isAnimatingRef.current) return
 
-  const handleMouseUp = () => {
-    if (isDragging && dragStartY !== null && dragEndY !== null && !isMobile) {
-      const dragDistance = dragEndY - dragStartY
-      
-      // If dragged down significantly (pull to go to previous section)
-      if (dragDistance > 50) {
-        goPrev()
+      const currentSectionEl = sectionRefs.current[sectionRef.current]
+      if (!currentSectionEl) return
+
+      const { scrollTop, scrollHeight, clientHeight } = currentSectionEl
+      const isAtTop = scrollTop <= 5
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 5
+
+      if (e.deltaY > 0 && isAtBottom) {
+        e.preventDefault()
+        goNextRef.current()
+        wheelCooldown.current = true
+        setTimeout(() => {
+          wheelCooldown.current = false
+        }, 800)
       }
-      // If dragged up significantly (push to go to next section)
-      else if (dragDistance < -50) {
-        goNext()
+      else if (e.deltaY < 0 && isAtTop) {
+        e.preventDefault()
+        goPrevRef.current()
+        wheelCooldown.current = true
+        setTimeout(() => {
+          wheelCooldown.current = false
+        }, 800)
       }
     }
-    
-    // Reset drag state
-    setDragStartY(null)
-    setDragEndY(null)
-    setIsDragging(false)
-  }
+
+    window.addEventListener('wheel', handleWheel, { passive: false })
+    return () => window.removeEventListener('wheel', handleWheel)
+  }, [isMobile])
 
   // Mobile: render all sections stacked, normal scroll
   if (isMobile) {
     return (
       <div className="w-full">
-        <Section1 onNext={goNext} isMobile={true} />
-        <Section2 onPrev={goPrev} onNext={goNext} isMobile={true} />
-        <Section3 onPrev={goPrev} onNext={goNext} isMobile={true} />
-        <Section4 onPrev={goPrev} onNext={goNext} isMobile={true} />
+        <Section1 isMobile={true} />
+        <Section2 isMobile={true} />
+        <Section3 isMobile={true} />
+        <Section4 isMobile={true} />
       </div>
     )
   }
@@ -447,18 +448,60 @@ export default function Servicing() {
         }
       `}</style>
 
-      <div 
-        className="w-full overflow-hidden"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-      >
+      <div className="w-full overflow-hidden">
         <div className={cls}>
-          {section === 0 && <Section1 onNext={goNext} isMobile={false} />}
-          {section === 1 && <Section2 onPrev={goPrev} onNext={goNext} isMobile={false} />}
-          {section === 2 && <Section3 onPrev={goPrev} onNext={goNext} isMobile={false} />}
-          {section === 3 && <Section4 onPrev={goPrev} onNext={goNext} isMobile={false} />}
+          {/* Section 0 */}
+          {currentSection === 0 && (
+            <div 
+              ref={(el: HTMLDivElement | null) => {
+                sectionRefs.current[0] = el;
+              }}
+              className="h-screen overflow-y-auto"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <style>{`div::-webkit-scrollbar { display: none; }`}</style>
+              <Section1 isMobile={false} />
+            </div>
+          )}
+          
+          {/* Section 1 */}
+          {currentSection === 1 && (
+            <div 
+              ref={(el: HTMLDivElement | null) => {
+                sectionRefs.current[1] = el;
+              }}
+              className="h-screen overflow-y-auto"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <Section2 isMobile={false} />
+            </div>
+          )}
+          
+          {/* Section 2 */}
+          {currentSection === 2 && (
+            <div 
+              ref={(el: HTMLDivElement | null) => {
+                sectionRefs.current[2] = el;
+              }}
+              className="h-screen overflow-y-auto"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <Section3 isMobile={false} />
+            </div>
+          )}
+          
+          {/* Section 3 */}
+          {currentSection === 3 && (
+            <div 
+              ref={(el: HTMLDivElement | null) => {
+                sectionRefs.current[3] = el;
+              }}
+              className="h-screen overflow-y-auto"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <Section4 isMobile={false} />
+            </div>
+          )}
         </div>
       </div>
     </>

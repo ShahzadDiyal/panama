@@ -7,6 +7,8 @@ import { useNavbar } from "../../context/NavbarContext";
 import { publicService } from '../../services/publicService';
 import type { Category } from '../../types';
 
+import dropdown_icon from '../../assets/arrow_down_icon.svg'
+
 // ── StickyInfoBar ─────────────────────────────────────────────────────────
 function StickyInfoBar({ visible }: { visible: boolean }) {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -35,7 +37,6 @@ function StickyInfoBar({ visible }: { visible: boolean }) {
         sticky top-20 z-30 bg-white
         transition-all duration-300
         pt-14 py-6
-        shadow-sm
         ${visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 pointer-events-none"}
       `}
     >
@@ -60,52 +61,64 @@ function StickyInfoBar({ visible }: { visible: boolean }) {
       </div>
 
       {/* ── Row 2: Search + filters ── */}
-      <div className="flex flex-col lg:flex-row gap-3 mt-4 px-6">
-        <div className="relative flex-1 w-full">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search suppliers, products, or categories"
-            className="w-full pl-4 pr-10 py-2.5 rounded-full border border-gray-300 text-sm focus:outline-none focus:border-slate-500 no-section-click"
-          />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2">
-            <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </span>
+      <div className="flex flex-col lg:flex-row gap-3 mt-4 px-4 md:px-16">
+        <div className="flex-1">
+          <div className="relative md:w-[70%] w-full">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search suppliers, products, or categories"
+              className="w-full pl-4 pr-10 py-2.5 rounded-full border border-gray-300 text-sm focus:outline-none focus:border-slate-500"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2">
+              <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </span>
+          </div>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-          <select 
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)} 
-            className="w-full sm:w-auto px-4 py-2.5 rounded-full border border-gray-300 text-sm focus:outline-none no-section-click"
-          >
-            <option value="All">All Categories</option>
-            {loadingCategories ? (
-              <option disabled>Loading...</option>
-            ) : (
-              categories.map((cat) => (
-                <option key={cat.id} value={cat.name}>
-                  {cat.name}
-                </option>
-              ))
-            )}
-          </select>
+          <div className="relative w-full sm:w-auto">
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full appearance-none px-4 py-2.5 pr-10 rounded-[10px] border border-gray-300 text-sm focus:outline-none"
+            >
+              <option value="All">All Categories</option>
+              {loadingCategories ? (
+                <option disabled>Loading...</option>
+              ) : (
+                categories.map((cat) => (
+                  <option key={cat.id} value={cat.name}>
+                    {cat.name}
+                  </option>
+                ))
+              )}
+            </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+              <img src={dropdown_icon} alt="" />
+            </div>
+          </div>
 
-          <select
-            value={supplierType}
-            onChange={(e) => setSupplierType(e.target.value)}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-full border border-gray-300 text-sm focus:outline-none no-section-click"
-          >
-            <option value="">Supplier Type</option>
-            <option value="manufacturer">Manufacturer</option>
-            <option value="wholesaler">Wholesaler</option>
-            <option value="distributor">Distributor</option>
-            <option value="exporter">Exporter</option>
-          </select>
+          <div className="relative w-full sm:w-auto">
+            <select
+              value={supplierType}
+              onChange={(e) => setSupplierType(e.target.value)}
+              className="w-full appearance-none px-4 py-2.5 pr-10 rounded-[10px] border border-gray-300 text-sm focus:outline-none"
+            >
+              <option value="">Supplier Type</option>
+              <option value="manufacturer">Manufacturer</option>
+              <option value="wholesaler">Wholesaler</option>
+              <option value="distributor">Distributor</option>
+              <option value="exporter">Exporter</option>
+            </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+              <img src={dropdown_icon} alt="" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -123,14 +136,11 @@ export default function Home() {
   const [barVisible, setBarVisible] = useState(false);
   const [leavingUp, setLeavingUp] = useState(false);
 
-  // Drag state
-  const [dragStartY, setDragStartY] = useState<number | null>(null);
-  const [dragEndY, setDragEndY] = useState<number | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-
-  // Refs so timeouts / event handlers always read latest values
-  const currentSectionRef = useRef(0);
+  // Refs for scroll-based navigation
   const isAnimatingRef = useRef(false);
+  const currentSectionRef = useRef(0);
+  const wheelCooldown = useRef(false);
+  const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const updateSection = (next: number) => {
     currentSectionRef.current = next;
@@ -160,7 +170,6 @@ export default function Home() {
     updateSection(cur - 1);
   };
 
-  // Always-fresh refs for use inside effects
   const goNextRef = useRef(goNext);
   const goPrevRef = useRef(goPrev);
   goNextRef.current = goNext;
@@ -180,38 +189,42 @@ export default function Home() {
     }
   }, [currentSection, isMobile, setShowNavbar2]);
 
-  // ── Desktop: drag handlers ───────────────────────────────────────────
-  const handleMouseDown = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    const isInteractive = target.closest('a, button, input, select, [role="button"], .no-section-click');
-    if (!isInteractive && !isMobile) {
-      setDragStartY(e.clientY);
-      setIsDragging(true);
-    }
-  };
+  // ── Scroll-based navigation ───────────────────────────────────────────
+  useEffect(() => {
+    if (isMobile) return;
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || isMobile) return;
-    setDragEndY(e.clientY);
-  };
+    const handleWheel = (e: WheelEvent) => {
+      if (wheelCooldown.current) return;
+      if (isAnimatingRef.current) return;
 
-  const handleMouseUp = () => {
-    if (isDragging && dragStartY !== null && dragEndY !== null && !isMobile) {
-      const dragDistance = dragEndY - dragStartY;
-      // If dragged down significantly (pull to go to previous section)
-      if (dragDistance > 50) {
-        goPrevRef.current();
-      }
-      // If dragged up significantly (push to go to next section)
-      else if (dragDistance < -50) {
+      const currentSectionEl = sectionRefs.current[currentSectionRef.current];
+      if (!currentSectionEl) return;
+
+      const { scrollTop, scrollHeight, clientHeight } = currentSectionEl;
+      const isAtTop = scrollTop <= 5;
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 5;
+
+      if (e.deltaY > 0 && isAtBottom) {
+        e.preventDefault();
         goNextRef.current();
+        wheelCooldown.current = true;
+        setTimeout(() => {
+          wheelCooldown.current = false;
+        }, 800);
       }
-    }
-    // Reset drag state
-    setDragStartY(null);
-    setDragEndY(null);
-    setIsDragging(false);
-  };
+      else if (e.deltaY < 0 && isAtTop) {
+        e.preventDefault();
+        goPrevRef.current();
+        wheelCooldown.current = true;
+        setTimeout(() => {
+          wheelCooldown.current = false;
+        }, 800);
+      }
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    return () => window.removeEventListener('wheel', handleWheel);
+  }, [isMobile]);
 
   // ── Arrow key handler ─────────────────────────────────────────────────
   useEffect(() => {
@@ -266,40 +279,68 @@ export default function Home() {
   const renderCurrentSection = () => {
     const cls = leavingUp ? "animate-leave-up" : "animate-enter-down";
 
-    switch (currentSection) {
-      case 0:
-        return (
-          <div key="hero" className={cls}>
+    return (
+      <div className={cls}>
+        {/* Section 0 - Hero */}
+        {currentSection === 0 && (
+          <div 
+            ref={(el: HTMLDivElement | null) => {
+              sectionRefs.current[0] = el;
+            }}
+            className="h-screen overflow-y-auto"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            <style>{`div::-webkit-scrollbar { display: none; }`}</style>
             <HeroSection />
           </div>
-        );
-      case 1:
-        return (
-          <div key="deals" className={`bg-white min-h-screen ${cls}`}>
+        )}
+        
+        {/* Section 1 - Deals */}
+        {currentSection === 1 && (
+          <div 
+            ref={(el: HTMLDivElement | null) => {
+              sectionRefs.current[1] = el;
+            }}
+            className="h-screen overflow-y-auto bg-white"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
             <StickyInfoBar visible={true} />
             <div className="px-4 sm:px-6 lg:px-8 mt-8">
               <LatestDeals />
             </div>
           </div>
-        );
-      case 2:
-        return (
-          <div key="suppliers" className={`bg-white min-h-screen ${cls}`}>
+        )}
+        
+        {/* Section 2 - Suppliers */}
+        {currentSection === 2 && (
+          <div 
+            ref={(el: HTMLDivElement | null) => {
+              sectionRefs.current[2] = el;
+            }}
+            className="h-screen overflow-y-auto bg-white"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
             <StickyInfoBar visible={true} />
             <div className="px-4 sm:px-6 lg:px-8">
               <VerifiedSupplier />
             </div>
           </div>
-        );
-      case 3:
-        return (
-          <div key="pricing" className={cls}>
+        )}
+        
+        {/* Section 3 - Pricing */}
+        {currentSection === 3 && (
+          <div 
+            ref={(el: HTMLDivElement | null) => {
+              sectionRefs.current[3] = el;
+            }}
+            className="h-screen overflow-y-auto"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
             <PricingSection />
           </div>
-        );
-      default:
-        return null;
-    }
+        )}
+      </div>
+    );
   };
 
   // ── Mobile renderer ───────────────────────────────────────────────────
@@ -310,7 +351,7 @@ export default function Home() {
       </div>
       <div className="bg-white">
         <StickyInfoBar visible={barVisible} />
-        <div id="deals-section" className="sm:px-6 lg:px-8 mt-20">
+        <div id="deals-section" className="sm:px-6 lg:px-8 ">
           <LatestDeals />
         </div>
         <div id="suppliers-section" className="px-4 sm:px-6 lg:px-8">
@@ -341,13 +382,7 @@ export default function Home() {
         }
       `}</style>
 
-      <div 
-        className="w-full overflow-x-hidden"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-      >
+      <div className="w-full overflow-x-hidden">
         {isMobile ? renderAllSections() : renderCurrentSection()}
       </div>
     </>
