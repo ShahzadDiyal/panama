@@ -219,6 +219,7 @@ export interface Subscription {
   current_period_end: string;
   created_at: string;
   updated_at: string;
+  expires_at: string;
   plan?: Plan;
 }
 

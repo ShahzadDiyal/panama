@@ -22,7 +22,7 @@ interface WhatsAppResponse {
 export default function DealDetails() {
   const { id } = useParams()
   const { setShowNavbar2 } = useNavbar()
-  const { user, subscription } = useAuth()
+  const { user, hasValidSubscription } = useAuth()
   const [visible, setVisible] = useState(false)
   const [activeImg, setActiveImg] = useState(0)
   const [product, setProduct] = useState<ProductDetails | null>(null)
@@ -62,41 +62,42 @@ export default function DealDetails() {
     fetchProduct()
   }, [id])
 
-  // Fetch WhatsApp number if user has active subscription
-  useEffect(() => {
-    const fetchWhatsApp = async () => {
-      if (!id || !product) return
+// Fetch WhatsApp number if user has active subscription
+useEffect(() => {
+  const fetchWhatsApp = async () => {
+    if (!id || !product) return
 
-      if (subscription?.status === 'active') {
-        try {
-          const response = await contactService.getVendorWhatsApp(Number(id))
-          // Handle the response properly
-          if (response && typeof response === 'object') {
-            // If response has the expected structure
-            if ('whatsapp_no' in response) {
-              setWhatsappData(response as unknown as WhatsAppResponse)
-            }
-            // If response is just { whatsapp: string }
-            else if ('whatsapp' in response) {
-              // Create a proper WhatsAppResponse object
-              setWhatsappData({
-                vendor_id: product?.vendor_id || 0,
-                vendor_name: product?.vendor?.business_name || 'Unknown',
-                product_id: product?.id || 0,
-                product_name: product?.title || '',
-                whatsapp_no: (response as any).whatsapp,
-                whatsapp_link: `https://wa.me/${(response as any).whatsapp.replace(/\D/g, '')}?text=Hi%2C+I+am+interested+in+your+product+%22${encodeURIComponent(product?.title || '')}%22`
-              })
-            }
+    // Only fetch if user has valid subscription
+    if (hasValidSubscription) {
+      try {
+        const response = await contactService.getVendorWhatsApp(Number(id))
+        // Handle the response properly
+        if (response && typeof response === 'object') {
+          // If response has the expected structure
+          if ('whatsapp_no' in response) {
+            setWhatsappData(response as unknown as WhatsAppResponse)
           }
-        } catch (err) {
-          console.error('Failed to fetch WhatsApp number', err)
+          // If response is just { whatsapp: string }
+          else if ('whatsapp' in response) {
+            // Create a proper WhatsAppResponse object
+            setWhatsappData({
+              vendor_id: product?.vendor_id || 0,
+              vendor_name: product?.vendor?.business_name || 'Unknown',
+              product_id: product?.id || 0,
+              product_name: product?.title || '',
+              whatsapp_no: (response as any).whatsapp,
+              whatsapp_link: `https://wa.me/${(response as any).whatsapp.replace(/\D/g, '')}?text=Hi%2C+I+am+interested+in+your+product+%22${encodeURIComponent(product?.title || '')}%22`
+            })
+          }
         }
+      } catch (err) {
+        console.error('Failed to fetch WhatsApp number', err)
       }
     }
+  }
 
-    fetchWhatsApp()
-  }, [id, product, subscription])
+  fetchWhatsApp()
+}, [id, product, hasValidSubscription])
 
   const handleRequestQuote = async () => {
     if (!user) {
@@ -126,23 +127,23 @@ export default function DealDetails() {
   }
 
   const handleWhatsAppContact = async () => {
-    if (!user) {
-      window.location.href = '/login'
-      return
-    }
+   if (!user) {
+    window.location.href = '/login'
+    return
+  }
 
-    if (!product) return
+  if (!product) return
 
-    if (subscription?.status !== 'active') {
-      alert('You need an active subscription to contact suppliers via WhatsApp')
-      return
-    }
+    if (!hasValidSubscription) {
+    alert('You need an active subscription to contact suppliers via WhatsApp')
+    return
+  }
 
-    // If we already have whatsappData with a link, use it
-    if (whatsappData?.whatsapp_link) {
-      window.open(whatsappData.whatsapp_link, '_blank')
-      return
-    }
+  // If we already have whatsappData with a link, use it
+  if (whatsappData?.whatsapp_link) {
+    window.open(whatsappData.whatsapp_link, '_blank')
+    return
+  }
 
     // Otherwise fetch it
     setWhatsappLoading(true)
@@ -217,8 +218,8 @@ export default function DealDetails() {
       : product.images?.map(img => getImageUrl(img.path)) || [getImageUrl(product.cover_image)],
   } : null
 
-  const hasActiveSubscription = subscription?.status === 'active'
-  const hasRealContact = hasActiveSubscription &&
+  // const hasActiveSubscription = subscription?.status === 'active'
+  const hasRealContact = hasValidSubscription &&
     whatsappData?.whatsapp_no &&
     whatsappData.whatsapp_no !== 'hidden'
 
@@ -448,19 +449,23 @@ export default function DealDetails() {
                       </span>
                     </button> */}
 
-                    <button
-                      onClick={handleRequestQuoteClick}
-                      disabled={quoteLoading}
-                      className="flex items-center justify-between gap-3 px-5 py-3 rounded-full
-                        bg-[#C3E8FF] hover:bg-[#162B60] text-slate-700 hover:text-white
-                        font-semibold text-[16px] transition-all duration-200 group disabled:opacity-50 cursor-pointer"
-                    >
-                      {quoteLoading ? 'Sending...' : 'Request Quote'}
-                      <span className="w-7 h-7 rounded-full group-hover:bg-white
-                        flex items-center justify-center flex-shrink-0 transition-all p-1">
-                        <img src={lock_icon} alt="" />
-                      </span>
-                    </button>
+                   <button
+  onClick={handleRequestQuote}
+  disabled={quoteLoading || hasValidSubscription}  // 👈 Add this condition
+  className="flex-1 flex items-center justify-between gap-3 px-5 py-3 rounded-xl
+    bg-[#DAEEFF] hover:bg-[#162B60] text-slate-700 hover:text-white
+    font-semibold text-sm transition-all duration-200 group disabled:opacity-50"
+>
+  {quoteLoading ? 'Sending...' : hasValidSubscription ? 'Subscribed' : 'Request Quote'}  
+  <span className="w-7 h-7 rounded-full bg-white/60 group-hover:bg-white/20
+    flex items-center justify-center flex-shrink-0 transition-all">
+    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor"
+      viewBox="0 0 24 24" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round"
+        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+    </svg>
+  </span>
+</button>
                   </div>
                 </div>
               )}
@@ -603,42 +608,39 @@ export default function DealDetails() {
                 )}
 
                 {/* CTAs */}
-                <div className="flex flex-col sm:flex-row gap-3 mt-2">
-                  <button
-                    onClick={handleWhatsAppContact}
-                    disabled={whatsappLoading}
-                    className="flex-1 flex items-center justify-between gap-3 px-5 py-3 rounded-xl
-                      bg-[#DAEEFF] hover:bg-[#162B60] text-slate-700 hover:text-white
-                      font-semibold text-sm transition-all duration-200 group disabled:opacity-50"
-                  >
-                    {whatsappLoading ? 'Loading...' : hasRealContact ? `WhatsApp: ${whatsappData?.whatsapp_no}` : 'Contact via WhatsApp'}
-                    <span className="w-7 h-7 rounded-full bg-white/60 group-hover:bg-white/20
-                      flex items-center justify-center flex-shrink-0 transition-all">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                      </svg>
-                    </span>
-                  </button>
+               {/* CTAs */}
+<div className="flex flex-col gap-3 mt-2">
+  <button
+    onClick={handleWhatsAppContact}
+    disabled={whatsappLoading}
+    className="flex items-center justify-between gap-3 px-5 py-3 rounded-full
+      bg-[#C3E8FF] hover:bg-[#162B60] text-slate-700 hover:text-white
+      font-semibold text-[16px] transition-all duration-200 group disabled:opacity-50"
+  >
+    {whatsappLoading ? 'Loading...' : hasRealContact ? `WhatsApp: ${whatsappData?.whatsapp_no}` : 'Contact via WhatsApp'}
+    <span className="w-7 h-7 rounded-full bg-white/60 group-hover:bg-white/20
+      flex items-center justify-center flex-shrink-0 transition-all">
+      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor"
+        viewBox="0 0 24 24" strokeWidth={2.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+      </svg>
+    </span>
+  </button>
 
-                  <button
-                    onClick={handleRequestQuote}
-                    disabled={quoteLoading}
-                    className="flex-1 flex items-center justify-between gap-3 px-5 py-3 rounded-xl
-                      bg-[#DAEEFF] hover:bg-[#162B60] text-slate-700 hover:text-white
-                      font-semibold text-sm transition-all duration-200 group disabled:opacity-50"
-                  >
-                    {quoteLoading ? 'Sending...' : 'Request Quote'}
-                    <span className="w-7 h-7 rounded-full bg-white/60 group-hover:bg-white/20
-                      flex items-center justify-center flex-shrink-0 transition-all">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round"
-                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                    </span>
-                  </button>
-                </div>
+  <button
+    onClick={handleRequestQuoteClick}
+    disabled={quoteLoading}
+    className="flex items-center justify-between gap-3 px-5 py-3 rounded-full
+      bg-[#C3E8FF] hover:bg-[#162B60] text-slate-700 hover:text-white
+      font-semibold text-[16px] transition-all duration-200 group disabled:opacity-50 cursor-pointer"
+  >
+    {quoteLoading ? 'Sending...' : 'Request Quote'}
+    <span className="w-7 h-7 rounded-full group-hover:bg-white
+      flex items-center justify-center flex-shrink-0 transition-all p-1">
+      <img src={lock_icon} alt="" />
+    </span>
+  </button>
+</div>
               </div>
             )}
           </div>

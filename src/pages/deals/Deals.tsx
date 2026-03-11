@@ -131,7 +131,7 @@ function DealCard({ deal }: { deal: Deal }) {
 
 // ── Section 1 Component (Deals Grid) ────────────────────────────────────
 function Section1({ isMobile }: { isMobile: boolean }) {
-  const { subscription } = useAuth()
+  const { hasValidSubscription } = useAuth()
   const [search, setSearch] = useState('')
   const [supplierType, setSupplierType] = useState('All Types')
   const [location, setLocation] = useState('All Locations')
@@ -216,8 +216,9 @@ function Section1({ isMobile }: { isMobile: boolean }) {
 
     const moqText = `${product.moq} units`
 
-    const hasActiveSubscription = subscription?.status === 'active'
-    const isPremium = hasActiveSubscription ? false : product.id % 3 === 0
+    // const hasActiveSubscription = subscription?.status === 'active'
+    const isPremium = hasValidSubscription ? false : product.id % 3 === 0
+
 
     return {
       id: product.id,

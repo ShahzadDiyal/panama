@@ -59,6 +59,21 @@ function Section1({ isMobile }: { isMobile: boolean }) {
   )
 }
 
+// Helper function to check if subscription is valid
+const isSubscriptionValid = (subscription: any): boolean => {
+  if (!subscription) return false;
+  if (subscription.status !== 'active') return false;
+  
+  // Check if expires_at exists and is not expired
+  if (subscription.expires_at) {
+    const expiryDate = new Date(subscription.expires_at);
+    const now = new Date();
+    return expiryDate > now;
+  }
+  
+  return true;
+};
+
 // ── Section 2: Pricing Cards (first occurrence) ──────────────────────────
 function Section2({ isMobile }: { isMobile: boolean }) {
   const { user, subscription, refreshSubscription } = useAuth()
@@ -91,22 +106,22 @@ function Section2({ isMobile }: { isMobile: boolean }) {
       return
     }
 
-    // Check if user already has this exact plan active
-    if (subscription?.status === 'active' && subscription.plan_id === planId) {
-      alert('You already have this subscription active!')
+    // Check if user already has a valid subscription for this exact plan
+    if (subscription && isSubscriptionValid(subscription) && subscription.plan_id === planId) {
+      alert('You already have an active subscription for this plan!')
       return
     }
 
     try {
       setSubscribing(planId)
 
-      if (subscription) {
-        // User has existing subscription - use upgrade
+      if (subscription && isSubscriptionValid(subscription)) {
+        // User has existing valid subscription - use upgrade
         await subscriptionService.upgrade(planId)
         await refreshSubscription()
         alert('Plan upgraded successfully!')
       } else {
-        // User has no subscription - use checkout (redirects to Stripe)
+        // User has no valid subscription - use checkout (redirects to Stripe)
         const { checkout_url } = await subscriptionService.checkout(planId)
         // Redirect to Stripe Checkout
         window.location.href = checkout_url
@@ -122,9 +137,9 @@ function Section2({ isMobile }: { isMobile: boolean }) {
     }
   }
 
-  // Check if user has this plan already
-  const hasActivePlan = (planId: number) => {
-    return subscription?.status === 'active' && subscription.plan_id === planId
+  // Check if user has a valid active plan (not expired)
+  const hasValidActivePlan = (planId: number) => {
+    return subscription && isSubscriptionValid(subscription) && subscription.plan_id === planId;
   }
 
   // Map API plan to the format expected by the UI
@@ -203,7 +218,7 @@ function Section2({ isMobile }: { isMobile: boolean }) {
   }
 
   const isPlanActive = (planId: number) => {
-    return hasActivePlan(planId)
+    return hasValidActivePlan(planId)
   }
 
   return (
@@ -261,8 +276,9 @@ function Section2({ isMobile }: { isMobile: boolean }) {
               return (
                 <div
                   key={plan.id}
-                  className={`relative bg-white rounded-2xl shadow-xl p-6 sm:p-8 flex flex-col ${isActive ? 'ring-2 ring-green-500' : ''
-                    }`}
+                  className={`relative bg-white rounded-2xl shadow-xl p-6 sm:p-8 flex flex-col ${
+                    isActive ? 'ring-2 ring-green-500' : ''
+                  }`}
                 >
                   {isActive && (
                     <div className="absolute -top-3 right-4 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full">
@@ -348,22 +364,22 @@ function Section3({ isMobile }: { isMobile: boolean }) {
       return
     }
 
-    // Check if user already has this exact plan active
-    if (subscription?.status === 'active' && subscription.plan_id === planId) {
-      alert('You already have this subscription active!')
+    // Check if user already has a valid subscription for this exact plan
+    if (subscription && isSubscriptionValid(subscription) && subscription.plan_id === planId) {
+      alert('You already have an active subscription for this plan!')
       return
     }
 
     try {
       setSubscribing(planId)
 
-      if (subscription) {
-        // User has existing subscription - use upgrade
+      if (subscription && isSubscriptionValid(subscription)) {
+        // User has existing valid subscription - use upgrade
         await subscriptionService.upgrade(planId)
         await refreshSubscription()
         alert('Plan upgraded successfully!')
       } else {
-        // User has no subscription - use checkout (redirects to Stripe)
+        // User has no valid subscription - use checkout (redirects to Stripe)
         const { checkout_url } = await subscriptionService.checkout(planId)
         // Redirect to Stripe Checkout
         window.location.href = checkout_url
@@ -379,9 +395,9 @@ function Section3({ isMobile }: { isMobile: boolean }) {
     }
   }
 
-  // Check if user has this plan already
-  const hasActivePlan = (planId: number) => {
-    return subscription?.status === 'active' && subscription.plan_id === planId
+  // Check if user has a valid active plan (not expired)
+  const hasValidActivePlan = (planId: number) => {
+    return subscription && isSubscriptionValid(subscription) && subscription.plan_id === planId;
   }
 
   // Map API plan to the format expected by the UI
@@ -460,7 +476,7 @@ function Section3({ isMobile }: { isMobile: boolean }) {
   }
 
   const isPlanActive = (planId: number) => {
-    return hasActivePlan(planId)
+    return hasValidActivePlan(planId)
   }
 
   return (
@@ -506,8 +522,9 @@ function Section3({ isMobile }: { isMobile: boolean }) {
               return (
                 <div
                   key={plan.id}
-                  className={`relative bg-white rounded-2xl shadow-xl p-6 sm:p-8 flex flex-col ${isActive ? 'ring-2 ring-green-500' : ''
-                    }`}
+                  className={`relative bg-white rounded-2xl shadow-xl p-6 sm:p-8 flex flex-col ${
+                    isActive ? 'ring-2 ring-green-500' : ''
+                  }`}
                 >
                   {isActive && (
                     <div className="absolute -top-3 right-4 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full">

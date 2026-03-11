@@ -6,6 +6,29 @@ import type { User, LoginCredentials, RegisterData, ApiError } from '../types/au
 import type { Subscription } from '../types'
 import { AxiosError } from 'axios'
 
+// Helper function to check if subscription is valid (active and not expired)
+const isSubscriptionValid = (subscription: Subscription | null): boolean => {
+  if (!subscription) return false;
+  if (subscription.status !== 'active') return false;
+  
+  // Check if expires_at exists and is not expired
+  if (subscription.expires_at) {
+    const expiryDate = new Date(subscription.expires_at);
+    const now = new Date();
+    return expiryDate > now;
+  }
+  
+  // If no expires_at field, check current_period_end if available
+  if (subscription.current_period_end) {
+    const periodEndDate = new Date(subscription.current_period_end);
+    const now = new Date();
+    return periodEndDate > now;
+  }
+  
+  // If no expiration fields, fall back to status only
+  return true;
+};
+
 interface AuthContextType {
     user: User | null
     loading: boolean
@@ -13,8 +36,9 @@ interface AuthContextType {
     login: (credentials: LoginCredentials) => Promise<{ success: boolean; error?: string }>
     register: (userData: RegisterData) => Promise<{ success: boolean; error?: string }>
     logout: () => Promise<void>
-    // New subscription properties
+    // Subscription properties
     subscription: Subscription | null
+    hasValidSubscription: boolean // New computed property
     loadingSubscription: boolean
     refreshSubscription: () => Promise<void>
 }
@@ -37,11 +61,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null)
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
-    // New subscription states
     const [subscription, setSubscription] = useState<Subscription | null>(null)
     const [loadingSubscription, setLoadingSubscription] = useState<boolean>(true)
 
-    // Load user on mount if token exists (existing functionality)
+    // Computed property for valid subscription
+    const hasValidSubscription = isSubscriptionValid(subscription);
+
+    // Load user on mount if token exists
     useEffect(() => {
         const loadUser = async () => {
             const token = localStorage.getItem('token')
@@ -65,14 +91,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         loadUser()
     }, [])
 
-    // Fetch subscription when user changes (new functionality)
+    // Fetch subscription when user changes
     const fetchSubscription = async () => {
         if (!user) {
             setSubscription(null)
             setLoadingSubscription(false)
             return
         }
-        
+
         try {
             const sub = await subscriptionService.getMySubscription()
             setSubscription(sub)
@@ -89,13 +115,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         fetchSubscription()
     }, [user])
 
-    // Refresh subscription manually (new functionality)
+    // Refresh subscription manually
     const refreshSubscription = async () => {
         setLoadingSubscription(true)
         await fetchSubscription()
     }
 
-    // Login (existing functionality enhanced with subscription fetch)
+    // Login
     const login = async (credentials: LoginCredentials) => {
         setError(null)
         try {
@@ -103,10 +129,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             const { token, user } = data
             localStorage.setItem('token', token)
             setUser(user)
-            
+
             // Fetch subscription after successful login
             await fetchSubscription()
-            
+
             return { success: true }
         } catch (err) {
             const axiosError = err as AxiosError<ApiError>
@@ -116,7 +142,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
     }
 
-    // Register (existing functionality enhanced with subscription fetch)
+    // Register
     const register = async (userData: RegisterData) => {
         setError(null)
         try {
@@ -124,10 +150,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             const { token, user } = data
             localStorage.setItem('token', token)
             setUser(user)
-            
+
             // Fetch subscription after successful registration
             await fetchSubscription()
-            
+
             return { success: true }
         } catch (err) {
             const axiosError = err as AxiosError<ApiError>
@@ -137,7 +163,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
     }
 
-    // Logout (existing functionality enhanced with subscription cleanup)
+    // Logout
     const logout = async () => {
         try {
             await authService.logout()
@@ -146,7 +172,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         } finally {
             localStorage.removeItem('token')
             setUser(null)
-            setSubscription(null) // Clear subscription on logout
+            setSubscription(null)
         }
     }
 
@@ -157,8 +183,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         login,
         register,
         logout,
-        // New subscription properties
         subscription,
+        hasValidSubscription, // Add the computed property
         loadingSubscription,
         refreshSubscription,
     }
